@@ -46,6 +46,9 @@ function AppIcon({
 
   const handlePressOut = () => {
     scale.value = withSpring(1);
+  };
+
+  const handlePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     onPress();
   };
@@ -55,6 +58,8 @@ function AppIcon({
       style={[styles.appIcon, animatedStyle]}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
+      onPress={handlePress}
+      testID={`app-icon-${icon}`}
     >
       <View style={[styles.appIconBg, { backgroundColor: color }]}>
         <Feather name={icon} size={32} color="#FFFFFF" />
