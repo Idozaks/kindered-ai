@@ -105,7 +105,9 @@ export default function DecisionNavigatorScreen() {
             id: String(index + 1),
             title: content,
             description: i18n.language === 'he' ? "לחץ למידע נוסף" : "Tap for more details",
-            doriAdvice: content,
+            doriAdvice: i18n.language === 'he' 
+              ? `זה השלב ה${index + 1}. קח את הזמן, אין לחץ.` 
+              : `This is step ${index + 1}. Take your time, no rush.`,
             hasSandbox: false,
           };
         });
