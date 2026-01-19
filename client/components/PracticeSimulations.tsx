@@ -1145,6 +1145,757 @@ export function SettingsSimulation({ onComplete, stepIndex }: SimulationProps) {
   return null;
 }
 
+export function TaxiSimulation({ onComplete, stepIndex }: SimulationProps) {
+  const { theme } = useTheme();
+  const { t } = useTranslation();
+  const [destination, setDestination] = useState("");
+
+  if (stepIndex === 0) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "הקש על אפליקציית המוניות" : "Tap the Taxi app"}
+        </ThemedText>
+        <View style={styles.homeScreen}>
+          <AppIcon name={t("mirrorWorld.tasks.appWhatsApp")} icon="message-circle" color="#25D366" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appBank")} icon="credit-card" color="#1E88E5" onPress={() => {}} />
+          <AppIcon 
+            name={t("mirrorWorld.tasks.appTaxi")} 
+            icon="navigation" 
+            color="#FF9500" 
+            onPress={onComplete}
+          />
+          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="settings" color="#9B59B6" onPress={() => {}} />
+        </View>
+      </View>
+    );
+  }
+
+  if (stepIndex === 1) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "לחץ 'אפשר' כדי לאפשר גישה למיקום" : "Tap 'Allow' to enable location access"}
+        </ThemedText>
+        <View style={styles.permissionDialog}>
+          <View style={[styles.dialogBox, { backgroundColor: theme.card || theme.backgroundSecondary }]}>
+            <View style={[styles.dialogIcon, { backgroundColor: "#FF9500" + "20" }]}>
+              <Feather name="map-pin" size={32} color="#FF9500" />
+            </View>
+            <ThemedText type="h4" style={{ textAlign: "center", marginBottom: Spacing.sm }}>
+              {t("common.loading") === "טוען..." ? "גישה למיקום" : "Location Access"}
+            </ThemedText>
+            <ThemedText style={{ textAlign: "center", color: theme.textSecondary, marginBottom: Spacing.lg }}>
+              {t("common.loading") === "טוען..." ? "האפליקציה צריכה לדעת את המיקום שלך כדי להזמין מונית" : "The app needs your location to order a taxi"}
+            </ThemedText>
+            <View style={styles.dialogButtons}>
+              <Pressable style={[styles.dialogBtn, { backgroundColor: theme.backgroundSecondary }]}>
+                <ThemedText>{t("common.loading") === "טוען..." ? "לא עכשיו" : "Not Now"}</ThemedText>
+              </Pressable>
+              <Pressable 
+                style={[styles.dialogBtn, { backgroundColor: "#FF9500" }]}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                  onComplete();
+                }}
+              >
+                <ThemedText style={{ color: "#FFFFFF", fontWeight: "600" }}>{t("common.loading") === "טוען..." ? "אפשר" : "Allow"}</ThemedText>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  if (stepIndex === 2) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "הזן את היעד שלך" : "Enter your destination"}
+        </ThemedText>
+        <View style={styles.taxiScreen}>
+          <View style={[styles.locationCard, { backgroundColor: theme.card || theme.backgroundSecondary }]}>
+            <View style={styles.locationRow}>
+              <View style={[styles.locationDot, { backgroundColor: "#52C41A" }]} />
+              <ThemedText style={{ flex: 1 }}>{t("common.loading") === "טוען..." ? "המיקום הנוכחי שלך" : "Your current location"}</ThemedText>
+            </View>
+            <View style={[styles.locationDivider, { borderLeftColor: theme.border || theme.textSecondary }]} />
+            <View style={styles.locationRow}>
+              <View style={[styles.locationDot, { backgroundColor: "#FF9500" }]} />
+              <TextInput
+                style={[styles.destinationInput, { color: theme.text, textAlign: t("common.loading") === "טוען..." ? "right" : "left" }]}
+                placeholder={t("common.loading") === "טוען..." ? "לאן נוסעים?" : "Where to?"}
+                placeholderTextColor={theme.textSecondary}
+                value={destination}
+                onChangeText={setDestination}
+              />
+            </View>
+          </View>
+          <Pressable 
+            style={[styles.taxiBtn, { backgroundColor: "#FF9500" }]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onComplete();
+            }}
+          >
+            <ThemedText style={{ color: "#FFFFFF", fontWeight: "600" }}>{t("common.loading") === "טוען..." ? "חפש" : "Search"}</ThemedText>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  if (stepIndex === 3) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "בחר סוג מונית" : "Choose taxi type"}
+        </ThemedText>
+        <View style={styles.taxiOptions}>
+          <Pressable 
+            style={[styles.taxiOption, { backgroundColor: theme.card || theme.backgroundSecondary, borderWidth: 2, borderColor: "#FF9500" }]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onComplete();
+            }}
+          >
+            <Feather name="truck" size={28} color="#FF9500" />
+            <ThemedText type="body" style={{ fontWeight: "600", marginTop: Spacing.sm }}>
+              {t("common.loading") === "טוען..." ? "רגילה" : "Standard"}
+            </ThemedText>
+            <ThemedText type="small" style={{ color: theme.textSecondary }}>₪35</ThemedText>
+          </Pressable>
+          <Pressable 
+            style={[styles.taxiOption, { backgroundColor: theme.card || theme.backgroundSecondary }]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onComplete();
+            }}
+          >
+            <Feather name="star" size={28} color="#1E88E5" />
+            <ThemedText type="body" style={{ fontWeight: "600", marginTop: Spacing.sm }}>
+              {t("common.loading") === "טוען..." ? "פרימיום" : "Premium"}
+            </ThemedText>
+            <ThemedText type="small" style={{ color: theme.textSecondary }}>₪55</ThemedText>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  if (stepIndex === 4) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "אשר את מקום האיסוף" : "Confirm pickup location"}
+        </ThemedText>
+        <View style={[styles.mapPlaceholder, { backgroundColor: theme.backgroundSecondary }]}>
+          <View style={[styles.mapPin, { backgroundColor: "#FF9500" }]}>
+            <Feather name="map-pin" size={24} color="#FFFFFF" />
+          </View>
+          <ThemedText style={{ marginTop: Spacing.lg, color: theme.textSecondary }}>
+            {t("common.loading") === "טוען..." ? "רחוב הרצל 15, תל אביב" : "15 Herzl Street, Tel Aviv"}
+          </ThemedText>
+        </View>
+        <Pressable 
+          style={[styles.taxiBtn, { backgroundColor: "#FF9500" }]}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            onComplete();
+          }}
+        >
+          <ThemedText style={{ color: "#FFFFFF", fontWeight: "600" }}>{t("common.loading") === "טוען..." ? "אשר מיקום" : "Confirm Location"}</ThemedText>
+        </Pressable>
+      </View>
+    );
+  }
+
+  if (stepIndex === 5) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "לחץ להזמנת המונית" : "Tap to order the taxi"}
+        </ThemedText>
+        <View style={[styles.orderSummaryCard, { backgroundColor: theme.card || theme.backgroundSecondary }]}>
+          <View style={styles.orderRow}>
+            <ThemedText style={{ color: theme.textSecondary }}>{t("common.loading") === "טוען..." ? "מ:" : "From:"}</ThemedText>
+            <ThemedText>{t("common.loading") === "טוען..." ? "המיקום הנוכחי" : "Current location"}</ThemedText>
+          </View>
+          <View style={styles.orderRow}>
+            <ThemedText style={{ color: theme.textSecondary }}>{t("common.loading") === "טוען..." ? "אל:" : "To:"}</ThemedText>
+            <ThemedText>{t("common.loading") === "טוען..." ? "בית החולים" : "Hospital"}</ThemedText>
+          </View>
+          <View style={[styles.orderRow, { borderTopWidth: 1, borderTopColor: theme.border || theme.textSecondary, paddingTop: Spacing.md }]}>
+            <ThemedText style={{ fontWeight: "600" }}>{t("common.loading") === "טוען..." ? "מחיר משוער:" : "Estimated price:"}</ThemedText>
+            <ThemedText style={{ fontWeight: "600", color: "#FF9500" }}>₪35</ThemedText>
+          </View>
+        </View>
+        <Pressable 
+          style={[styles.orderTaxiBtn, { backgroundColor: "#FF9500" }]}
+          onPress={() => {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            onComplete();
+          }}
+        >
+          <Feather name="navigation" size={20} color="#FFFFFF" />
+          <ThemedText style={{ color: "#FFFFFF", fontWeight: "600", marginLeft: Spacing.sm }}>
+            {t("common.loading") === "טוען..." ? "הזמן מונית" : "Order Taxi"}
+          </ThemedText>
+        </Pressable>
+      </View>
+    );
+  }
+
+  if (stepIndex === 6) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "מונית בדרך אליך!" : "Taxi is on the way!"}
+        </ThemedText>
+        <View style={styles.driverCard}>
+          <View style={[styles.driverInfo, { backgroundColor: theme.card || theme.backgroundSecondary }]}>
+            <View style={[styles.driverAvatar, { backgroundColor: "#FF9500" + "30" }]}>
+              <Feather name="user" size={32} color="#FF9500" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <ThemedText type="body" style={{ fontWeight: "600" }}>{t("common.loading") === "טוען..." ? "משה כהן" : "Moshe Cohen"}</ThemedText>
+              <ThemedText type="small" style={{ color: theme.textSecondary }}>{t("common.loading") === "טוען..." ? "מונית לבנה • 12-345-67" : "White Taxi • 12-345-67"}</ThemedText>
+              <ThemedText type="small" style={{ color: "#FF9500", marginTop: Spacing.xs }}>{t("common.loading") === "טוען..." ? "יגיע בעוד 3 דקות" : "Arriving in 3 min"}</ThemedText>
+            </View>
+          </View>
+          <Pressable 
+            style={[styles.successBtn, { backgroundColor: theme.success }]}
+            onPress={() => {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              onComplete();
+            }}
+          >
+            <Feather name="check-circle" size={20} color="#FFFFFF" />
+            <ThemedText style={{ color: "#FFFFFF", marginLeft: Spacing.sm, fontWeight: "600" }}>
+              {t("common.loading") === "טוען..." ? "סיום" : "Complete"}
+            </ThemedText>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  return null;
+}
+
+export function PhotosSimulation({ onComplete, stepIndex }: SimulationProps) {
+  const { theme } = useTheme();
+  const { t } = useTranslation();
+  const [selectedPhotos, setSelectedPhotos] = useState<number[]>([]);
+  const [message, setMessage] = useState("");
+
+  if (stepIndex === 0) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "הקש על אפליקציית התמונות" : "Tap the Photos app"}
+        </ThemedText>
+        <View style={styles.homeScreen}>
+          <AppIcon name={t("mirrorWorld.tasks.appWhatsApp")} icon="message-circle" color="#25D366" onPress={() => {}} />
+          <AppIcon 
+            name={t("mirrorWorld.tasks.appPhotos")} 
+            icon="image" 
+            color="#52C41A" 
+            onPress={onComplete}
+          />
+          <AppIcon name={t("mirrorWorld.tasks.appCalendar")} icon="calendar" color="#FF3B30" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="settings" color="#9B59B6" onPress={() => {}} />
+        </View>
+      </View>
+    );
+  }
+
+  if (stepIndex === 1) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "הקש על תמונות כדי לבחור אותן" : "Tap photos to select them"}
+        </ThemedText>
+        <View style={styles.photoGrid}>
+          {[1, 2, 3, 4, 5, 6].map((num) => (
+            <Pressable 
+              key={num}
+              style={[
+                styles.photoThumbnail, 
+                { backgroundColor: theme.backgroundSecondary },
+                selectedPhotos.includes(num) && { borderWidth: 3, borderColor: "#52C41A" }
+              ]}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setSelectedPhotos(prev => 
+                  prev.includes(num) ? prev.filter(n => n !== num) : [...prev, num]
+                );
+              }}
+            >
+              <Feather 
+                name={num <= 3 ? "users" : "sun"} 
+                size={28} 
+                color={theme.textSecondary} 
+              />
+              {selectedPhotos.includes(num) && (
+                <View style={styles.photoCheck}>
+                  <Feather name="check" size={14} color="#FFFFFF" />
+                </View>
+              )}
+            </Pressable>
+          ))}
+        </View>
+        <Pressable 
+          style={[styles.taxiBtn, { backgroundColor: "#52C41A", opacity: selectedPhotos.length > 0 ? 1 : 0.5 }]}
+          onPress={() => {
+            if (selectedPhotos.length > 0) {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              onComplete();
+            }
+          }}
+        >
+          <ThemedText style={{ color: "#FFFFFF", fontWeight: "600" }}>
+            {t("common.loading") === "טוען..." ? `נבחרו ${selectedPhotos.length} תמונות` : `${selectedPhotos.length} photos selected`}
+          </ThemedText>
+        </Pressable>
+      </View>
+    );
+  }
+
+  if (stepIndex === 2) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "לחץ על כפתור השיתוף" : "Tap the share button"}
+        </ThemedText>
+        <View style={styles.photoPreview}>
+          <View style={[styles.selectedPhotosBanner, { backgroundColor: theme.backgroundSecondary }]}>
+            <ThemedText>{t("common.loading") === "טוען..." ? "3 תמונות נבחרו" : "3 photos selected"}</ThemedText>
+          </View>
+          <Pressable 
+            style={[styles.shareBtn, { backgroundColor: "#52C41A" }]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              onComplete();
+            }}
+          >
+            <Feather name="share" size={24} color="#FFFFFF" />
+            <ThemedText style={{ color: "#FFFFFF", fontWeight: "600", marginLeft: Spacing.sm }}>
+              {t("common.loading") === "טוען..." ? "שתף" : "Share"}
+            </ThemedText>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  if (stepIndex === 3) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "בחר וואטסאפ לשיתוף" : "Choose WhatsApp to share"}
+        </ThemedText>
+        <View style={styles.shareSheet}>
+          <ThemedText type="body" style={{ fontWeight: "600", marginBottom: Spacing.lg }}>
+            {t("common.loading") === "טוען..." ? "שתף דרך:" : "Share via:"}
+          </ThemedText>
+          <View style={styles.shareOptions}>
+            <Pressable 
+              style={styles.shareOption}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                onComplete();
+              }}
+            >
+              <View style={[styles.shareIconBg, { backgroundColor: "#25D366" }]}>
+                <Feather name="message-circle" size={24} color="#FFFFFF" />
+              </View>
+              <ThemedText type="small">{t("mirrorWorld.tasks.appWhatsApp")}</ThemedText>
+            </Pressable>
+            <View style={styles.shareOption}>
+              <View style={[styles.shareIconBg, { backgroundColor: "#F4B942" }]}>
+                <Feather name="mail" size={24} color="#FFFFFF" />
+              </View>
+              <ThemedText type="small">{t("mirrorWorld.tasks.appEmail")}</ThemedText>
+            </View>
+            <View style={styles.shareOption}>
+              <View style={[styles.shareIconBg, { backgroundColor: "#5B9BD5" }]}>
+                <Feather name="message-square" size={24} color="#FFFFFF" />
+              </View>
+              <ThemedText type="small">{t("mirrorWorld.tasks.appMessages")}</ThemedText>
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  if (stepIndex === 4) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "בחר את בן המשפחה לשליחה" : "Select family member to send to"}
+        </ThemedText>
+        <View style={styles.contactsList}>
+          <Pressable 
+            style={[styles.contactRow, { borderBottomColor: theme.border || theme.textSecondary }]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onComplete();
+            }}
+          >
+            <View style={[styles.avatar, { backgroundColor: "#E91E63" + "30" }]}>
+              <ThemedText style={{ color: "#E91E63" }}>ש</ThemedText>
+            </View>
+            <View style={{ flex: 1, marginLeft: Spacing.md }}>
+              <ThemedText type="body">{t("mirrorWorld.tasks.contactSarah")}</ThemedText>
+            </View>
+          </Pressable>
+          <Pressable 
+            style={[styles.contactRow, { borderBottomColor: theme.border || theme.textSecondary }]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onComplete();
+            }}
+          >
+            <View style={[styles.avatar, { backgroundColor: "#5B9BD5" + "30" }]}>
+              <ThemedText style={{ color: "#5B9BD5" }}>מ</ThemedText>
+            </View>
+            <View style={{ flex: 1, marginLeft: Spacing.md }}>
+              <ThemedText type="body">{t("mirrorWorld.tasks.contactMichael")}</ThemedText>
+            </View>
+          </Pressable>
+          <Pressable 
+            style={[styles.contactRow, { borderBottomColor: theme.border || theme.textSecondary }]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onComplete();
+            }}
+          >
+            <View style={[styles.avatar, { backgroundColor: "#52C41A" + "30" }]}>
+              <ThemedText style={{ color: "#52C41A" }}>א</ThemedText>
+            </View>
+            <View style={{ flex: 1, marginLeft: Spacing.md }}>
+              <ThemedText type="body">{t("mirrorWorld.tasks.contactEmma")}</ThemedText>
+            </View>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  if (stepIndex === 5) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "הוסף הודעה לתמונות" : "Add a message with the photos"}
+        </ThemedText>
+        <View style={styles.messageCompose}>
+          <View style={[styles.photosPreviewRow, { backgroundColor: theme.backgroundSecondary }]}>
+            {[1, 2, 3].map(num => (
+              <View key={num} style={styles.miniPhoto}>
+                <Feather name="image" size={16} color={theme.textSecondary} />
+              </View>
+            ))}
+            <ThemedText type="small" style={{ marginLeft: Spacing.sm, color: theme.textSecondary }}>
+              {t("common.loading") === "טוען..." ? "3 תמונות" : "3 photos"}
+            </ThemedText>
+          </View>
+          <TextInput
+            style={[styles.messageInputLarge, { backgroundColor: theme.backgroundSecondary, color: theme.text, textAlign: t("common.loading") === "טוען..." ? "right" : "left" }]}
+            placeholder={t("common.loading") === "טוען..." ? "הוסף הודעה..." : "Add a message..."}
+            placeholderTextColor={theme.textSecondary}
+            value={message}
+            onChangeText={setMessage}
+            multiline
+          />
+          <Pressable 
+            style={[styles.taxiBtn, { backgroundColor: "#25D366" }]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              onComplete();
+            }}
+          >
+            <ThemedText style={{ color: "#FFFFFF", fontWeight: "600" }}>{t("common.loading") === "טוען..." ? "המשך" : "Continue"}</ThemedText>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  if (stepIndex === 6) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "לחץ לשליחת התמונות" : "Tap to send the photos"}
+        </ThemedText>
+        <View style={styles.sendConfirm}>
+          <View style={[styles.sendPreview, { backgroundColor: theme.card || theme.backgroundSecondary }]}>
+            <ThemedText style={{ color: theme.textSecondary, marginBottom: Spacing.sm }}>
+              {t("common.loading") === "טוען..." ? "שולח ל: שרה (בת)" : "Sending to: Sarah (Daughter)"}
+            </ThemedText>
+            <ThemedText>
+              {t("common.loading") === "טוען..." ? "תראי איזה תמונות יפות מהטיול!" : "Look at these beautiful photos from the trip!"}
+            </ThemedText>
+          </View>
+          <Pressable 
+            style={[styles.sendPhotosBtn, { backgroundColor: "#25D366" }]}
+            onPress={() => {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              onComplete();
+            }}
+          >
+            <Feather name="send" size={20} color="#FFFFFF" />
+            <ThemedText style={{ color: "#FFFFFF", fontWeight: "600", marginLeft: Spacing.sm }}>
+              {t("common.loading") === "טוען..." ? "שלח תמונות" : "Send Photos"}
+            </ThemedText>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  return null;
+}
+
+export function CalendarSimulation({ onComplete, stepIndex }: SimulationProps) {
+  const { theme } = useTheme();
+  const { t } = useTranslation();
+  const [eventName, setEventName] = useState("");
+  const [selectedHour, setSelectedHour] = useState(10);
+
+  if (stepIndex === 0) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "הקש על אפליקציית היומן" : "Tap the Calendar app"}
+        </ThemedText>
+        <View style={styles.homeScreen}>
+          <AppIcon name={t("mirrorWorld.tasks.appWhatsApp")} icon="message-circle" color="#25D366" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="image" color="#52C41A" onPress={() => {}} />
+          <AppIcon 
+            name={t("mirrorWorld.tasks.appCalendar")} 
+            icon="calendar" 
+            color="#FF3B30" 
+            onPress={onComplete}
+          />
+          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="settings" color="#9B59B6" onPress={() => {}} />
+        </View>
+      </View>
+    );
+  }
+
+  if (stepIndex === 1) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "לחץ על + להוספת אירוע חדש" : "Tap + to add new event"}
+        </ThemedText>
+        <View style={styles.calendarView}>
+          <View style={styles.calendarHeader}>
+            <ThemedText type="h4">{t("common.loading") === "טוען..." ? "ינואר 2026" : "January 2026"}</ThemedText>
+            <Pressable 
+              style={[styles.addEventBtn, { backgroundColor: "#FF3B30" }]}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                onComplete();
+              }}
+            >
+              <Feather name="plus" size={24} color="#FFFFFF" />
+            </Pressable>
+          </View>
+          <View style={styles.calendarGrid}>
+            {["א", "ב", "ג", "ד", "ה", "ו", "ש"].map((day, idx) => (
+              <ThemedText key={idx} type="small" style={[styles.calendarDayHeader, { color: theme.textSecondary }]}>{day}</ThemedText>
+            ))}
+            {Array.from({ length: 31 }, (_, i) => i + 1).slice(0, 28).map((day) => (
+              <View key={day} style={[styles.calendarDay, day === 21 && { backgroundColor: "#FF3B30", borderRadius: 20 }]}>
+                <ThemedText style={{ color: day === 21 ? "#FFFFFF" : theme.text }}>{day}</ThemedText>
+              </View>
+            ))}
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  if (stepIndex === 2) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "הזן שם לאירוע" : "Enter event name"}
+        </ThemedText>
+        <View style={styles.eventForm}>
+          <TextInput
+            style={[styles.eventNameInput, { backgroundColor: theme.backgroundSecondary, color: theme.text, textAlign: t("common.loading") === "טוען..." ? "right" : "left" }]}
+            placeholder={t("common.loading") === "טוען..." ? "שם האירוע..." : "Event name..."}
+            placeholderTextColor={theme.textSecondary}
+            value={eventName}
+            onChangeText={setEventName}
+          />
+          <Pressable 
+            style={[styles.taxiBtn, { backgroundColor: "#FF3B30" }]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onComplete();
+            }}
+          >
+            <ThemedText style={{ color: "#FFFFFF", fontWeight: "600" }}>{t("common.loading") === "טוען..." ? "המשך" : "Continue"}</ThemedText>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  if (stepIndex === 3) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "בחר את התאריך" : "Select the date"}
+        </ThemedText>
+        <View style={styles.dateSelector}>
+          {["20", "21", "22", "23", "24"].map((day, idx) => (
+            <Pressable 
+              key={day}
+              style={[styles.dateSelectorBtn, idx === 1 && { backgroundColor: "#FF3B30" }, idx !== 1 && { backgroundColor: theme.backgroundSecondary }]}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                onComplete();
+              }}
+            >
+              <ThemedText style={{ color: idx === 1 ? "#FFFFFF" : theme.text, fontWeight: "600" }}>{day}</ThemedText>
+              <ThemedText type="small" style={{ color: idx === 1 ? "#FFFFFF" : theme.textSecondary }}>
+                {t("common.loading") === "טוען..." ? "ינו׳" : "Jan"}
+              </ThemedText>
+            </Pressable>
+          ))}
+        </View>
+      </View>
+    );
+  }
+
+  if (stepIndex === 4) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "בחר את השעה" : "Select the time"}
+        </ThemedText>
+        <View style={styles.timeSelector}>
+          <ThemedText type="h4" style={{ marginBottom: Spacing.lg }}>
+            {t("common.loading") === "טוען..." ? "בחר שעה:" : "Choose time:"}
+          </ThemedText>
+          <View style={styles.timeOptions}>
+            {[9, 10, 11, 12, 14, 15].map((hour) => (
+              <Pressable 
+                key={hour}
+                style={[
+                  styles.timeOption, 
+                  { backgroundColor: selectedHour === hour ? "#FF3B30" : theme.backgroundSecondary }
+                ]}
+                onPress={() => {
+                  setSelectedHour(hour);
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  onComplete();
+                }}
+              >
+                <ThemedText style={{ color: selectedHour === hour ? "#FFFFFF" : theme.text }}>
+                  {hour}:00
+                </ThemedText>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  if (stepIndex === 5) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "הוסף התראת תזכורת" : "Add a reminder alert"}
+        </ThemedText>
+        <View style={styles.reminderOptions}>
+          <ThemedText type="h4" style={{ marginBottom: Spacing.lg }}>
+            {t("common.loading") === "טוען..." ? "תזכיר לי:" : "Remind me:"}
+          </ThemedText>
+          <Pressable 
+            style={[styles.reminderOption, { backgroundColor: theme.backgroundSecondary }]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onComplete();
+            }}
+          >
+            <Feather name="bell" size={20} color="#FF3B30" />
+            <ThemedText style={{ marginLeft: Spacing.md }}>{t("common.loading") === "טוען..." ? "שעה לפני" : "1 hour before"}</ThemedText>
+          </Pressable>
+          <Pressable 
+            style={[styles.reminderOption, { backgroundColor: "#FF3B30" }]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onComplete();
+            }}
+          >
+            <Feather name="bell" size={20} color="#FFFFFF" />
+            <ThemedText style={{ marginLeft: Spacing.md, color: "#FFFFFF" }}>{t("common.loading") === "טוען..." ? "יום לפני" : "1 day before"}</ThemedText>
+          </Pressable>
+          <Pressable 
+            style={[styles.reminderOption, { backgroundColor: theme.backgroundSecondary }]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onComplete();
+            }}
+          >
+            <Feather name="bell-off" size={20} color={theme.textSecondary} />
+            <ThemedText style={{ marginLeft: Spacing.md, color: theme.textSecondary }}>{t("common.loading") === "טוען..." ? "ללא תזכורת" : "No reminder"}</ThemedText>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  if (stepIndex === 6) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "לחץ לשמירת התזכורת" : "Tap to save the reminder"}
+        </ThemedText>
+        <View style={[styles.eventSummary, { backgroundColor: theme.card || theme.backgroundSecondary }]}>
+          <View style={styles.eventSummaryHeader}>
+            <Feather name="calendar" size={24} color="#FF3B30" />
+            <ThemedText type="h4" style={{ marginLeft: Spacing.md }}>
+              {t("common.loading") === "טוען..." ? "תור לרופא" : "Doctor Appointment"}
+            </ThemedText>
+          </View>
+          <View style={styles.eventSummaryRow}>
+            <Feather name="clock" size={18} color={theme.textSecondary} />
+            <ThemedText style={{ marginLeft: Spacing.md }}>21/01/2026, 10:00</ThemedText>
+          </View>
+          <View style={styles.eventSummaryRow}>
+            <Feather name="bell" size={18} color={theme.textSecondary} />
+            <ThemedText style={{ marginLeft: Spacing.md }}>{t("common.loading") === "טוען..." ? "תזכורת: יום לפני" : "Reminder: 1 day before"}</ThemedText>
+          </View>
+        </View>
+        <Pressable 
+          style={[styles.saveEventBtn, { backgroundColor: "#FF3B30" }]}
+          onPress={() => {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            onComplete();
+          }}
+        >
+          <Feather name="check" size={20} color="#FFFFFF" />
+          <ThemedText style={{ color: "#FFFFFF", fontWeight: "600", marginLeft: Spacing.sm }}>
+            {t("common.loading") === "טוען..." ? "שמור תזכורת" : "Save Reminder"}
+          </ThemedText>
+        </Pressable>
+      </View>
+    );
+  }
+
+  return null;
+}
+
 const styles = StyleSheet.create({
   simulationContainer: {
     flex: 1,
@@ -1631,6 +2382,344 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  permissionDialog: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  dialogBox: {
+    width: "90%",
+    padding: Spacing.xl,
+    borderRadius: BorderRadius.xl,
+    alignItems: "center",
+  },
+  dialogIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: Spacing.lg,
+  },
+  dialogButtons: {
+    flexDirection: "row",
+    gap: Spacing.md,
+    width: "100%",
+  },
+  dialogBtn: {
+    flex: 1,
+    height: 48,
+    borderRadius: BorderRadius.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  taxiScreen: {
+    flex: 1,
+    gap: Spacing.lg,
+  },
+  locationCard: {
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+  },
+  locationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: Spacing.sm,
+  },
+  locationDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: Spacing.md,
+  },
+  locationDivider: {
+    borderLeftWidth: 2,
+    borderStyle: "dashed",
+    height: 20,
+    marginLeft: 5,
+  },
+  destinationInput: {
+    flex: 1,
+    fontSize: 16,
+    paddingVertical: 0,
+  },
+  taxiBtn: {
+    height: 50,
+    borderRadius: BorderRadius.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  taxiOptions: {
+    flexDirection: "row",
+    gap: Spacing.lg,
+    justifyContent: "center",
+  },
+  taxiOption: {
+    width: 120,
+    height: 120,
+    borderRadius: BorderRadius.lg,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: Spacing.md,
+  },
+  mapPlaceholder: {
+    flex: 1,
+    borderRadius: BorderRadius.lg,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: Spacing.lg,
+  },
+  mapPin: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  orderSummaryCard: {
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.lg,
+  },
+  orderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: Spacing.sm,
+  },
+  orderTaxiBtn: {
+    flexDirection: "row",
+    height: 56,
+    borderRadius: BorderRadius.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  driverCard: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  driverInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.lg,
+  },
+  driverAvatar: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: Spacing.lg,
+  },
+  photoGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: Spacing.md,
+    justifyContent: "center",
+    marginBottom: Spacing.lg,
+  },
+  photoThumbnail: {
+    width: 90,
+    height: 90,
+    borderRadius: BorderRadius.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  photoCheck: {
+    position: "absolute",
+    top: 4,
+    right: 4,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#52C41A",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  photoPreview: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  selectedPhotosBanner: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.lg,
+  },
+  shareBtn: {
+    flexDirection: "row",
+    height: 56,
+    paddingHorizontal: Spacing.xl,
+    borderRadius: BorderRadius.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  shareSheet: {
+    flex: 1,
+    padding: Spacing.lg,
+  },
+  shareOptions: {
+    flexDirection: "row",
+    gap: Spacing.xl,
+    justifyContent: "center",
+  },
+  shareOption: {
+    alignItems: "center",
+    gap: Spacing.sm,
+  },
+  shareIconBg: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  messageCompose: {
+    flex: 1,
+    gap: Spacing.lg,
+  },
+  photosPreviewRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+  },
+  miniPhoto: {
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.sm,
+    backgroundColor: "rgba(0,0,0,0.1)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: Spacing.xs,
+  },
+  messageInputLarge: {
+    height: 100,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    fontSize: 16,
+    textAlignVertical: "top",
+  },
+  sendConfirm: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  sendPreview: {
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.lg,
+  },
+  sendPhotosBtn: {
+    flexDirection: "row",
+    height: 56,
+    borderRadius: BorderRadius.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  calendarView: {
+    flex: 1,
+  },
+  calendarHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: Spacing.lg,
+  },
+  addEventBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  calendarGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 4,
+  },
+  calendarDayHeader: {
+    width: 40,
+    textAlign: "center",
+    marginBottom: Spacing.sm,
+  },
+  calendarDay: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  eventForm: {
+    flex: 1,
+    gap: Spacing.lg,
+  },
+  eventNameInput: {
+    height: 56,
+    borderRadius: BorderRadius.md,
+    paddingHorizontal: Spacing.lg,
+    fontSize: 18,
+  },
+  dateSelector: {
+    flexDirection: "row",
+    gap: Spacing.md,
+    justifyContent: "center",
+  },
+  dateSelectorBtn: {
+    width: 56,
+    height: 70,
+    borderRadius: BorderRadius.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  timeSelector: {
+    flex: 1,
+    alignItems: "center",
+  },
+  timeOptions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: Spacing.md,
+    justifyContent: "center",
+  },
+  timeOption: {
+    width: 80,
+    height: 48,
+    borderRadius: BorderRadius.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  reminderOptions: {
+    flex: 1,
+    gap: Spacing.md,
+  },
+  reminderOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.md,
+  },
+  eventSummary: {
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.lg,
+  },
+  eventSummaryHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: Spacing.lg,
+  },
+  eventSummaryRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: Spacing.sm,
+  },
+  saveEventBtn: {
+    flexDirection: "row",
+    height: 56,
+    borderRadius: BorderRadius.md,
     alignItems: "center",
     justifyContent: "center",
   },

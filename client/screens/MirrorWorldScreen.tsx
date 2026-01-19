@@ -19,6 +19,9 @@ import {
   BankSimulation,
   DoctorSimulation,
   SettingsSimulation,
+  TaxiSimulation,
+  PhotosSimulation,
+  CalendarSimulation,
 } from "@/components/PracticeSimulations";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
@@ -133,6 +136,54 @@ export default function MirrorWorldScreen() {
         t("mirrorWorld.tasks.settingsStep4"),
       ],
     },
+    {
+      id: "taxi",
+      title: t("mirrorWorld.tasks.taxi"),
+      description: t("mirrorWorld.intro"),
+      icon: "navigation",
+      color: "#FF9500",
+      steps: [
+        t("mirrorWorld.tasks.taxiStep1"),
+        t("mirrorWorld.tasks.taxiStep2"),
+        t("mirrorWorld.tasks.taxiStep3"),
+        t("mirrorWorld.tasks.taxiStep4"),
+        t("mirrorWorld.tasks.taxiStep5"),
+        t("mirrorWorld.tasks.taxiStep6"),
+        t("mirrorWorld.tasks.taxiStep7"),
+      ],
+    },
+    {
+      id: "photos",
+      title: t("mirrorWorld.tasks.photos"),
+      description: t("mirrorWorld.intro"),
+      icon: "image",
+      color: "#52C41A",
+      steps: [
+        t("mirrorWorld.tasks.photosStep1"),
+        t("mirrorWorld.tasks.photosStep2"),
+        t("mirrorWorld.tasks.photosStep3"),
+        t("mirrorWorld.tasks.photosStep4"),
+        t("mirrorWorld.tasks.photosStep5"),
+        t("mirrorWorld.tasks.photosStep6"),
+        t("mirrorWorld.tasks.photosStep7"),
+      ],
+    },
+    {
+      id: "calendar",
+      title: t("mirrorWorld.tasks.calendar"),
+      description: t("mirrorWorld.intro"),
+      icon: "calendar",
+      color: "#FF3B30",
+      steps: [
+        t("mirrorWorld.tasks.calendarStep1"),
+        t("mirrorWorld.tasks.calendarStep2"),
+        t("mirrorWorld.tasks.calendarStep3"),
+        t("mirrorWorld.tasks.calendarStep4"),
+        t("mirrorWorld.tasks.calendarStep5"),
+        t("mirrorWorld.tasks.calendarStep6"),
+        t("mirrorWorld.tasks.calendarStep7"),
+      ],
+    },
   ], [t]);
 
   const [selectedTask, setSelectedTask] = useState<PracticeTask | null>(null);
@@ -220,6 +271,27 @@ export default function MirrorWorldScreen() {
       case "settings":
         return (
           <SettingsSimulation 
+            stepIndex={currentStep} 
+            onComplete={handleNextStep} 
+          />
+        );
+      case "taxi":
+        return (
+          <TaxiSimulation 
+            stepIndex={currentStep} 
+            onComplete={handleNextStep} 
+          />
+        );
+      case "photos":
+        return (
+          <PhotosSimulation 
+            stepIndex={currentStep} 
+            onComplete={handleNextStep} 
+          />
+        );
+      case "calendar":
+        return (
+          <CalendarSimulation 
             stepIndex={currentStep} 
             onComplete={handleNextStep} 
           />
