@@ -29,6 +29,7 @@ export interface PathStep {
   description: string;
   doriAdvice: string;
   hasSandbox: boolean;
+  icon?: string;
 }
 
 const defaultSettings: UserSettings = {

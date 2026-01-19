@@ -63,13 +63,38 @@ Important guidelines:
 
 router.post("/decision-help", async (req, res) => {
   try {
-    const { goal, currentStep } = req.body;
+    const { goal, currentStep, language } = req.body;
 
     if (!goal) {
       return res.status(400).json({ error: "Goal is required" });
     }
 
-    const systemPrompt = `You are Dori, a warm and supportive AI assistant helping seniors break down tasks into simple steps.
+    const isHebrew = language === "he";
+
+    const systemPrompt = isHebrew 
+      ? `אתה דורי, עוזר AI חם ותומך שעוזר לקשישים לפרק משימות לשלבים פשוטים.
+
+האישיות שלך:
+- חביב ומעודד, כמו חבר טוב
+- משתמש בשפה פשוטה ויומיומית
+- נותן עצות מעשיות וניתנות לביצוע
+- מתמקד בשלב אחד בכל פעם
+
+חשוב מאוד: החזר את התשובה שלך בפורמט JSON בלבד, ללא טקסט נוסף.
+הפורמט:
+{
+  "steps": [
+    {
+      "title": "כותרת השלב",
+      "description": "תיאור קצר",
+      "tip": "עצה חמה ומעודדת",
+      "icon": "שם אייקון מ-Feather"
+    }
+  ]
+}
+
+השתמש באייקונים אלה בלבד: clipboard, file-text, phone, calendar, check-circle, map-pin, credit-card, mail, search, users`
+      : `You are Dori, a warm and supportive AI assistant helping seniors break down tasks into simple steps.
 
 Your personality:
 - Kind and encouraging, like a helpful friend
@@ -77,8 +102,20 @@ Your personality:
 - Give practical, actionable advice
 - Focus on one step at a time
 
-If asked for steps, provide 3-5 simple steps in a numbered list.
-Keep each step short and clear.`;
+IMPORTANT: Return your response in JSON format only, with no additional text.
+Format:
+{
+  "steps": [
+    {
+      "title": "Step title",
+      "description": "Brief description",
+      "tip": "Warm, encouraging advice",
+      "icon": "Feather icon name"
+    }
+  ]
+}
+
+Only use these icons: clipboard, file-text, phone, calendar, check-circle, map-pin, credit-card, mail, search, users`;
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
@@ -86,25 +123,48 @@ Keep each step short and clear.`;
         {
           role: "user",
           parts: [{ text: currentStep 
-            ? `The user is working on: "${goal}". They just completed step ${currentStep}. Give them encouragement and suggest what to do next.`
-            : `Help the user break down this goal into simple steps: "${goal}"` 
+            ? (isHebrew 
+              ? `המשתמש עובד על: "${goal}". הם סיימו את שלב ${currentStep}. החזר JSON עם עידוד והצעה למה לעשות הלאה.`
+              : `The user is working on: "${goal}". They just completed step ${currentStep}. Return JSON with encouragement and suggest what to do next.`)
+            : (isHebrew
+              ? `עזור למשתמש לפרק את המטרה הזו לשלבים פשוטים (3-5 שלבים): "${goal}". החזר JSON בלבד.`
+              : `Help the user break down this goal into simple steps (3-5 steps): "${goal}". Return JSON only.`)
           }],
         },
       ],
       config: {
         systemInstruction: systemPrompt,
-        maxOutputTokens: 400,
+        maxOutputTokens: 800,
       },
     });
 
-    const text = response.text || "Let's work on this together! What's the first thing you'd like to do?";
-
-    res.json({ response: text });
+    const text = response.text || "";
+    
+    // Try to parse JSON from response
+    try {
+      // Extract JSON from response (handle cases where AI adds extra text)
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        res.json({ 
+          response: text,
+          structured: parsed,
+          success: true
+        });
+      } else {
+        res.json({ response: text, success: true });
+      }
+    } catch {
+      res.json({ response: text, success: true });
+    }
   } catch (error) {
     console.error("Decision help error:", error);
+    const lang = req.body?.language;
     res.status(500).json({ 
       error: "Unable to get AI response",
-      response: "I'm having a little trouble right now. Let's try again in a moment!" 
+      response: lang === "he" 
+        ? "אני מתקשה כרגע. בוא ננסה שוב בעוד רגע!"
+        : "I'm having a little trouble right now. Let's try again in a moment!" 
     });
   }
 });
