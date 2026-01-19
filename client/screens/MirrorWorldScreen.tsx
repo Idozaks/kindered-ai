@@ -192,116 +192,24 @@ export default function MirrorWorldScreen() {
   const [currentStep, setCurrentStep] = useState(0);
   const [completed, setCompleted] = useState(false);
 
-  const handleSelectTask = (task: PracticeTask) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setSelectedTask(task);
-    setCurrentStep(0);
-    setCompleted(false);
-  };
-
-  const handleNextStep = () => {
-    if (!selectedTask) return;
-
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-    if (currentStep < selectedTask.steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      setCompleted(true);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }
-  };
-
-  const handleRestart = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setCurrentStep(0);
-    setCompleted(false);
-  };
-
-  const handleBack = () => {
-    setSelectedTask(null);
-    setCurrentStep(0);
-    setCompleted(false);
-  };
-
-  const renderSimulation = () => {
-    if (!selectedTask) return null;
-
-    switch (selectedTask.id) {
-      case "videocall":
-        return (
-          <VideoCallSimulation 
-            stepIndex={currentStep} 
-            onComplete={handleNextStep} 
-          />
-        );
-      case "grocery":
-        return (
-          <GrocerySimulation 
-            stepIndex={currentStep} 
-            onComplete={handleNextStep} 
-          />
-        );
-      case "email":
-        return (
-          <EmailSimulation 
-            stepIndex={currentStep} 
-            onComplete={handleNextStep} 
-          />
-        );
-      case "whatsapp":
-        return (
-          <WhatsAppSimulation 
-            stepIndex={currentStep} 
-            onComplete={handleNextStep} 
-          />
-        );
-      case "bank":
-        return (
-          <BankSimulation 
-            stepIndex={currentStep} 
-            onComplete={handleNextStep} 
-          />
-        );
-      case "doctor":
-        return (
-          <DoctorSimulation 
-            stepIndex={currentStep} 
-            onComplete={handleNextStep} 
-          />
-        );
-      case "settings":
-        return (
-          <SettingsSimulation 
-            stepIndex={currentStep} 
-            onComplete={handleNextStep} 
-          />
-        );
-      case "taxi":
-        return (
-          <TaxiSimulation 
-            stepIndex={currentStep} 
-            onComplete={handleNextStep} 
-          />
-        );
-      case "photos":
-        return (
-          <PhotosSimulation 
-            stepIndex={currentStep} 
-            onComplete={handleNextStep} 
-          />
-        );
-      case "calendar":
-        return (
-          <CalendarSimulation 
-            stepIndex={currentStep} 
-            onComplete={handleNextStep} 
-          />
-        );
-      default:
-        return null;
-    }
-  };
+  const renderTaskItem = ({ item, index }: { item: PracticeTask; index: number }) => (
+    <Animated.View
+      key={item.id}
+      entering={FadeInUp.delay(index * 100).duration(400)}
+      style={styles.gridItem}
+    >
+      <GlassCard 
+        style={styles.gridTaskCard}
+        onPress={() => handleSelectTask(item)}
+        testID={`task-${item.id}`}
+      >
+        <View style={[styles.taskIconCircle, { backgroundColor: item.color + "20" }]}>
+          <Feather name={item.icon as any} size={32} color={item.color} />
+        </View>
+        <ThemedText type="body" style={styles.taskTitleText}>{item.title}</ThemedText>
+      </GlassCard>
+    </Animated.View>
+  );
 
   return (
     <ThemedView style={styles.container}>
@@ -342,31 +250,9 @@ export default function MirrorWorldScreen() {
               {t("mirrorWorld.selectTask")}
             </ThemedText>
 
-            {PRACTICE_TASKS.map((task, index) => (
-              <Animated.View
-                key={task.id}
-                entering={FadeInUp.delay(index * 100).duration(400)}
-                style={styles.taskCardWrapper}
-              >
-                <GlassCard
-                  onPress={() => handleSelectTask(task)}
-                  style={styles.taskCard}
-                  icon={
-                    <View
-                      style={[
-                        styles.taskIcon,
-                        { backgroundColor: task.color + "20" },
-                      ]}
-                    >
-                      <Feather name={task.icon} size={28} color={task.color} />
-                    </View>
-                  }
-                  title={task.title}
-                  description={task.description}
-                  testID={`task-${task.id}`}
-                />
-              </Animated.View>
-            ))}
+            <View style={styles.gridContainer}>
+              {PRACTICE_TASKS.map((task, index) => renderTaskItem({ item: task, index }))}
+            </View>
           </Animated.View>
         </ScrollView>
       ) : completed ? (
@@ -657,5 +543,33 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     width: "100%",
+  },
+  gridContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    gap: Spacing.md,
+  },
+  gridItem: {
+    width: "47%",
+    marginBottom: Spacing.md,
+  },
+  gridTaskCard: {
+    padding: Spacing.lg,
+    alignItems: "center",
+    justifyContent: "center",
+    height: 160,
+  },
+  taskIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: Spacing.md,
+  },
+  taskTitleText: {
+    textAlign: "center",
+    fontWeight: "600",
   },
 });
