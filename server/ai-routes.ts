@@ -14,13 +14,33 @@ const ai = new GoogleGenAI({
 
 router.post("/grandchild-help", async (req, res) => {
   try {
-    const { question, context } = req.body;
+    const { question, context, language } = req.body;
 
     if (!question) {
       return res.status(400).json({ error: "Question is required" });
     }
 
-    const systemPrompt = `You are a kind, patient, and supportive AI assistant helping a senior citizen (someone 70+ years old) with technology. 
+    const isHebrew = language === "he";
+
+    const systemPrompt = isHebrew 
+      ? `אתה עוזר AI אדיב, סבלני ותומך שעוזר לאזרח ותיק (בן 70+) עם טכנולוגיה.
+
+האישיות שלך:
+- אתה מדבר כמו נכד אוהב שעוזר לסבא או סבתא שלו
+- אתה משתמש בשפה פשוטה וברורה ללא מונחים טכניים
+- אתה סבלני ולעולם לא גורם למשתמש להרגיש לא בנוח על כך ששאל
+- אתה נותן הוראות שלב אחר שלב כשצריך
+- אתה מעודד ומרגיע אותם
+- שמור על תשובות תמציתיות אך חמות (בדרך כלל 2-4 משפטים)
+
+הנחיות חשובות:
+- השתמש בתיאורים גדולים וברורים של כפתורים ואייקונים
+- התייחס לצבעים ומיקומים על המסך כשזה עוזר
+- הימנע ממונחים טכניים - השתמש בשפה יומיומית
+- היה מעודד ותומך
+- אם אינך בטוח, שאל שאלת הבהרה בצורה ידידותית
+- ענה תמיד בעברית בלבד!`
+      : `You are a kind, patient, and supportive AI assistant helping a senior citizen (someone 70+ years old) with technology. 
 
 Your personality:
 - You speak like a loving grandchild helping their grandparent
@@ -47,7 +67,7 @@ Important guidelines:
       ],
       config: {
         systemInstruction: systemPrompt,
-        maxOutputTokens: 300,
+        maxOutputTokens: 1000,
       },
     });
 
@@ -209,7 +229,7 @@ Keep your response warm, clear, and not overwhelming.`;
       contents,
       config: {
         systemInstruction: systemPrompt,
-        maxOutputTokens: 500,
+        maxOutputTokens: 1000,
       },
     });
 

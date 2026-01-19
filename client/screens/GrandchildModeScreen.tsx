@@ -71,6 +71,7 @@ export default function GrandchildModeScreen() {
       const response = await apiRequest("POST", "/api/ai/grandchild-help", {
         question,
         context: "helping a senior with technology",
+        language: t("common.loading") === "טוען..." ? "he" : "en",
       });
       return response.json();
     },
