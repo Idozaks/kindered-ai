@@ -32,7 +32,7 @@ export interface PathStep {
 }
 
 const defaultSettings: UserSettings = {
-  language: "en",
+  language: "he",
   highContrast: false,
   fontSize: "normal",
   narratorMode: false,
@@ -109,9 +109,9 @@ export const storage = {
   async getLanguage(): Promise<"en" | "he"> {
     try {
       const data = await AsyncStorage.getItem(KEYS.LANGUAGE);
-      return (data as "en" | "he") || "en";
+      return (data as "en" | "he") || "he";
     } catch {
-      return "en";
+      return "he";
     }
   },
 
