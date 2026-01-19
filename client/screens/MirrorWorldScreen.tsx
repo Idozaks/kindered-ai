@@ -95,6 +95,7 @@ export default function MirrorWorldScreen() {
         t("mirrorWorld.tasks.whatsappStep2"),
         t("mirrorWorld.tasks.whatsappStep3"),
         t("mirrorWorld.tasks.whatsappStep4"),
+        t("mirrorWorld.tasks.whatsappStep5"),
       ],
     },
     {
@@ -108,6 +109,7 @@ export default function MirrorWorldScreen() {
         t("mirrorWorld.tasks.bankStep2"),
         t("mirrorWorld.tasks.bankStep3"),
         t("mirrorWorld.tasks.bankStep4"),
+        t("mirrorWorld.tasks.bankStep5"),
       ],
     },
     {

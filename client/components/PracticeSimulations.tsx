@@ -691,7 +691,7 @@ export function WhatsAppSimulation({ onComplete, stepIndex }: SimulationProps) {
                 onComplete();
               }}
             >
-              <Feather name="send" size={18} color="#FFFFFF" />
+              <Feather name="arrow-right" size={18} color="#FFFFFF" />
             </Pressable>
           </View>
         </View>
@@ -703,7 +703,7 @@ export function WhatsAppSimulation({ onComplete, stepIndex }: SimulationProps) {
     return (
       <View style={styles.simulationContainer}>
         <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
-          {t("common.loading") === "טוען..." ? "מעולה! הודעה נשלחה בהצלחה!" : "Great! Message sent successfully!"}
+          {t("common.loading") === "טוען..." ? "הוסף אימוג׳י או תמונה להודעה" : "Add an emoji or photo to your message"}
         </ThemedText>
         <View style={styles.chatScreen}>
           <View style={[styles.chatBubble, { backgroundColor: theme.backgroundSecondary, alignSelf: "flex-start" }]}>
@@ -711,6 +711,62 @@ export function WhatsAppSimulation({ onComplete, stepIndex }: SimulationProps) {
           </View>
           <View style={[styles.chatBubble, { backgroundColor: "#25D366", alignSelf: "flex-end" }]}>
             <ThemedText style={{ color: "#FFFFFF" }}>{t("common.loading") === "טוען..." ? "הכל טוב, תודה!" : "All good, thanks!"}</ThemedText>
+          </View>
+          <View style={styles.attachmentOptions}>
+            <Pressable 
+              style={[styles.attachmentBtn, { backgroundColor: theme.backgroundSecondary }]}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                onComplete();
+              }}
+            >
+              <Feather name="smile" size={24} color="#FFD93D" />
+              <ThemedText type="small" style={{ marginTop: Spacing.xs }}>
+                {t("common.loading") === "טוען..." ? "אימוג׳י" : "Emoji"}
+              </ThemedText>
+            </Pressable>
+            <Pressable 
+              style={[styles.attachmentBtn, { backgroundColor: theme.backgroundSecondary }]}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                onComplete();
+              }}
+            >
+              <Feather name="image" size={24} color="#52C41A" />
+              <ThemedText type="small" style={{ marginTop: Spacing.xs }}>
+                {t("common.loading") === "טוען..." ? "תמונה" : "Photo"}
+              </ThemedText>
+            </Pressable>
+            <Pressable 
+              style={[styles.attachmentBtn, { backgroundColor: theme.backgroundSecondary }]}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                onComplete();
+              }}
+            >
+              <Feather name="camera" size={24} color="#5B9BD5" />
+              <ThemedText type="small" style={{ marginTop: Spacing.xs }}>
+                {t("common.loading") === "טוען..." ? "מצלמה" : "Camera"}
+              </ThemedText>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  if (stepIndex === 4) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "מעולה! הודעה נשלחה בהצלחה!" : "Great! Message sent successfully!"}
+        </ThemedText>
+        <View style={styles.chatScreen}>
+          <View style={[styles.chatBubble, { backgroundColor: theme.backgroundSecondary, alignSelf: "flex-start" }]}>
+            <ThemedText>{t("common.loading") === "טוען..." ? "היי! מה שלומך?" : "Hi! How are you?"}</ThemedText>
+          </View>
+          <View style={[styles.chatBubble, { backgroundColor: "#25D366", alignSelf: "flex-end" }]}>
+            <ThemedText style={{ color: "#FFFFFF" }}>{t("common.loading") === "טוען..." ? "הכל טוב, תודה! 😊" : "All good, thanks! 😊"}</ThemedText>
           </View>
           <Animated.View entering={ZoomIn.duration(300)}>
             <Pressable 
@@ -816,10 +872,10 @@ export function BankSimulation({ onComplete, stepIndex }: SimulationProps) {
     return (
       <View style={styles.simulationContainer}>
         <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
-          {t("common.loading") === "טוען..." ? "הנה הפעולות האחרונות. הקש על כפתור הסיום" : "Here are recent transactions. Tap Complete"}
+          {t("common.loading") === "טוען..." ? "הנה הפעולות האחרונות. הקש להמשך" : "Here are recent transactions. Tap to continue"}
         </ThemedText>
-        <View style={styles.transactionsList}>
-          <View style={[styles.transactionRow, { borderBottomColor: theme.border }]}>
+        <Pressable style={styles.transactionsList} onPress={onComplete}>
+          <View style={[styles.transactionRow, { borderBottomColor: theme.border || theme.textSecondary }]}>
             <View style={[styles.transactionIcon, { backgroundColor: "#52C41A" + "20" }]}>
               <Feather name="arrow-down-left" size={18} color="#52C41A" />
             </View>
@@ -829,7 +885,7 @@ export function BankSimulation({ onComplete, stepIndex }: SimulationProps) {
             </View>
             <ThemedText style={{ color: "#52C41A", fontWeight: "600" }}>+₪5,000</ThemedText>
           </View>
-          <View style={[styles.transactionRow, { borderBottomColor: theme.border }]}>
+          <View style={[styles.transactionRow, { borderBottomColor: theme.border || theme.textSecondary }]}>
             <View style={[styles.transactionIcon, { backgroundColor: "#FF6B6B" + "20" }]}>
               <Feather name="arrow-up-right" size={18} color="#FF6B6B" />
             </View>
@@ -839,16 +895,37 @@ export function BankSimulation({ onComplete, stepIndex }: SimulationProps) {
             </View>
             <ThemedText style={{ color: "#FF6B6B", fontWeight: "600" }}>-₪320</ThemedText>
           </View>
+        </Pressable>
+      </View>
+    );
+  }
+
+  if (stepIndex === 4) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "לחץ על יציאה מאובטחת" : "Tap to exit securely"}
+        </ThemedText>
+        <View style={styles.exitScreen}>
+          <View style={[styles.secureExitCard, { backgroundColor: theme.card || theme.backgroundSecondary }]}>
+            <Feather name="shield" size={40} color="#1E88E5" />
+            <ThemedText type="h4" style={{ marginTop: Spacing.lg, textAlign: "center" }}>
+              {t("common.loading") === "טוען..." ? "יציאה מאובטחת" : "Secure Logout"}
+            </ThemedText>
+            <ThemedText style={{ color: theme.textSecondary, textAlign: "center", marginTop: Spacing.sm }}>
+              {t("common.loading") === "טוען..." ? "תמיד לחץ יציאה כשאתה מסיים!" : "Always tap logout when you're done!"}
+            </ThemedText>
+          </View>
           <Pressable 
-            style={[styles.successBtn, { backgroundColor: theme.success }]}
+            style={[styles.logoutBtn, { backgroundColor: "#1E88E5" }]}
             onPress={() => {
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
               onComplete();
             }}
           >
-            <Feather name="check-circle" size={20} color="#FFFFFF" />
+            <Feather name="log-out" size={20} color="#FFFFFF" />
             <ThemedText style={{ color: "#FFFFFF", marginLeft: Spacing.sm, fontWeight: "600" }}>
-              {t("common.loading") === "טוען..." ? "סיום" : "Complete"}
+              {t("common.loading") === "טוען..." ? "יציאה מהחשבון" : "Log Out"}
             </ThemedText>
           </Pressable>
         </View>
@@ -2719,6 +2796,39 @@ const styles = StyleSheet.create({
   saveEventBtn: {
     flexDirection: "row",
     height: 56,
+    borderRadius: BorderRadius.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  attachmentOptions: {
+    flexDirection: "row",
+    gap: Spacing.lg,
+    justifyContent: "center",
+    marginTop: Spacing.lg,
+  },
+  attachmentBtn: {
+    width: 80,
+    height: 80,
+    borderRadius: BorderRadius.lg,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  exitScreen: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  secureExitCard: {
+    padding: Spacing.xl,
+    borderRadius: BorderRadius.xl,
+    alignItems: "center",
+    marginBottom: Spacing.lg,
+    width: "90%",
+  },
+  logoutBtn: {
+    flexDirection: "row",
+    height: 56,
+    paddingHorizontal: Spacing.xl,
     borderRadius: BorderRadius.md,
     alignItems: "center",
     justifyContent: "center",
