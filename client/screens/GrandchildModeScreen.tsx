@@ -23,7 +23,6 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { GlassCard } from "@/components/GlassCard";
 import { GlassButton } from "@/components/GlassButton";
-import { FloatingMicButton } from "@/components/FloatingMicButton";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { apiRequest } from "@/lib/query-client";
@@ -444,13 +443,6 @@ export default function GrandchildModeScreen() {
         </View>
       )}
 
-      {isActive ? (
-        <FloatingMicButton
-          onPress={handleMicPress}
-          isListening={false}
-          testID="mic-button"
-        />
-      ) : null}
     </ThemedView>
   );
 }
