@@ -8,6 +8,7 @@ Key features include:
 - **Grandchild Mode**: Live screen sharing with AI guidance
 - **Letter Helper**: Document scanning and plain-language translation
 - **Mirror World**: Safe practice environment for learning digital tasks
+- **WhatsApp Guides**: Step-by-step tutorials for common WhatsApp tasks (reading messages, sending texts/photos, video calls, privacy settings, group safety)
 - **Global Mic Button**: Voice-first interaction available throughout the app
 
 ## User Preferences
