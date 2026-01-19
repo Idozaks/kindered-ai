@@ -1,32 +1,84 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import MainTabNavigator from "@/navigation/MainTabNavigator";
-import ModalScreen from "@/screens/ModalScreen";
+import { Pressable } from "react-native";
+import { Feather } from "@expo/vector-icons";
+
+import DashboardScreen from "@/screens/DashboardScreen";
+import SettingsScreen from "@/screens/SettingsScreen";
+import GrandchildModeScreen from "@/screens/GrandchildModeScreen";
+import DecisionNavigatorScreen from "@/screens/DecisionNavigatorScreen";
+import LetterHelperScreen from "@/screens/LetterHelperScreen";
+import MirrorWorldScreen from "@/screens/MirrorWorldScreen";
+import { HeaderTitle } from "@/components/HeaderTitle";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
+import { useTheme } from "@/hooks/useTheme";
 
 export type RootStackParamList = {
-  Main: undefined;
-  Modal: undefined;
+  Dashboard: undefined;
+  Settings: undefined;
+  GrandchildMode: undefined;
+  DecisionNavigator: undefined;
+  LetterHelper: undefined;
+  MirrorWorld: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootStackNavigator() {
   const screenOptions = useScreenOptions();
+  const { theme } = useTheme();
 
   return (
     <Stack.Navigator screenOptions={screenOptions}>
       <Stack.Screen
-        name="Main"
-        component={MainTabNavigator}
-        options={{ headerShown: false }}
+        name="Dashboard"
+        component={DashboardScreen}
+        options={({ navigation }) => ({
+          headerTitle: () => <HeaderTitle title="Kindred AI" />,
+          headerRight: () => (
+            <Pressable
+              onPress={() => navigation.navigate("Settings")}
+              hitSlop={8}
+              testID="settings-button"
+            >
+              <Feather name="settings" size={24} color={theme.text} />
+            </Pressable>
+          ),
+        })}
       />
       <Stack.Screen
-        name="Modal"
-        component={ModalScreen}
+        name="Settings"
+        component={SettingsScreen}
         options={{
-          presentation: "modal",
-          headerTitle: "Modal",
+          headerTitle: "Settings",
+        }}
+      />
+      <Stack.Screen
+        name="GrandchildMode"
+        component={GrandchildModeScreen}
+        options={{
+          headerTitle: "Grandchild Mode",
+        }}
+      />
+      <Stack.Screen
+        name="DecisionNavigator"
+        component={DecisionNavigatorScreen}
+        options={{
+          headerTitle: "Decision Navigator",
+        }}
+      />
+      <Stack.Screen
+        name="LetterHelper"
+        component={LetterHelperScreen}
+        options={{
+          headerTitle: "Letter Helper",
+        }}
+      />
+      <Stack.Screen
+        name="MirrorWorld"
+        component={MirrorWorldScreen}
+        options={{
+          headerTitle: "Practice Zone",
         }}
       />
     </Stack.Navigator>
