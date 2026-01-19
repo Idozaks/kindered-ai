@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { StyleSheet } from "react-native";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, Asset } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
@@ -24,9 +24,22 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 import "@/lib/i18n";
 
+// Simulation Images
+const simulationImages = [
+  require("../assets/images/simulations/senior_woman_smiling_on_video_call.png"),
+  require("../assets/images/simulations/fresh_colorful_vegetables_in_a_basket.png"),
+  require("../assets/images/simulations/modern_tablet_with_email_inbox_ui.png"),
+  require("../assets/images/simulations/close-up_of_hands_typing_message_on_smartphone.png"),
+  require("../assets/images/simulations/modern_credit_card_on_a_clean_surface.png"),
+  require("../assets/images/simulations/friendly_doctor_in_consultation_room.png"),
+  require("../assets/images/simulations/modern_white_taxi_driving_on_city_street.png"),
+  require("../assets/images/simulations/digital_calendar_on_a_smartphone_screen.png"),
+];
+
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
+  const [appIsReady, setAppIsReady] = useState(false);
   const [fontsLoaded, fontError] = useFonts({
     Inter_400Regular,
     Inter_600SemiBold,
@@ -35,12 +48,30 @@ export default function App() {
   });
 
   useEffect(() => {
-    if (fontsLoaded || fontError) {
+    async function prepare() {
+      try {
+        // Pre-load images
+        const cacheImages = simulationImages.map(image => {
+          return Asset.fromModule(image).downloadAsync();
+        });
+        await Promise.all(cacheImages);
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        setAppIsReady(true);
+      }
+    }
+
+    prepare();
+  }, []);
+
+  useEffect(() => {
+    if ((fontsLoaded || fontError) && appIsReady) {
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded, fontError]);
+  }, [fontsLoaded, fontError, appIsReady]);
 
-  if (!fontsLoaded && !fontError) {
+  if ((!fontsLoaded && !fontError) || !appIsReady) {
     return null;
   }
 
