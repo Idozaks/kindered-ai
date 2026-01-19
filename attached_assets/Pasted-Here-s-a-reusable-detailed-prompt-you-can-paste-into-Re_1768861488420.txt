@@ -1,0 +1,268 @@
+Here’s a reusable, detailed prompt you can paste into Replit AI (or any coding agent) to generate guided WhatsApp journeys for your elder-learning platform.
+
+Prompt for Replit AI: Build Senior-Friendly WhatsApp Guided Journeys
+You are an expert full‑stack developer and UX designer building a web‑based “guided help” module for an elder-learning platform. The goal is to create simple, step‑by‑step WhatsApp walkthroughs for seniors (70+) that can be read on the web or inside a web‑view, and optionally mirrored as WhatsApp messages from a bot.
+
+1. Project Goal
+Build a small web app (HTML/CSS/JS, no backend required for v1) that shows guided scripts for common WhatsApp tasks for seniors:
+
+Open WhatsApp and read a message
+
+Send a simple text message
+
+Send a photo (new + existing)
+
+Make a video call
+
+Join and behave safely in a family group
+
+Turn on basic privacy protections
+
+Leave a group that feels uncomfortable
+
+Each “guide” should be shown as a wizard‑like sequence of very clear steps, one per screen/row, with Previous / Next controls, and large readable UI.
+
+Use evidence-based mobile design guidelines for older adults (large touch targets, simple layout, low cognitive load, high contrast, minimal options on screen).
+​
+
+2. Target Users and Constraints
+Design for:
+
+Age: 70+
+
+Likely vision issues → need large text (at least 18–20px), high contrast.
+​
+
+Possible tremor / arthritis → large buttons, generous spacing, avoid small tap targets.
+​
+
+Low digital confidence → very clear, plain language, one idea per step, no jargon.
+​
+
+Assume:
+
+They are using Android or iOS with WhatsApp.
+
+They are reading this guide in a browser on tablet or phone.
+
+A caregiver may sit next to them and read aloud.
+
+3. UX Requirements
+Implement a single-page web app with:
+
+A simple top bar with the platform name, e.g. “Elder Learn – WhatsApp Guides”.
+
+A left column (or top selector on mobile) listing the journeys:
+
+“1. Read a message”
+
+“2. Send a text”
+
+“3. Send a photo”
+
+“4. Video call”
+
+“5. Family groups & safety”
+
+“6. Privacy settings”
+
+“7. Leave a group”
+
+A main panel that shows one guide at a time as a stepper:
+
+A big title: e.g. “Send a simple text message”.
+
+A prominent Step X of Y indicator.
+
+The current step text in short sentences, max 2 short sentences per step.
+
+Below the text, optional small “Trainer notes” line (for caregivers).
+
+Navigation buttons: “Back” and a highlighted “Next” (or “Finish” on last step).
+
+A very simple design:
+
+Large font (18–20px body, 22–26px titles).
+
+High contrast: dark text on light background, large buttons with clear labels.
+​
+
+Big click/tap area (minimum 44x44px for buttons and step selectors).
+​
+
+No complex animations; keep everything calm and predictable.
+
+4. Content for Each Journey
+Use these exact user-facing steps, but you may slightly tweak wording for brevity, not complexity. Keep them extremely simple.
+
+Journey 1: Read a message
+Steps (each step is one screen in the wizard):
+
+Find the WhatsApp icon on your home screen. It is green with a white telephone. Tap it once.
+
+You are now on Chats. This is your list of conversations.
+
+Look for the person’s name. If you see a small number or dot next to it, there is a new message.
+
+Tap their name once.
+
+New messages are at the bottom of the screen. Slide your finger up to see older messages.
+
+Tap the back arrow at the top‑left to return to the list of chats.
+
+Journey 2: Send a simple text
+Open WhatsApp and go to Chats.
+
+To reply, tap the person’s name. To start a new chat, tap the green message/plus button, then tap the person’s name.
+
+At the bottom, tap the long white box. The keyboard appears.
+
+Type a short message, for example: “Hello, I can see your message.”
+
+Tap the green send arrow or paper airplane.
+
+Your message appears on the right side of the screen. That means it was sent.
+
+Journey 3: Send a photo
+A. Take and send a new photo
+
+Open the chat with the person.
+
+Tap the paperclip or plus (+) next to the typing box.
+
+Tap Camera.
+
+Point the camera and tap the big round button to take the picture.
+
+If you like the photo, tap the green Send arrow. If not, tap X or Back and try again.
+
+B. Send a photo from Gallery
+
+Tap the paperclip/plus again.
+
+Tap Gallery or Photos.
+
+Tap the picture you want.
+
+Tap Send.
+
+Journey 4: Video call
+Open WhatsApp and go to Chats.
+
+Tap the name of the person you want to see.
+
+At the top‑right, tap the video camera icon.
+
+Wait while it rings. You will see your face on the screen.
+
+When they answer, you will both see each other. Speak normally.
+
+To end the call, tap the red phone button.
+
+Journey 5: Family groups & safety
+On Chats, group conversations show more than one person. Tap the group name.
+
+Anything you write in this group is seen by everyone in the group.
+
+Use the typing box and send button like a normal chat.
+
+Do not share personal details like ID numbers, bank details, or passwords.
+
+Be careful with links that talk about prizes or special offers. Ask family before tapping.
+
+If someone in the group makes you uncomfortable, tell a family member or helper.
+
+Journey 6: Turn on privacy settings
+(Trainer can guide; steps still senior-friendly.)
+
+In WhatsApp, tap the three dots (top‑right), then tap Settings. On iPhone, tap Settings at the bottom.
+
+Tap Privacy.
+
+Tap Profile photo and choose My contacts.
+
+Tap Last seen and online and choose My contacts or Nobody.
+
+Tap Groups and choose My contacts so only your contacts can add you to groups.
+
+If unknown numbers bother you, turn on Silence unknown callers (if available).
+
+Journey 7: Leave a group
+Open the group you want to leave.
+
+Tap the group’s name at the top.
+
+Scroll to the bottom. Tap Exit group.
+
+Tap Exit again to confirm.
+
+You will no longer get messages from that group.
+
+5. Implementation Details
+Stack:
+
+HTML + CSS + vanilla JS is enough.
+
+Organize content as a simple JSON structure: an array of journeys, each with title, description, and steps.
+
+JS behavior:
+
+When user clicks a journey in the list, load its steps and reset to step 1.
+
+“Next” moves forward unless on last step; then it can show “Finished!” message or loop back.
+
+“Back” disabled on first step.
+
+Store current journey + step in memory; optional: use localStorage so seniors can come back to where they left.
+
+Accessibility:
+
+Use proper semantic HTML (buttons, headings).
+
+Large fonts, high contrast, focus states for keyboard.
+
+Avoid more than ~8–9 steps per journey; if more, break into sections.
+​
+
+6. Optional: Design for Future WhatsApp Bot Integration
+Structure the data so that later the same JSON can drive:
+
+The web stepper UI, and
+
+A WhatsApp “coach bot” that sends the same steps as messages (one step per message, asking “Type NEXT when you are ready.”).
+
+So:
+
+Put the journeys in a JSON object with keys: id, title, steps, and trainerNotes (optional).
+
+Keep each step as short text, suitable for sending as a single WhatsApp message.
+
+7. What to Output
+A single Replit project structure with:
+
+index.html
+
+style.css
+
+script.js
+
+data.js (or embedded JSON) for the guides.
+
+Fully working code that:
+
+Renders the list of journeys.
+
+Renders the stepper UI.
+
+Allows navigation between journeys and steps.
+
+Brief explanation in comments of:
+
+Where to edit/add new journeys.
+
+How to adjust fonts/colors for accessibility.
+
+Start by generating all four files with clean, readable code and then explain how to run it on Replit.
+
+Use this prompt as-is with Replit AI. If you need, the next step can be: “Refine the color palette and typography to WCAG AA contrast for seniors.”
+
