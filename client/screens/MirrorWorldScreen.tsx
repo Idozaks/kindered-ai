@@ -14,7 +14,11 @@ import { GlassButton } from "@/components/GlassButton";
 import { 
   VideoCallSimulation, 
   GrocerySimulation, 
-  EmailSimulation 
+  EmailSimulation,
+  WhatsAppSimulation,
+  BankSimulation,
+  DoctorSimulation,
+  SettingsSimulation,
 } from "@/components/PracticeSimulations";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
@@ -77,6 +81,58 @@ export default function MirrorWorldScreen() {
         t("mirrorWorld.tasks.emailStep5"),
       ],
     },
+    {
+      id: "whatsapp",
+      title: t("mirrorWorld.tasks.whatsapp"),
+      description: t("mirrorWorld.intro"),
+      icon: "message-circle",
+      color: "#25D366",
+      steps: [
+        t("mirrorWorld.tasks.whatsappStep1"),
+        t("mirrorWorld.tasks.whatsappStep2"),
+        t("mirrorWorld.tasks.whatsappStep3"),
+        t("mirrorWorld.tasks.whatsappStep4"),
+      ],
+    },
+    {
+      id: "bank",
+      title: t("mirrorWorld.tasks.bank"),
+      description: t("mirrorWorld.intro"),
+      icon: "credit-card",
+      color: "#1E88E5",
+      steps: [
+        t("mirrorWorld.tasks.bankStep1"),
+        t("mirrorWorld.tasks.bankStep2"),
+        t("mirrorWorld.tasks.bankStep3"),
+        t("mirrorWorld.tasks.bankStep4"),
+      ],
+    },
+    {
+      id: "doctor",
+      title: t("mirrorWorld.tasks.doctor"),
+      description: t("mirrorWorld.intro"),
+      icon: "heart",
+      color: "#E91E63",
+      steps: [
+        t("mirrorWorld.tasks.doctorStep1"),
+        t("mirrorWorld.tasks.doctorStep2"),
+        t("mirrorWorld.tasks.doctorStep3"),
+        t("mirrorWorld.tasks.doctorStep4"),
+      ],
+    },
+    {
+      id: "settings",
+      title: t("mirrorWorld.tasks.settings"),
+      description: t("mirrorWorld.intro"),
+      icon: "settings",
+      color: "#9B59B6",
+      steps: [
+        t("mirrorWorld.tasks.settingsStep1"),
+        t("mirrorWorld.tasks.settingsStep2"),
+        t("mirrorWorld.tasks.settingsStep3"),
+        t("mirrorWorld.tasks.settingsStep4"),
+      ],
+    },
   ], [t]);
 
   const [selectedTask, setSelectedTask] = useState<PracticeTask | null>(null);
@@ -136,6 +192,34 @@ export default function MirrorWorldScreen() {
       case "email":
         return (
           <EmailSimulation 
+            stepIndex={currentStep} 
+            onComplete={handleNextStep} 
+          />
+        );
+      case "whatsapp":
+        return (
+          <WhatsAppSimulation 
+            stepIndex={currentStep} 
+            onComplete={handleNextStep} 
+          />
+        );
+      case "bank":
+        return (
+          <BankSimulation 
+            stepIndex={currentStep} 
+            onComplete={handleNextStep} 
+          />
+        );
+      case "doctor":
+        return (
+          <DoctorSimulation 
+            stepIndex={currentStep} 
+            onComplete={handleNextStep} 
+          />
+        );
+      case "settings":
+        return (
+          <SettingsSimulation 
             stepIndex={currentStep} 
             onComplete={handleNextStep} 
           />

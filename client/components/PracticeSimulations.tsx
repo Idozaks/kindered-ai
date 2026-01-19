@@ -598,6 +598,553 @@ export function EmailSimulation({ onComplete, stepIndex }: SimulationProps) {
   return null;
 }
 
+export function WhatsAppSimulation({ onComplete, stepIndex }: SimulationProps) {
+  const { theme } = useTheme();
+  const { t } = useTranslation();
+  const [message, setMessage] = useState("");
+
+  if (stepIndex === 0) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "הקש על וואטסאפ כדי לפתוח אותו" : "Tap WhatsApp to open it"}
+        </ThemedText>
+        <View style={styles.homeScreen}>
+          <AppIcon 
+            name={t("mirrorWorld.tasks.appWhatsApp")} 
+            icon="message-circle" 
+            color="#25D366" 
+            onPress={onComplete}
+          />
+          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="image" color="#52C41A" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appEmail")} icon="mail" color="#F4B942" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="settings" color="#9B59B6" onPress={() => {}} />
+        </View>
+      </View>
+    );
+  }
+
+  if (stepIndex === 1) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "הקש על איש קשר כדי לפתוח שיחה" : "Tap a contact to open a chat"}
+        </ThemedText>
+        <View style={styles.contactsList}>
+          <Pressable 
+            style={[styles.contactRow, { borderBottomColor: theme.border }]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onComplete();
+            }}
+          >
+            <View style={[styles.avatar, { backgroundColor: "#25D366" + "30" }]}>
+              <ThemedText style={{ color: "#25D366" }}>S</ThemedText>
+            </View>
+            <View style={{ flex: 1, marginLeft: Spacing.md }}>
+              <ThemedText type="body">{t("mirrorWorld.tasks.contactSarah")}</ThemedText>
+              <ThemedText type="small" style={{ color: theme.textSecondary }}>{t("common.loading") === "טוען..." ? "לחץ לכתיבת הודעה" : "Tap to write a message"}</ThemedText>
+            </View>
+          </Pressable>
+          <Pressable 
+            style={[styles.contactRow, { borderBottomColor: theme.border }]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onComplete();
+            }}
+          >
+            <View style={[styles.avatar, { backgroundColor: "#5B9BD5" + "30" }]}>
+              <ThemedText style={{ color: "#5B9BD5" }}>M</ThemedText>
+            </View>
+            <View style={{ flex: 1, marginLeft: Spacing.md }}>
+              <ThemedText type="body">{t("mirrorWorld.tasks.contactMichael")}</ThemedText>
+              <ThemedText type="small" style={{ color: theme.textSecondary }}>{t("common.loading") === "טוען..." ? "לחץ לכתיבת הודעה" : "Tap to write a message"}</ThemedText>
+            </View>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  if (stepIndex === 2) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "כתוב הודעה בתיבה למטה" : "Type a message in the box below"}
+        </ThemedText>
+        <View style={styles.chatScreen}>
+          <View style={[styles.chatBubble, { backgroundColor: theme.backgroundSecondary, alignSelf: "flex-start" }]}>
+            <ThemedText>{t("common.loading") === "טוען..." ? "היי! מה שלומך?" : "Hi! How are you?"}</ThemedText>
+          </View>
+          <View style={styles.chatInputArea}>
+            <TextInput
+              style={[styles.chatInput, { backgroundColor: theme.backgroundSecondary, color: theme.text, textAlign: t("common.loading") === "טוען..." ? "right" : "left" }]}
+              placeholder={t("common.loading") === "טוען..." ? "כתוב הודעה..." : "Type a message..."}
+              placeholderTextColor={theme.textSecondary}
+              value={message}
+              onChangeText={setMessage}
+            />
+            <Pressable 
+              style={[styles.chatSendBtn, { backgroundColor: "#25D366" }]}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                onComplete();
+              }}
+            >
+              <Feather name="send" size={18} color="#FFFFFF" />
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  if (stepIndex === 3) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "מעולה! הודעה נשלחה בהצלחה!" : "Great! Message sent successfully!"}
+        </ThemedText>
+        <View style={styles.chatScreen}>
+          <View style={[styles.chatBubble, { backgroundColor: theme.backgroundSecondary, alignSelf: "flex-start" }]}>
+            <ThemedText>{t("common.loading") === "טוען..." ? "היי! מה שלומך?" : "Hi! How are you?"}</ThemedText>
+          </View>
+          <View style={[styles.chatBubble, { backgroundColor: "#25D366", alignSelf: "flex-end" }]}>
+            <ThemedText style={{ color: "#FFFFFF" }}>{t("common.loading") === "טוען..." ? "הכל טוב, תודה!" : "All good, thanks!"}</ThemedText>
+          </View>
+          <Animated.View entering={ZoomIn.duration(300)}>
+            <Pressable 
+              style={[styles.successBtn, { backgroundColor: theme.success }]}
+              onPress={() => {
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                onComplete();
+              }}
+            >
+              <Feather name="check-circle" size={20} color="#FFFFFF" />
+              <ThemedText style={{ color: "#FFFFFF", marginLeft: Spacing.sm, fontWeight: "600" }}>
+                {t("common.loading") === "טוען..." ? "סיום" : "Complete"}
+              </ThemedText>
+            </Pressable>
+          </Animated.View>
+        </View>
+      </View>
+    );
+  }
+
+  return null;
+}
+
+export function BankSimulation({ onComplete, stepIndex }: SimulationProps) {
+  const { theme } = useTheme();
+  const { t } = useTranslation();
+  const [pin, setPin] = useState("");
+
+  if (stepIndex === 0) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "הקש על אפליקציית הבנק כדי לפתוח אותה" : "Tap the Bank app to open it"}
+        </ThemedText>
+        <View style={styles.homeScreen}>
+          <AppIcon name={t("mirrorWorld.tasks.appWhatsApp")} icon="message-circle" color="#25D366" onPress={() => {}} />
+          <AppIcon 
+            name={t("mirrorWorld.tasks.appBank")} 
+            icon="credit-card" 
+            color="#1E88E5" 
+            onPress={onComplete}
+          />
+          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="image" color="#52C41A" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="settings" color="#9B59B6" onPress={() => {}} />
+        </View>
+      </View>
+    );
+  }
+
+  if (stepIndex === 1) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "הזן את הקוד שלך (4 ספרות)" : "Enter your PIN (4 digits)"}
+        </ThemedText>
+        <View style={styles.pinScreen}>
+          <View style={[styles.bankLogo, { backgroundColor: "#1E88E5" + "20" }]}>
+            <Feather name="credit-card" size={40} color="#1E88E5" />
+          </View>
+          <ThemedText type="h4" style={{ marginBottom: Spacing.lg }}>{t("common.loading") === "טוען..." ? "כניסה לחשבון" : "Account Login"}</ThemedText>
+          <TextInput
+            style={[styles.pinInput, { backgroundColor: theme.backgroundSecondary, color: theme.text }]}
+            placeholder="••••"
+            placeholderTextColor={theme.textSecondary}
+            value={pin}
+            onChangeText={setPin}
+            keyboardType="numeric"
+            maxLength={4}
+            secureTextEntry
+          />
+          <Pressable 
+            style={[styles.bankBtn, { backgroundColor: "#1E88E5" }]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              onComplete();
+            }}
+          >
+            <ThemedText style={{ color: "#FFFFFF", fontWeight: "600" }}>{t("common.loading") === "טוען..." ? "כניסה" : "Log In"}</ThemedText>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  if (stepIndex === 2) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "הנה היתרה שלך. הקש להמשך" : "Here's your balance. Tap to continue"}
+        </ThemedText>
+        <Pressable style={styles.balanceScreen} onPress={onComplete}>
+          <View style={[styles.balanceCard, { backgroundColor: "#1E88E5" }]}>
+            <ThemedText style={{ color: "#FFFFFF", opacity: 0.8 }}>{t("common.loading") === "טוען..." ? "חשבון עובר ושב" : "Checking Account"}</ThemedText>
+            <ThemedText type="h1" style={{ color: "#FFFFFF", marginVertical: Spacing.md }}>₪12,450.00</ThemedText>
+            <ThemedText style={{ color: "#FFFFFF", opacity: 0.8 }}>{t("common.loading") === "טוען..." ? "לחץ לפרטים נוספים" : "Tap for details"}</ThemedText>
+          </View>
+        </Pressable>
+      </View>
+    );
+  }
+
+  if (stepIndex === 3) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "הנה הפעולות האחרונות. הקש על כפתור הסיום" : "Here are recent transactions. Tap Complete"}
+        </ThemedText>
+        <View style={styles.transactionsList}>
+          <View style={[styles.transactionRow, { borderBottomColor: theme.border }]}>
+            <View style={[styles.transactionIcon, { backgroundColor: "#52C41A" + "20" }]}>
+              <Feather name="arrow-down-left" size={18} color="#52C41A" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <ThemedText>{t("common.loading") === "טוען..." ? "הפקדה" : "Deposit"}</ThemedText>
+              <ThemedText type="small" style={{ color: theme.textSecondary }}>15/01</ThemedText>
+            </View>
+            <ThemedText style={{ color: "#52C41A", fontWeight: "600" }}>+₪5,000</ThemedText>
+          </View>
+          <View style={[styles.transactionRow, { borderBottomColor: theme.border }]}>
+            <View style={[styles.transactionIcon, { backgroundColor: "#FF6B6B" + "20" }]}>
+              <Feather name="arrow-up-right" size={18} color="#FF6B6B" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <ThemedText>{t("common.loading") === "טוען..." ? "סופרמרקט" : "Supermarket"}</ThemedText>
+              <ThemedText type="small" style={{ color: theme.textSecondary }}>14/01</ThemedText>
+            </View>
+            <ThemedText style={{ color: "#FF6B6B", fontWeight: "600" }}>-₪320</ThemedText>
+          </View>
+          <Pressable 
+            style={[styles.successBtn, { backgroundColor: theme.success }]}
+            onPress={() => {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              onComplete();
+            }}
+          >
+            <Feather name="check-circle" size={20} color="#FFFFFF" />
+            <ThemedText style={{ color: "#FFFFFF", marginLeft: Spacing.sm, fontWeight: "600" }}>
+              {t("common.loading") === "טוען..." ? "סיום" : "Complete"}
+            </ThemedText>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  return null;
+}
+
+export function DoctorSimulation({ onComplete, stepIndex }: SimulationProps) {
+  const { theme } = useTheme();
+  const { t } = useTranslation();
+
+  if (stepIndex === 0) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "הקש על אפליקציית הבריאות כדי לפתוח אותה" : "Tap the Health app to open it"}
+        </ThemedText>
+        <View style={styles.homeScreen}>
+          <AppIcon name={t("mirrorWorld.tasks.appBank")} icon="credit-card" color="#1E88E5" onPress={() => {}} />
+          <AppIcon 
+            name={t("mirrorWorld.tasks.appHealth")} 
+            icon="heart" 
+            color="#E91E63" 
+            onPress={onComplete}
+          />
+          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="image" color="#52C41A" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="settings" color="#9B59B6" onPress={() => {}} />
+        </View>
+      </View>
+    );
+  }
+
+  if (stepIndex === 1) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "בחר את הרופא שלך" : "Choose your doctor"}
+        </ThemedText>
+        <View style={styles.doctorList}>
+          <Pressable 
+            style={[styles.doctorCard, { backgroundColor: theme.card }]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onComplete();
+            }}
+          >
+            <View style={[styles.doctorAvatar, { backgroundColor: "#E91E63" + "20" }]}>
+              <Feather name="user" size={24} color="#E91E63" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <ThemedText type="body" style={{ fontWeight: "600" }}>{t("common.loading") === "טוען..." ? "ד\"ר כהן" : "Dr. Cohen"}</ThemedText>
+              <ThemedText type="small" style={{ color: theme.textSecondary }}>{t("common.loading") === "טוען..." ? "רופא משפחה" : "Family Doctor"}</ThemedText>
+            </View>
+            <Feather name="chevron-right" size={20} color={theme.textSecondary} />
+          </Pressable>
+          <Pressable 
+            style={[styles.doctorCard, { backgroundColor: theme.card }]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onComplete();
+            }}
+          >
+            <View style={[styles.doctorAvatar, { backgroundColor: "#5B9BD5" + "20" }]}>
+              <Feather name="user" size={24} color="#5B9BD5" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <ThemedText type="body" style={{ fontWeight: "600" }}>{t("common.loading") === "טוען..." ? "ד\"ר לוי" : "Dr. Levi"}</ThemedText>
+              <ThemedText type="small" style={{ color: theme.textSecondary }}>{t("common.loading") === "טוען..." ? "קרדיולוג" : "Cardiologist"}</ThemedText>
+            </View>
+            <Feather name="chevron-right" size={20} color={theme.textSecondary} />
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  if (stepIndex === 2) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "בחר תאריך לתור" : "Pick a date for your appointment"}
+        </ThemedText>
+        <View style={styles.dateGrid}>
+          {["20", "21", "22", "23"].map((day, idx) => (
+            <Pressable 
+              key={day}
+              style={[styles.dateBtn, idx === 1 ? { backgroundColor: "#E91E63" } : { backgroundColor: theme.backgroundSecondary }]}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                onComplete();
+              }}
+            >
+              <ThemedText style={{ color: idx === 1 ? "#FFFFFF" : theme.text, fontWeight: "600" }}>{day}</ThemedText>
+              <ThemedText type="small" style={{ color: idx === 1 ? "#FFFFFF" : theme.textSecondary }}>
+                {t("common.loading") === "טוען..." ? "ינו׳" : "Jan"}
+              </ThemedText>
+            </Pressable>
+          ))}
+        </View>
+        <ThemedText type="small" style={{ textAlign: "center", marginTop: Spacing.md, color: theme.textSecondary }}>
+          {t("common.loading") === "טוען..." ? "הקש על תאריך כדי להמשיך" : "Tap a date to continue"}
+        </ThemedText>
+      </View>
+    );
+  }
+
+  if (stepIndex === 3) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "אשר את התור שלך" : "Confirm your appointment"}
+        </ThemedText>
+        <View style={[styles.appointmentCard, { backgroundColor: theme.card }]}>
+          <View style={styles.appointmentHeader}>
+            <Feather name="calendar" size={24} color="#E91E63" />
+            <ThemedText type="h4" style={{ marginLeft: Spacing.md }}>
+              {t("common.loading") === "טוען..." ? "אישור תור" : "Appointment Confirmation"}
+            </ThemedText>
+          </View>
+          <View style={styles.appointmentDetail}>
+            <ThemedText style={{ color: theme.textSecondary }}>{t("common.loading") === "טוען..." ? "רופא:" : "Doctor:"}</ThemedText>
+            <ThemedText style={{ fontWeight: "600" }}>{t("common.loading") === "טוען..." ? "ד\"ר כהן" : "Dr. Cohen"}</ThemedText>
+          </View>
+          <View style={styles.appointmentDetail}>
+            <ThemedText style={{ color: theme.textSecondary }}>{t("common.loading") === "טוען..." ? "תאריך:" : "Date:"}</ThemedText>
+            <ThemedText style={{ fontWeight: "600" }}>21/01/2026, 10:00</ThemedText>
+          </View>
+          <Pressable 
+            style={[styles.confirmBtn, { backgroundColor: "#E91E63" }]}
+            onPress={() => {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              onComplete();
+            }}
+          >
+            <Feather name="check" size={20} color="#FFFFFF" />
+            <ThemedText style={{ color: "#FFFFFF", fontWeight: "600", marginLeft: Spacing.sm }}>
+              {t("common.loading") === "טוען..." ? "אשר תור" : "Confirm Appointment"}
+            </ThemedText>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  return null;
+}
+
+export function SettingsSimulation({ onComplete, stepIndex }: SimulationProps) {
+  const { theme } = useTheme();
+  const { t } = useTranslation();
+  const [fontSize, setFontSize] = useState(2);
+
+  if (stepIndex === 0) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "הקש על הגדרות כדי לפתוח אותן" : "Tap Settings to open it"}
+        </ThemedText>
+        <View style={styles.homeScreen}>
+          <AppIcon name={t("mirrorWorld.tasks.appWhatsApp")} icon="message-circle" color="#25D366" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="image" color="#52C41A" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appEmail")} icon="mail" color="#F4B942" onPress={() => {}} />
+          <AppIcon 
+            name={t("mirrorWorld.tasks.appSettings")} 
+            icon="settings" 
+            color="#9B59B6" 
+            onPress={onComplete}
+          />
+        </View>
+      </View>
+    );
+  }
+
+  if (stepIndex === 1) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "הקש על 'תצוגה' כדי לשנות הגדרות" : "Tap 'Display' to change settings"}
+        </ThemedText>
+        <View style={styles.settingsList}>
+          <Pressable 
+            style={[styles.settingsRow, { borderBottomColor: theme.border }]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onComplete();
+            }}
+          >
+            <View style={[styles.settingsIcon, { backgroundColor: "#9B59B6" + "20" }]}>
+              <Feather name="sun" size={20} color="#9B59B6" />
+            </View>
+            <ThemedText style={{ flex: 1 }}>{t("common.loading") === "טוען..." ? "תצוגה" : "Display"}</ThemedText>
+            <Feather name="chevron-right" size={20} color={theme.textSecondary} />
+          </Pressable>
+          <View style={[styles.settingsRow, { borderBottomColor: theme.border }]}>
+            <View style={[styles.settingsIcon, { backgroundColor: "#5B9BD5" + "20" }]}>
+              <Feather name="wifi" size={20} color="#5B9BD5" />
+            </View>
+            <ThemedText style={{ flex: 1 }}>{t("common.loading") === "טוען..." ? "אינטרנט" : "Wi-Fi"}</ThemedText>
+            <Feather name="chevron-right" size={20} color={theme.textSecondary} />
+          </View>
+          <View style={[styles.settingsRow, { borderBottomColor: theme.border }]}>
+            <View style={[styles.settingsIcon, { backgroundColor: "#52C41A" + "20" }]}>
+              <Feather name="volume-2" size={20} color="#52C41A" />
+            </View>
+            <ThemedText style={{ flex: 1 }}>{t("common.loading") === "טוען..." ? "צלילים" : "Sounds"}</ThemedText>
+            <Feather name="chevron-right" size={20} color={theme.textSecondary} />
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  if (stepIndex === 2) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "גרור את המחוון כדי להגדיל את הטקסט" : "Drag the slider to make text bigger"}
+        </ThemedText>
+        <View style={styles.displaySettings}>
+          <ThemedText type="h4" style={{ marginBottom: Spacing.lg }}>
+            {t("common.loading") === "טוען..." ? "גודל טקסט" : "Text Size"}
+          </ThemedText>
+          <View style={styles.fontSizeDemo}>
+            <ThemedText type="small" style={{ fontSize: 12 + fontSize * 2 }}>Aa</ThemedText>
+            <ThemedText type="body" style={{ fontSize: 16 + fontSize * 2, marginHorizontal: Spacing.lg }}>Aa</ThemedText>
+            <ThemedText type="h3" style={{ fontSize: 20 + fontSize * 2 }}>Aa</ThemedText>
+          </View>
+          <View style={styles.sliderContainer}>
+            <ThemedText>A</ThemedText>
+            <View style={[styles.slider, { backgroundColor: theme.backgroundSecondary }]}>
+              {[0, 1, 2, 3, 4].map((level) => (
+                <Pressable 
+                  key={level}
+                  style={[
+                    styles.sliderDot, 
+                    { backgroundColor: level <= fontSize ? "#9B59B6" : theme.textSecondary }
+                  ]}
+                  onPress={() => {
+                    setFontSize(level);
+                    if (level >= 3) {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                      onComplete();
+                    }
+                  }}
+                />
+              ))}
+            </View>
+            <ThemedText type="h4">A</ThemedText>
+          </View>
+          <ThemedText type="small" style={{ textAlign: "center", color: theme.textSecondary, marginTop: Spacing.md }}>
+            {t("common.loading") === "טוען..." ? "הקש על הנקודות כדי להגדיל" : "Tap the dots to increase size"}
+          </ThemedText>
+        </View>
+      </View>
+    );
+  }
+
+  if (stepIndex === 3) {
+    return (
+      <View style={styles.simulationContainer}>
+        <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
+          {t("common.loading") === "טוען..." ? "מעולה! ההגדרות נשמרו" : "Great! Settings saved"}
+        </ThemedText>
+        <View style={styles.successScreen}>
+          <Animated.View entering={ZoomIn.duration(300)} style={[styles.successIcon, { backgroundColor: "#9B59B6" + "20" }]}>
+            <Feather name="check-circle" size={48} color="#9B59B6" />
+          </Animated.View>
+          <ThemedText type="h3" style={{ marginTop: Spacing.lg, marginBottom: Spacing.sm }}>
+            {t("common.loading") === "טוען..." ? "הגדרות נשמרו!" : "Settings Saved!"}
+          </ThemedText>
+          <ThemedText style={{ color: theme.textSecondary, textAlign: "center" }}>
+            {t("common.loading") === "טוען..." ? "הטקסט יהיה גדול יותר בכל האפליקציות" : "Text will be larger in all apps"}
+          </ThemedText>
+          <Pressable 
+            style={[styles.successBtn, { backgroundColor: theme.success, marginTop: Spacing.xl }]}
+            onPress={() => {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              onComplete();
+            }}
+          >
+            <Feather name="check-circle" size={20} color="#FFFFFF" />
+            <ThemedText style={{ color: "#FFFFFF", marginLeft: Spacing.sm, fontWeight: "600" }}>
+              {t("common.loading") === "טוען..." ? "סיום" : "Complete"}
+            </ThemedText>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  return null;
+}
+
 const styles = StyleSheet.create({
   simulationContainer: {
     flex: 1,
@@ -883,5 +1430,208 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     height: 56,
     borderRadius: BorderRadius.md,
+  },
+  chatScreen: {
+    flex: 1,
+    justifyContent: "flex-end",
+    gap: Spacing.md,
+  },
+  chatBubble: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    maxWidth: "80%",
+  },
+  chatInputArea: {
+    flexDirection: "row",
+    gap: Spacing.sm,
+    alignItems: "center",
+    marginTop: Spacing.lg,
+  },
+  chatInput: {
+    flex: 1,
+    height: 44,
+    borderRadius: BorderRadius.lg,
+    paddingHorizontal: Spacing.md,
+    fontSize: 16,
+  },
+  chatSendBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  successBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    height: 50,
+    borderRadius: BorderRadius.md,
+    marginTop: Spacing.lg,
+  },
+  pinScreen: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  bankLogo: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: Spacing.lg,
+  },
+  pinInput: {
+    width: 200,
+    height: 56,
+    borderRadius: BorderRadius.md,
+    fontSize: 24,
+    textAlign: "center",
+    marginBottom: Spacing.lg,
+  },
+  bankBtn: {
+    width: 200,
+    height: 50,
+    borderRadius: BorderRadius.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  balanceScreen: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  balanceCard: {
+    padding: Spacing.xl,
+    borderRadius: BorderRadius.xl,
+    alignItems: "center",
+  },
+  transactionsList: {
+    flex: 1,
+  },
+  transactionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: Spacing.md,
+    borderBottomWidth: 1,
+  },
+  transactionIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: Spacing.md,
+  },
+  doctorList: {
+    gap: Spacing.md,
+  },
+  doctorCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+  },
+  doctorAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: Spacing.md,
+  },
+  dateGrid: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: Spacing.md,
+    marginTop: Spacing.lg,
+  },
+  dateBtn: {
+    width: 60,
+    height: 70,
+    borderRadius: BorderRadius.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  appointmentCard: {
+    padding: Spacing.xl,
+    borderRadius: BorderRadius.xl,
+  },
+  appointmentHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: Spacing.lg,
+  },
+  appointmentDetail: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: Spacing.sm,
+  },
+  confirmBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    height: 50,
+    borderRadius: BorderRadius.md,
+    marginTop: Spacing.lg,
+  },
+  settingsList: {
+    gap: Spacing.sm,
+  },
+  settingsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: Spacing.md,
+    borderBottomWidth: 1,
+  },
+  settingsIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.md,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: Spacing.md,
+  },
+  displaySettings: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  fontSizeDemo: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    marginBottom: Spacing.xl,
+  },
+  sliderContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.md,
+    width: "100%",
+  },
+  slider: {
+    flex: 1,
+    height: 8,
+    borderRadius: 4,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: Spacing.md,
+  },
+  sliderDot: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+  },
+  successScreen: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  successIcon: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
