@@ -103,19 +103,28 @@
 
 ## Visual Design
 
-**Neumorphic-lite Components**:
-- All buttons have 3D appearance with 4px bottom border
-- Press state: border reduces to 1px, content shifts down 3px
-- Subtle inner shadow for depth: shadowOpacity 0.1, shadowRadius 3px
-- Rounded corners: 16px for cards, 12px for buttons
+**Liquid Glass UI (iOS 26 Style)**:
+- Frosted glass effect with subtle blur and translucency
+- Components have soft inner glow and subtle backdrop blur
+- Iridescent/rainbow edge highlights on interactive elements
+- Light refraction effects that respond to content behind
+- Rounded corners: 20px for cards, 16px for buttons
+- Subtle spring animations reminiscent of Dynamic Island
+
+**Glass Card Components**:
+- Background: rgba(255, 255, 255, 0.7) with backdrop blur
+- Border: 1px solid rgba(255, 255, 255, 0.5)
+- Subtle shadow: offset (0, 8), opacity 0.1, radius 24px
+- Press state: slight scale down (0.98) with spring animation
 
 **Floating Mic Button**:
 - Size: 72x72px
-- Shadow: offset (0, 4), opacity 0.2, radius 8px
-- Pulse animation when listening
+- Frosted glass effect with inner glow
+- Gradient overlay: Primary to Secondary colors at 30% opacity
+- Pulse animation when listening (scale + glow)
 - Haptic feedback on press
 
-**Icons**: Lucide Icons, 28px minimum size
+**Icons**: Feather icons from @expo/vector-icons, 28px minimum size
 
 **RTL Support**: All layouts mirror for Hebrew, carousel scrolls right-to-left
 
