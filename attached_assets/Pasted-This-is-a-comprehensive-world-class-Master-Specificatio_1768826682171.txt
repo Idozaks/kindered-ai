@@ -1,0 +1,46 @@
+This is a comprehensive, world-class "Master Specification Prompt" designed for an advanced agentic coding platform (like Bolt, Lovable, or Replit Agent). It incorporates the specific architectural decisions and UI/UX improvements we've discussed.
+Master Specification: Project "Kindred AI"
+1. System Objective
+Build Kindred AI, an ultra-accessible digital companion for seniors (70+) designed to bridge the gap between traditional life and the modern digital world. The app must feel like a "patient, technically brilliant grandchild" rather than a piece of software.
+2. Core UI/UX Design System
+Tactile Physics: Use "Neumorphic-lite" design. Buttons should have 3D shadows and a 4px bottom border that "clicks" down on press.
+Typography: Default font size 20px+. Use Varela Round for Hebrew and Inter for English.
+Hierarchy:
+Primary Action Carousel: A horizontal, snapping carousel for the top 3 high-importance tools.
+Secondary Tool Grid: A 2x2 or 2xN grid for utility tools.
+The Global Mic: A prominent floating action button for voice-first interaction.
+RTL/LTR Support: Full bi-directional support (Hebrew/English) with mirrored layouts.
+3. Tech Stack & AI Configuration (Gemini API)
+Integrate the Google GenAI SDK using the following specific model assignments:
+The "Brain" (Gemini 3 Pro): For complex reasoning (Bureaucracy/Decision Navigator). Enable thinkingBudget (32k tokens) and googleSearch tools.
+The "Eyes & Ears" (Gemini 2.5 Flash Native Audio): For Grandchild Mode and Live Lens. Stream real-time PCM audio (24kHz) and screen/camera frames (1-2 FPS).
+The "Artist" (Gemini 2.5 Flash Image): For generated visuals in simulations.
+The "Voice" (Gemini TTS): For high-quality text-to-speech feedback across the UI.
+4. Core Feature Modules
+A. Grandchild Mode (Live Screen Share)
+Functionality: Use navigator.mediaDevices.getDisplayMedia to capture the user's screen.
+Agency: The AI acts as a "live navigator." It watches the screen and says: "I see you're on the bank login. Tap the large blue button on the right to start."
+Interaction: Bi-directional real-time voice (Native Audio).
+B. Decision Navigator (The GPS for Life)
+Goal: Break down complex goals (e.g., "Renew Passport") into a 5-step interactive checklist.
+Execution: For each step, provide a "Dori's Advice" card with simple analogies and a "Practice in Sandbox" button.
+C. Letter Helper (Bureaucracy Translator)
+Input: Camera capture or file upload.
+Output:
+What is it? (Simple label).
+Urgency Meter: (High/Medium/Low with color coding).
+Plain Language Summary: (Removing all legal jargon).
+Action Checklist: (Max 3 items).
+D. Mirror World (Safe Simulation)
+Mechanism: A simulated browser/app environment where users practice tasks (Ordering groceries, Video calling) using AI-generated mock interfaces before doing them for real.
+5. Accessibility & Safety Features
+Narrator Mode: Full screen-reader support that describes the purpose of buttons, not just the labels.
+High Contrast: One-tap toggle for Black/Yellow high-contrast mode.
+Privacy Shield: AI vision must pause automatically if a "password" or "credit card" field is detected via OCR.
+6. Implementation Checklist for the Agent
+Environment Setup: React + Tailwind CSS + Lucide Icons.
+Multilingual Foundation: Implement an i18n system supporting HE and EN.
+Haptic Feedback: Integrate navigator.vibrate for all primary button presses.
+State Persistence: Save user progress, completed lessons, and generated paths in localStorage.
+Error Resilience: Implement exponential backoff for API calls and a "Reconnecting..." UI for the Live API.
+Instruction to the Coding Agent: "Start by building the Dashboard with the tool carousel and grid. Then, implement the Gemini service layer, ensuring all 'thinking' and 'search' tools are correctly configured for senior-friendly responses."
