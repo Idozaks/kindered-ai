@@ -19,8 +19,11 @@ import { Spacing } from "@/constants/theme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 
 // Import tool icons
+// @ts-ignore
 import monitorIcon from "../../assets/images/monitor-tool.png";
+// @ts-ignore
 import letterIcon from "../../assets/images/letter-tool.png";
+// @ts-ignore
 import mirrorIcon from "../../assets/images/mirror-tool.png";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
