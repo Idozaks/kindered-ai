@@ -33,12 +33,6 @@ interface Message {
   content: string;
 }
 
-const QUICK_QUESTIONS = [
-  "How do I send a photo?",
-  "Help me with WhatsApp",
-  "What is this button?",
-  "I'm confused about something",
-];
 
 export default function GrandchildModeScreen() {
   const insets = useSafeAreaInsets();
@@ -96,12 +90,19 @@ export default function GrandchildModeScreen() {
       const assistantMessage: Message = {
         id: Date.now().toString(),
         role: "assistant",
-        content: "I'm having trouble connecting right now. Let me try to help anyway! What would you like to do?",
+        content: t("grandchildMode.errorMessage"),
       };
       setMessages((prev) => [...prev, assistantMessage]);
       setIsTyping(false);
     },
   });
+
+  const QUICK_QUESTIONS = [
+    t("grandchildMode.questionPhoto"),
+    t("grandchildMode.questionWhatsApp"),
+    t("grandchildMode.questionButton"),
+    t("grandchildMode.questionConfused"),
+  ];
 
   const handleStartSession = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -109,7 +110,7 @@ export default function GrandchildModeScreen() {
     const welcomeMessage: Message = {
       id: "welcome",
       role: "assistant",
-      content: "Hi there! I'm here to help you with anything on your phone or tablet. Just ask me a question, or tap one of the suggestions below!",
+      content: t("grandchildMode.welcomeMessage"),
     };
     setMessages([welcomeMessage]);
   };
@@ -222,7 +223,7 @@ export default function GrandchildModeScreen() {
                       <Feather name="heart" size={16} color={theme.primary} />
                     </View>
                     <ThemedText type="small" style={{ color: theme.textSecondary, fontWeight: "600" }}>
-                      Kindred AI
+                      {t("grandchildMode.assistantName")}
                     </ThemedText>
                   </View>
                 ) : null}
@@ -249,7 +250,7 @@ export default function GrandchildModeScreen() {
                   <View style={[styles.dot, { backgroundColor: theme.primary, opacity: 0.4 }]} />
                 </View>
                 <ThemedText type="small" style={{ color: theme.textSecondary }}>
-                  Thinking...
+                  {t("grandchildMode.thinking")}
                 </ThemedText>
               </Animated.View>
             ) : null}
@@ -260,7 +261,7 @@ export default function GrandchildModeScreen() {
                 style={styles.quickQuestions}
               >
                 <ThemedText type="small" style={[styles.quickLabel, { color: theme.textSecondary }]}>
-                  Common questions:
+                  {t("grandchildMode.commonQuestions")}
                 </ThemedText>
                 {QUICK_QUESTIONS.map((question, index) => (
                   <Pressable
@@ -279,8 +280,8 @@ export default function GrandchildModeScreen() {
           <View style={[styles.inputArea, { paddingBottom: insets.bottom + Spacing.md, backgroundColor: theme.background }]}>
             <View style={[styles.inputRow, { backgroundColor: theme.card, borderColor: theme.border }]}>
               <TextInput
-                style={[styles.textInput, { color: theme.text }]}
-                placeholder="Type your question here..."
+                style={[styles.textInput, { color: theme.text, textAlign: t("common.loading") === "טוען..." ? "right" : "left" }]}
+                placeholder={t("grandchildMode.inputPlaceholder")}
                 placeholderTextColor={theme.textSecondary}
                 value={inputText}
                 onChangeText={setInputText}
@@ -307,7 +308,7 @@ export default function GrandchildModeScreen() {
             >
               <Feather name="x" size={16} color={theme.danger} />
               <ThemedText type="small" style={{ color: theme.danger, marginLeft: Spacing.xs }}>
-                End Session
+                {t("grandchildMode.endSession")}
               </ThemedText>
             </Pressable>
           </View>
