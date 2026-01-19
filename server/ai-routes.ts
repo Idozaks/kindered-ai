@@ -74,69 +74,30 @@ router.post("/decision-help", async (req, res) => {
     const isHebrew = language === "he";
 
     const systemPrompt = isHebrew 
-      ? `אתה דורי, עוזר AI חם ותומך שעוזר לקשישים לפרק משימות לשלבים פשוטים.
+      ? `אתה עוזר שנותן הדרכה ספציפית ומעשית. החזר JSON בלבד.`
+      : `You give specific, practical guidance. Return JSON only.`;
 
-האישיות שלך:
-- חביב ומעודד, כמו חבר טוב
-- משתמש בשפה פשוטה ויומיומית
-- נותן עצות מעשיות וניתנות לביצוע
-- מתמקד בשלב אחד בכל פעם
+    const userPrompt = isHebrew
+      ? `משימה: ${goal}
 
-חשוב מאוד: החזר את התשובה שלך בפורמט JSON בלבד, ללא טקסט נוסף.
-הפורמט:
-{
-  "steps": [
-    {
-      "title": "כותרת השלב",
-      "description": "תיאור קצר",
-      "tip": "עצה חמה ומעודדת",
-      "icon": "שם אייקון מ-Feather"
-    }
-  ]
-}
+צור 3 שלבים קצרים וספציפיים. החזר JSON בלבד:
+{"steps":[{"title":"כותרת","description":"תיאור קצר","tip":"טיפ ספציפי","icon":"file-text"}]}`
+      : `Task: ${goal}
 
-השתמש באייקונים אלה בלבד: clipboard, file-text, phone, calendar, check-circle, map-pin, credit-card, mail, search, users`
-      : `You are Dori, a warm and supportive AI assistant helping seniors break down tasks into simple steps.
-
-Your personality:
-- Kind and encouraging, like a helpful friend
-- Use simple, everyday language
-- Give practical, actionable advice
-- Focus on one step at a time
-
-IMPORTANT: Return your response in JSON format only, with no additional text.
-Format:
-{
-  "steps": [
-    {
-      "title": "Step title",
-      "description": "Brief description",
-      "tip": "Warm, encouraging advice",
-      "icon": "Feather icon name"
-    }
-  ]
-}
-
-Only use these icons: clipboard, file-text, phone, calendar, check-circle, map-pin, credit-card, mail, search, users`;
+Create 3 short, specific steps. Return JSON only:
+{"steps":[{"title":"Title","description":"Short description","tip":"Specific tip","icon":"file-text"}]}`;
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: [
         {
           role: "user",
-          parts: [{ text: currentStep 
-            ? (isHebrew 
-              ? `המשתמש עובד על: "${goal}". הם סיימו את שלב ${currentStep}. החזר JSON עם עידוד והצעה למה לעשות הלאה.`
-              : `The user is working on: "${goal}". They just completed step ${currentStep}. Return JSON with encouragement and suggest what to do next.`)
-            : (isHebrew
-              ? `עזור למשתמש לפרק את המטרה הזו לשלבים פשוטים (3-5 שלבים): "${goal}". החזר JSON בלבד.`
-              : `Help the user break down this goal into simple steps (3-5 steps): "${goal}". Return JSON only.`)
-          }],
+          parts: [{ text: userPrompt }],
         },
       ],
       config: {
         systemInstruction: systemPrompt,
-        maxOutputTokens: 800,
+        maxOutputTokens: 1200,
       },
     });
 
@@ -144,10 +105,45 @@ Only use these icons: clipboard, file-text, phone, calendar, check-circle, map-p
     
     // Try to parse JSON from response
     try {
-      // Extract JSON from response (handle cases where AI adds extra text)
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
+      // Extract JSON from response (handle markdown code blocks)
+      let jsonStr = text;
+      
+      // Remove markdown code block if present
+      const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (codeBlockMatch) {
+        jsonStr = codeBlockMatch[1].trim();
+      }
+      
+      // Try to parse the full JSON first
+      let parsed = null;
+      try {
+        const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          parsed = JSON.parse(jsonMatch[0]);
+        }
+      } catch {
+        // If full parse fails, try to extract individual steps from truncated JSON
+        const stepsMatch = jsonStr.match(/"steps"\s*:\s*\[([\s\S]*)/);
+        if (stepsMatch) {
+          const stepsContent = stepsMatch[1];
+          // Find complete step objects
+          const stepMatches = stepsContent.matchAll(/\{\s*"title"\s*:\s*"([^"]+)"\s*,\s*"description"\s*:\s*"([^"]+)"\s*,\s*"tip"\s*:\s*"([^"]+)"\s*,\s*"icon"\s*:\s*"([^"]+)"\s*\}/g);
+          const steps = [];
+          for (const match of stepMatches) {
+            steps.push({
+              title: match[1],
+              description: match[2],
+              tip: match[3].replace(/\\"/g, '"'),
+              icon: match[4]
+            });
+          }
+          if (steps.length > 0) {
+            parsed = { steps };
+          }
+        }
+      }
+      
+      if (parsed?.steps?.length > 0) {
         res.json({ 
           response: text,
           structured: parsed,
@@ -156,7 +152,8 @@ Only use these icons: clipboard, file-text, phone, calendar, check-circle, map-p
       } else {
         res.json({ response: text, success: true });
       }
-    } catch {
+    } catch (parseError) {
+      console.error("AI decision parse error:", parseError);
       res.json({ response: text, success: true });
     }
   } catch (error) {
