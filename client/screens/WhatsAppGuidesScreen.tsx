@@ -18,6 +18,7 @@ import Animated, {
   SlideOutLeft,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
+import { useTranslation } from "react-i18next";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -31,6 +32,7 @@ const WHATSAPP_GREEN = "#25D366";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function WhatsAppGuidesScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const { theme } = useTheme();
@@ -91,13 +93,13 @@ export default function WhatsAppGuidesScreen() {
           <Feather name="message-circle" size={32} color="#FFFFFF" />
         </View>
         <ThemedText type="h2" style={styles.title}>
-          WhatsApp Guides
+          {t("tools.whatsapp.title")}
         </ThemedText>
         <ThemedText
           type="body"
           style={[styles.subtitle, { color: theme.textSecondary }]}
         >
-          Step-by-step help for using WhatsApp
+          {t("tools.whatsapp.stepByStep")}
         </ThemedText>
       </Animated.View>
 
@@ -128,13 +130,13 @@ export default function WhatsAppGuidesScreen() {
             >
               <View style={styles.journeyTextContainer}>
                 <ThemedText type="h4" style={styles.journeyTitle}>
-                  {journey.title}
+                  {journey.titleHe || journey.title}
                 </ThemedText>
                 <ThemedText
                   type="small"
                   style={[styles.journeyDescription, { color: theme.textSecondary }]}
                 >
-                  {journey.description}
+                  {journey.descriptionHe || journey.description}
                 </ThemedText>
                 <View style={styles.stepCountRow}>
                   <Feather
@@ -145,7 +147,7 @@ export default function WhatsAppGuidesScreen() {
                   <ThemedText
                     style={[styles.stepCount, { color: theme.textSecondary }]}
                   >
-                    {journey.steps.length} steps
+                    {t("tools.whatsapp.steps", { count: journey.steps.length })}
                   </ThemedText>
                 </View>
               </View>
@@ -179,7 +181,7 @@ export default function WhatsAppGuidesScreen() {
           <ThemedText
             style={[styles.trainerToggleText, { color: theme.textSecondary }]}
           >
-            {showTrainerNotes ? "Trainer notes visible" : "Show trainer notes"}
+            {showTrainerNotes ? t("tools.whatsapp.trainerNotesVisible") : t("tools.whatsapp.showTrainerNotes")}
           </ThemedText>
         </Pressable>
       </Animated.View>
@@ -214,7 +216,7 @@ export default function WhatsAppGuidesScreen() {
           </Pressable>
           <View style={styles.stepperTitleContainer}>
             <ThemedText type="h4" numberOfLines={1}>
-              {selectedJourney.title}
+              {selectedJourney.titleHe || selectedJourney.title}
             </ThemedText>
           </View>
           <View style={styles.spacer} />
@@ -237,7 +239,7 @@ export default function WhatsAppGuidesScreen() {
           <ThemedText
             style={[styles.progressText, { color: theme.textSecondary }]}
           >
-            Step {currentStep + 1} of {selectedJourney.steps.length}
+            {t("tools.whatsapp.stepCount", { current: currentStep + 1, total: selectedJourney.steps.length })}
           </ThemedText>
         </View>
 
@@ -262,9 +264,9 @@ export default function WhatsAppGuidesScreen() {
                 </View>
               </View>
               <ThemedText type="body" style={styles.stepText}>
-                {step.text}
+                {step.textHe || step.text}
               </ThemedText>
-              {showTrainerNotes && step.trainerNote ? (
+              {showTrainerNotes && (step.trainerNoteHe || step.trainerNote) ? (
                 <Animated.View
                   entering={FadeIn.duration(200)}
                   style={[
@@ -282,7 +284,7 @@ export default function WhatsAppGuidesScreen() {
                     type="small"
                     style={[styles.trainerNoteText, { color: theme.textSecondary }]}
                   >
-                    Trainer: {step.trainerNote}
+                    {t("tools.whatsapp.trainer")}{step.trainerNoteHe || step.trainerNote}
                   </ThemedText>
                 </Animated.View>
               ) : null}
@@ -298,7 +300,7 @@ export default function WhatsAppGuidesScreen() {
             style={styles.navButton}
             testID="button-back"
           >
-            Back
+            {t("tools.whatsapp.back")}
           </GlassButton>
           {isLastStep ? (
             <GlassButton
@@ -306,7 +308,7 @@ export default function WhatsAppGuidesScreen() {
               style={[styles.navButton, { backgroundColor: WHATSAPP_GREEN }]}
               testID="button-finish"
             >
-              Finish
+              {t("tools.whatsapp.finish")}
             </GlassButton>
           ) : (
             <GlassButton
@@ -314,7 +316,7 @@ export default function WhatsAppGuidesScreen() {
               style={[styles.navButton, { backgroundColor: WHATSAPP_GREEN }]}
               testID="button-next"
             >
-              Next
+              {t("tools.whatsapp.next")}
             </GlassButton>
           )}
         </View>

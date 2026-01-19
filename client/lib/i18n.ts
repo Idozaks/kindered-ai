@@ -26,6 +26,15 @@ const resources = {
         whatsapp: {
           title: "WhatsApp Guides",
           description: "Step-by-step help",
+          stepByStep: "Step-by-step help for using WhatsApp",
+          steps: "{{count}} steps",
+          stepCount: "Step {{current}} of {{total}}",
+          trainerNotesVisible: "Trainer notes visible",
+          showTrainerNotes: "Show trainer notes",
+          back: "Back",
+          finish: "Finish",
+          next: "Next",
+          trainer: "Trainer: ",
         },
       },
       settings: {
@@ -223,6 +232,15 @@ const resources = {
         whatsapp: {
           title: "מדריכי וואטסאפ",
           description: "עזרה צעד אחר צעד",
+          stepByStep: "עזרה צעד אחר צעד לשימוש בוואטסאפ",
+          steps: "{{count}} שלבים",
+          stepCount: "שלב {{current}} מתוך {{total}}",
+          trainerNotesVisible: "הערות מדריך גלויות",
+          showTrainerNotes: "הצג הערות מדריך",
+          back: "חזרה",
+          finish: "סיום",
+          next: "הבא",
+          trainer: "מדריך: ",
         },
       },
       settings: {
