@@ -374,7 +374,14 @@ export default function MirrorWorldScreen() {
                 {selectedTask.steps[currentStep]}
               </ThemedText>
               <View style={styles.simulationArea}>
-                {renderSimulation()}
+                <ScrollView 
+                  style={styles.simulationScroll}
+                  contentContainerStyle={styles.simulationScrollContent}
+                  nestedScrollEnabled={true}
+                  showsVerticalScrollIndicator={false}
+                >
+                  {renderSimulation()}
+                </ScrollView>
               </View>
             </GlassCard>
 
@@ -507,6 +514,13 @@ const styles = StyleSheet.create({
     flex: 1,
     width: "100%",
     minHeight: 280,
+  },
+  simulationScroll: {
+    flex: 1,
+    width: "100%",
+  },
+  simulationScrollContent: {
+    flexGrow: 1,
   },
   practiceActions: {
     flexDirection: "row",
