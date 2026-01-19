@@ -1,6 +1,7 @@
 import { GoogleGenAI, Modality } from "@google/genai";
 import * as fs from "fs";
 import * as path from "path";
+import { batchProcess } from "./replit_integrations/batch";
 
 const ai = new GoogleGenAI({
   apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY,
@@ -242,9 +243,9 @@ const whatsappStepPrompts: StepImageConfig[] = [
   },
 ];
 
+const outputDir = path.resolve(process.cwd(), "assets", "whatsapp-guides");
+
 async function generateImage(prompt: string): Promise<string> {
-  console.log("Generating image with prompt:", prompt.substring(0, 50) + "...");
-  
   const response = await ai.models.generateContent({
     model: "gemini-3-pro-image-preview",
     contents: [{ role: "user", parts: [{ text: prompt }] }],
@@ -265,56 +266,58 @@ async function generateImage(prompt: string): Promise<string> {
   return imagePart.inlineData.data;
 }
 
-async function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 async function generateAllImages() {
-  const outputDir = path.resolve(process.cwd(), "assets", "whatsapp-guides");
-  
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
-  console.log(`Generating ${whatsappStepPrompts.length} images...`);
-  console.log(`Output directory: ${outputDir}`);
-
-  const results: { journeyId: string; stepIndex: number; filename: string }[] = [];
-
-  for (let i = 0; i < whatsappStepPrompts.length; i++) {
-    const config = whatsappStepPrompts[i];
+  // Filter to only missing images
+  const missingImages = whatsappStepPrompts.filter(config => {
     const filename = `${config.journeyId}-step-${config.stepIndex}.png`;
     const filepath = path.join(outputDir, filename);
+    return !fs.existsSync(filepath);
+  });
 
-    if (fs.existsSync(filepath)) {
-      console.log(`[${i + 1}/${whatsappStepPrompts.length}] Skipping existing: ${filename}`);
-      results.push({ journeyId: config.journeyId, stepIndex: config.stepIndex, filename });
-      continue;
-    }
+  if (missingImages.length === 0) {
+    console.log("All images already generated!");
+    return;
+  }
 
-    try {
-      console.log(`[${i + 1}/${whatsappStepPrompts.length}] Generating: ${filename}`);
+  console.log(`Generating ${missingImages.length} missing images in parallel...`);
+
+  const results = await batchProcess(
+    missingImages,
+    async (config) => {
+      const filename = `${config.journeyId}-step-${config.stepIndex}.png`;
+      const filepath = path.join(outputDir, filename);
       
       const base64Data = await generateImage(config.prompt);
       const buffer = Buffer.from(base64Data, "base64");
       fs.writeFileSync(filepath, buffer);
       
-      console.log(`  ✓ Saved: ${filename} (${buffer.length} bytes)`);
-      results.push({ journeyId: config.journeyId, stepIndex: config.stepIndex, filename });
-
-      if (i < whatsappStepPrompts.length - 1) {
-        await sleep(2000);
+      return { filename, size: buffer.length };
+    },
+    {
+      concurrency: 3,
+      retries: 5,
+      minTimeout: 3000,
+      onProgress: (completed, total, item) => {
+        const config = item as StepImageConfig;
+        console.log(`[${completed}/${total}] Generated: ${config.journeyId}-step-${config.stepIndex}.png`);
       }
-    } catch (error) {
-      console.error(`  ✗ Failed: ${filename}`, error);
-      await sleep(5000);
     }
-  }
+  );
 
+  console.log(`\nGenerated ${results.length} images successfully.`);
+  
+  // Create mapping file
+  const allFiles = whatsappStepPrompts.map(c => ({
+    journeyId: c.journeyId,
+    stepIndex: c.stepIndex,
+    filename: `${c.journeyId}-step-${c.stepIndex}.png`
+  }));
   const mappingPath = path.join(outputDir, "image-mapping.json");
-  fs.writeFileSync(mappingPath, JSON.stringify(results, null, 2));
-  console.log(`\nImage mapping saved to: ${mappingPath}`);
-  console.log(`Generated ${results.length} images successfully.`);
+  fs.writeFileSync(mappingPath, JSON.stringify(allFiles, null, 2));
 }
 
 generateAllImages().catch(console.error);

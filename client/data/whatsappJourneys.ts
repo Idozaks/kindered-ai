@@ -3,6 +3,7 @@ export interface JourneyStep {
   textHe?: string;
   trainerNote?: string;
   trainerNoteHe?: string;
+  image?: any;
 }
 
 export interface Journey {
@@ -12,6 +13,55 @@ export interface Journey {
   description: string;
   descriptionHe?: string;
   steps: JourneyStep[];
+}
+
+export const stepImages: Record<string, any> = {
+  "read-message-0": require("../../assets/whatsapp-guides/read-message-step-0.png"),
+  "read-message-1": require("../../assets/whatsapp-guides/read-message-step-1.png"),
+  "read-message-2": require("../../assets/whatsapp-guides/read-message-step-2.png"),
+  "read-message-3": require("../../assets/whatsapp-guides/read-message-step-3.png"),
+  "read-message-4": require("../../assets/whatsapp-guides/read-message-step-4.png"),
+  "read-message-5": require("../../assets/whatsapp-guides/read-message-step-5.png"),
+  "send-text-0": require("../../assets/whatsapp-guides/send-text-step-0.png"),
+  "send-text-1": require("../../assets/whatsapp-guides/send-text-step-1.png"),
+  "send-text-2": require("../../assets/whatsapp-guides/send-text-step-2.png"),
+  "send-text-3": require("../../assets/whatsapp-guides/send-text-step-3.png"),
+  "send-text-4": require("../../assets/whatsapp-guides/send-text-step-4.png"),
+  "send-text-5": require("../../assets/whatsapp-guides/send-text-step-5.png"),
+  "send-photo-0": require("../../assets/whatsapp-guides/send-photo-step-0.png"),
+  "send-photo-1": require("../../assets/whatsapp-guides/send-photo-step-1.png"),
+  "send-photo-2": require("../../assets/whatsapp-guides/send-photo-step-2.png"),
+  "send-photo-3": require("../../assets/whatsapp-guides/send-photo-step-3.png"),
+  "send-photo-4": require("../../assets/whatsapp-guides/send-photo-step-4.png"),
+  "send-photo-5": require("../../assets/whatsapp-guides/send-photo-step-5.png"),
+  "send-photo-6": require("../../assets/whatsapp-guides/send-photo-step-6.png"),
+  "video-call-0": require("../../assets/whatsapp-guides/video-call-step-0.png"),
+  "video-call-1": require("../../assets/whatsapp-guides/video-call-step-1.png"),
+  "video-call-2": require("../../assets/whatsapp-guides/video-call-step-2.png"),
+  "video-call-3": require("../../assets/whatsapp-guides/video-call-step-3.png"),
+  "video-call-4": require("../../assets/whatsapp-guides/video-call-step-4.png"),
+  "video-call-5": require("../../assets/whatsapp-guides/video-call-step-5.png"),
+  "family-groups-0": require("../../assets/whatsapp-guides/family-groups-step-0.png"),
+  "family-groups-1": require("../../assets/whatsapp-guides/family-groups-step-1.png"),
+  "family-groups-2": require("../../assets/whatsapp-guides/family-groups-step-2.png"),
+  "family-groups-3": require("../../assets/whatsapp-guides/family-groups-step-3.png"),
+  "family-groups-4": require("../../assets/whatsapp-guides/family-groups-step-4.png"),
+  "family-groups-5": require("../../assets/whatsapp-guides/family-groups-step-5.png"),
+  "privacy-settings-0": require("../../assets/whatsapp-guides/privacy-settings-step-0.png"),
+  "privacy-settings-1": require("../../assets/whatsapp-guides/privacy-settings-step-1.png"),
+  "privacy-settings-2": require("../../assets/whatsapp-guides/privacy-settings-step-2.png"),
+  "privacy-settings-3": require("../../assets/whatsapp-guides/privacy-settings-step-3.png"),
+  "privacy-settings-4": require("../../assets/whatsapp-guides/privacy-settings-step-4.png"),
+  "privacy-settings-5": require("../../assets/whatsapp-guides/privacy-settings-step-5.png"),
+  "leave-group-0": require("../../assets/whatsapp-guides/leave-group-step-0.png"),
+  "leave-group-1": require("../../assets/whatsapp-guides/leave-group-step-1.png"),
+  "leave-group-2": require("../../assets/whatsapp-guides/leave-group-step-2.png"),
+  "leave-group-3": require("../../assets/whatsapp-guides/leave-group-step-3.png"),
+  "leave-group-4": require("../../assets/whatsapp-guides/leave-group-step-4.png"),
+};
+
+export function getStepImage(journeyId: string, stepIndex: number): any {
+  return stepImages[`${journeyId}-${stepIndex}`];
 }
 
 export const whatsappJourneys: Journey[] = [

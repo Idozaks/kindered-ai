@@ -1,0 +1,212 @@
+[
+  {
+    "journeyId": "read-message",
+    "stepIndex": 0,
+    "filename": "read-message-step-0.png"
+  },
+  {
+    "journeyId": "read-message",
+    "stepIndex": 1,
+    "filename": "read-message-step-1.png"
+  },
+  {
+    "journeyId": "read-message",
+    "stepIndex": 2,
+    "filename": "read-message-step-2.png"
+  },
+  {
+    "journeyId": "read-message",
+    "stepIndex": 3,
+    "filename": "read-message-step-3.png"
+  },
+  {
+    "journeyId": "read-message",
+    "stepIndex": 4,
+    "filename": "read-message-step-4.png"
+  },
+  {
+    "journeyId": "read-message",
+    "stepIndex": 5,
+    "filename": "read-message-step-5.png"
+  },
+  {
+    "journeyId": "send-text",
+    "stepIndex": 0,
+    "filename": "send-text-step-0.png"
+  },
+  {
+    "journeyId": "send-text",
+    "stepIndex": 1,
+    "filename": "send-text-step-1.png"
+  },
+  {
+    "journeyId": "send-text",
+    "stepIndex": 2,
+    "filename": "send-text-step-2.png"
+  },
+  {
+    "journeyId": "send-text",
+    "stepIndex": 3,
+    "filename": "send-text-step-3.png"
+  },
+  {
+    "journeyId": "send-text",
+    "stepIndex": 4,
+    "filename": "send-text-step-4.png"
+  },
+  {
+    "journeyId": "send-text",
+    "stepIndex": 5,
+    "filename": "send-text-step-5.png"
+  },
+  {
+    "journeyId": "send-photo",
+    "stepIndex": 0,
+    "filename": "send-photo-step-0.png"
+  },
+  {
+    "journeyId": "send-photo",
+    "stepIndex": 1,
+    "filename": "send-photo-step-1.png"
+  },
+  {
+    "journeyId": "send-photo",
+    "stepIndex": 2,
+    "filename": "send-photo-step-2.png"
+  },
+  {
+    "journeyId": "send-photo",
+    "stepIndex": 3,
+    "filename": "send-photo-step-3.png"
+  },
+  {
+    "journeyId": "send-photo",
+    "stepIndex": 4,
+    "filename": "send-photo-step-4.png"
+  },
+  {
+    "journeyId": "send-photo",
+    "stepIndex": 5,
+    "filename": "send-photo-step-5.png"
+  },
+  {
+    "journeyId": "send-photo",
+    "stepIndex": 6,
+    "filename": "send-photo-step-6.png"
+  },
+  {
+    "journeyId": "video-call",
+    "stepIndex": 0,
+    "filename": "video-call-step-0.png"
+  },
+  {
+    "journeyId": "video-call",
+    "stepIndex": 1,
+    "filename": "video-call-step-1.png"
+  },
+  {
+    "journeyId": "video-call",
+    "stepIndex": 2,
+    "filename": "video-call-step-2.png"
+  },
+  {
+    "journeyId": "video-call",
+    "stepIndex": 3,
+    "filename": "video-call-step-3.png"
+  },
+  {
+    "journeyId": "video-call",
+    "stepIndex": 4,
+    "filename": "video-call-step-4.png"
+  },
+  {
+    "journeyId": "video-call",
+    "stepIndex": 5,
+    "filename": "video-call-step-5.png"
+  },
+  {
+    "journeyId": "family-groups",
+    "stepIndex": 0,
+    "filename": "family-groups-step-0.png"
+  },
+  {
+    "journeyId": "family-groups",
+    "stepIndex": 1,
+    "filename": "family-groups-step-1.png"
+  },
+  {
+    "journeyId": "family-groups",
+    "stepIndex": 2,
+    "filename": "family-groups-step-2.png"
+  },
+  {
+    "journeyId": "family-groups",
+    "stepIndex": 3,
+    "filename": "family-groups-step-3.png"
+  },
+  {
+    "journeyId": "family-groups",
+    "stepIndex": 4,
+    "filename": "family-groups-step-4.png"
+  },
+  {
+    "journeyId": "family-groups",
+    "stepIndex": 5,
+    "filename": "family-groups-step-5.png"
+  },
+  {
+    "journeyId": "privacy-settings",
+    "stepIndex": 0,
+    "filename": "privacy-settings-step-0.png"
+  },
+  {
+    "journeyId": "privacy-settings",
+    "stepIndex": 1,
+    "filename": "privacy-settings-step-1.png"
+  },
+  {
+    "journeyId": "privacy-settings",
+    "stepIndex": 2,
+    "filename": "privacy-settings-step-2.png"
+  },
+  {
+    "journeyId": "privacy-settings",
+    "stepIndex": 3,
+    "filename": "privacy-settings-step-3.png"
+  },
+  {
+    "journeyId": "privacy-settings",
+    "stepIndex": 4,
+    "filename": "privacy-settings-step-4.png"
+  },
+  {
+    "journeyId": "privacy-settings",
+    "stepIndex": 5,
+    "filename": "privacy-settings-step-5.png"
+  },
+  {
+    "journeyId": "leave-group",
+    "stepIndex": 0,
+    "filename": "leave-group-step-0.png"
+  },
+  {
+    "journeyId": "leave-group",
+    "stepIndex": 1,
+    "filename": "leave-group-step-1.png"
+  },
+  {
+    "journeyId": "leave-group",
+    "stepIndex": 2,
+    "filename": "leave-group-step-2.png"
+  },
+  {
+    "journeyId": "leave-group",
+    "stepIndex": 3,
+    "filename": "leave-group-step-3.png"
+  },
+  {
+    "journeyId": "leave-group",
+    "stepIndex": 4,
+    "filename": "leave-group-step-4.png"
+  }
+]

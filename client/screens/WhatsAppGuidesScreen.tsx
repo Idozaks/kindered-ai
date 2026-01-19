@@ -26,7 +26,8 @@ import { GlassButton } from "@/components/GlassButton";
 import { GlassCard } from "@/components/GlassCard";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius, Typography } from "@/constants/theme";
-import { whatsappJourneys, Journey } from "@/data/whatsappJourneys";
+import { whatsappJourneys, Journey, getStepImage } from "@/data/whatsappJourneys";
+import { Image } from "expo-image";
 
 const WHATSAPP_GREEN = "#25D366";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -192,6 +193,7 @@ export default function WhatsAppGuidesScreen() {
     if (!selectedJourney) return null;
 
     const step = selectedJourney.steps[currentStep];
+    const stepImage = getStepImage(selectedJourney.id, currentStep);
     const isFirstStep = currentStep === 0;
     const isLastStep = currentStep === selectedJourney.steps.length - 1;
 
@@ -243,13 +245,27 @@ export default function WhatsAppGuidesScreen() {
           </ThemedText>
         </View>
 
-        <View style={styles.stepContentContainer}>
+        <ScrollView
+          style={styles.stepScrollView}
+          contentContainerStyle={styles.stepScrollContent}
+          showsVerticalScrollIndicator={false}
+        >
           <Animated.View
             key={currentStep}
             entering={SlideInRight.duration(300)}
             exiting={SlideOutLeft.duration(200)}
             style={styles.stepContent}
           >
+            {stepImage ? (
+              <View style={styles.stepImageContainer}>
+                <Image
+                  source={stepImage}
+                  style={styles.stepImage}
+                  contentFit="contain"
+                  transition={200}
+                />
+              </View>
+            ) : null}
             <GlassCard style={styles.stepCard}>
               <View style={styles.stepNumberBadge}>
                 <View
@@ -290,7 +306,7 @@ export default function WhatsAppGuidesScreen() {
               ) : null}
             </GlassCard>
           </Animated.View>
-        </View>
+        </ScrollView>
 
         <View style={styles.navigationButtons}>
           <GlassButton
@@ -450,15 +466,28 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 16,
   },
-  stepContentContainer: {
+  stepScrollView: {
     flex: 1,
+  },
+  stepScrollContent: {
+    flexGrow: 1,
     justifyContent: "center",
+    paddingVertical: Spacing.md,
   },
   stepContent: {
     width: "100%",
   },
+  stepImageContainer: {
+    alignItems: "center",
+    marginBottom: Spacing.lg,
+  },
+  stepImage: {
+    width: SCREEN_WIDTH - Spacing.lg * 2,
+    height: 200,
+    borderRadius: BorderRadius.lg,
+  },
   stepCard: {
-    minHeight: 200,
+    minHeight: 120,
   },
   stepNumberBadge: {
     marginBottom: Spacing.lg,
