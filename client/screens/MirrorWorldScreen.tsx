@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { StyleSheet, View, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
@@ -28,58 +28,13 @@ interface PracticeTask {
   steps: string[];
 }
 
-  const PRACTICE_TASKS: PracticeTask[] = [
-    {
-      id: "grocery",
-      title: t("mirrorWorld.tasks.grocery"),
-      description: t("mirrorWorld.intro"),
-      icon: "shopping-cart",
-      color: "#52C41A",
-      steps: [
-        t("mirrorWorld.stepProgress", { current: 1, total: 5 }),
-        t("mirrorWorld.stepProgress", { current: 2, total: 5 }),
-        t("mirrorWorld.stepProgress", { current: 3, total: 5 }),
-        t("mirrorWorld.stepProgress", { current: 4, total: 5 }),
-        t("mirrorWorld.stepProgress", { current: 5, total: 5 }),
-      ],
-    },
-    {
-      id: "videocall",
-      title: t("mirrorWorld.tasks.videocall"),
-      description: t("mirrorWorld.intro"),
-      icon: "video",
-      color: "#5B9BD5",
-      steps: [
-        t("mirrorWorld.stepProgress", { current: 1, total: 5 }),
-        t("mirrorWorld.stepProgress", { current: 2, total: 5 }),
-        t("mirrorWorld.stepProgress", { current: 3, total: 5 }),
-        t("mirrorWorld.stepProgress", { current: 4, total: 5 }),
-        t("mirrorWorld.stepProgress", { current: 5, total: 5 }),
-      ],
-    },
-    {
-      id: "email",
-      title: t("mirrorWorld.tasks.email"),
-      description: t("mirrorWorld.intro"),
-      icon: "mail",
-      color: "#F4B942",
-      steps: [
-        t("mirrorWorld.stepProgress", { current: 1, total: 5 }),
-        t("mirrorWorld.stepProgress", { current: 2, total: 5 }),
-        t("mirrorWorld.stepProgress", { current: 3, total: 5 }),
-        t("mirrorWorld.stepProgress", { current: 4, total: 5 }),
-        t("mirrorWorld.stepProgress", { current: 5, total: 5 }),
-      ],
-    },
-  ];
-
 export default function MirrorWorldScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const { theme } = useTheme();
   const { t } = useTranslation();
 
-  const PRACTICE_TASKS: PracticeTask[] = [
+  const PRACTICE_TASKS: PracticeTask[] = useMemo(() => [
     {
       id: "grocery",
       title: t("mirrorWorld.tasks.grocery"),
@@ -87,11 +42,11 @@ export default function MirrorWorldScreen() {
       icon: "shopping-cart",
       color: "#52C41A",
       steps: [
-        "Open the grocery app",
-        "Search for items you need",
-        "Add items to your cart",
-        "Review your cart",
-        "Complete checkout",
+        t("mirrorWorld.tasks.groceryStep1"),
+        t("mirrorWorld.tasks.groceryStep2"),
+        t("mirrorWorld.tasks.groceryStep3"),
+        t("mirrorWorld.tasks.groceryStep4"),
+        t("mirrorWorld.tasks.groceryStep5"),
       ],
     },
     {
@@ -101,11 +56,11 @@ export default function MirrorWorldScreen() {
       icon: "video",
       color: "#5B9BD5",
       steps: [
-        "Open the video call app",
-        "Find your contact",
-        "Tap the video call button",
-        "Wait for them to answer",
-        "End the call when finished",
+        t("mirrorWorld.tasks.videoStep1"),
+        t("mirrorWorld.tasks.videoStep2"),
+        t("mirrorWorld.tasks.videoStep3"),
+        t("mirrorWorld.tasks.videoStep4"),
+        t("mirrorWorld.tasks.videoStep5"),
       ],
     },
     {
@@ -115,14 +70,14 @@ export default function MirrorWorldScreen() {
       icon: "mail",
       color: "#F4B942",
       steps: [
-        "Open your email app",
-        "Tap 'Compose' or the + button",
-        "Enter the recipient's email",
-        "Write your message",
-        "Tap Send",
+        t("mirrorWorld.tasks.emailStep1"),
+        t("mirrorWorld.tasks.emailStep2"),
+        t("mirrorWorld.tasks.emailStep3"),
+        t("mirrorWorld.tasks.emailStep4"),
+        t("mirrorWorld.tasks.emailStep5"),
       ],
     },
-  ];
+  ], [t]);
 
   const [selectedTask, setSelectedTask] = useState<PracticeTask | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
