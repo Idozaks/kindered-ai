@@ -20,6 +20,8 @@ export const Colors = {
     glassBg: "rgba(255, 255, 255, 0.75)",
     glassBorder: "rgba(255, 255, 255, 0.5)",
     glassOverlay: "rgba(91, 155, 213, 0.1)",
+    border: "#E0E0E0",
+    card: "#FFFFFF",
   },
   dark: {
     text: "#ECEDEE",
@@ -40,6 +42,8 @@ export const Colors = {
     glassBg: "rgba(37, 37, 66, 0.85)",
     glassBorder: "rgba(91, 155, 213, 0.3)",
     glassOverlay: "rgba(91, 155, 213, 0.15)",
+    border: "#3A3A5A",
+    card: "#2D2D4A",
   },
 };
 
