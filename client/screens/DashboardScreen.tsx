@@ -25,6 +25,8 @@ import monitorIcon from "@/assets/images/monitor-tool.png";
 import letterIcon from "@/assets/images/letter-tool.png";
 // @ts-ignore
 import mirrorIcon from "@/assets/images/mirror-tool.png";
+// @ts-ignore
+import whatsappIcon from "@/assets/images/whatsapp-tool.png";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -58,6 +60,13 @@ export default function DashboardScreen() {
       image: mirrorIcon,
       color: "#9B59B6",
     },
+    {
+      id: "whatsapp",
+      title: t("tools.whatsapp.title"),
+      description: t("tools.whatsapp.description"),
+      image: whatsappIcon,
+      color: "#25D366",
+    },
   ];
 
   const handleToolPress = useCallback(
@@ -71,6 +80,9 @@ export default function DashboardScreen() {
           break;
         case "mirror":
           navigation.navigate("MirrorWorld");
+          break;
+        case "whatsapp":
+          navigation.navigate("WhatsAppGuides");
           break;
       }
     },

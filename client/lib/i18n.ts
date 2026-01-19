@@ -23,6 +23,10 @@ const resources = {
           title: "Practice Area",
           description: "Learn Safely",
         },
+        whatsapp: {
+          title: "WhatsApp Guides",
+          description: "Step-by-step help",
+        },
       },
       settings: {
         title: "Settings",
@@ -215,6 +219,10 @@ const resources = {
         mirror: {
           title: "אזור תרגול",
           description: "למד בבטחה",
+        },
+        whatsapp: {
+          title: "מדריכי וואטסאפ",
+          description: "עזרה צעד אחר צעד",
         },
       },
       settings: {

@@ -8,6 +8,7 @@ import SettingsScreen from "@/screens/SettingsScreen";
 import GrandchildModeScreen from "@/screens/GrandchildModeScreen";
 import LetterHelperScreen from "@/screens/LetterHelperScreen";
 import MirrorWorldScreen from "@/screens/MirrorWorldScreen";
+import WhatsAppGuidesScreen from "@/screens/WhatsAppGuidesScreen";
 import { HeaderTitle } from "@/components/HeaderTitle";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useTheme } from "@/hooks/useTheme";
@@ -18,6 +19,7 @@ export type RootStackParamList = {
   GrandchildMode: undefined;
   LetterHelper: undefined;
   MirrorWorld: undefined;
+  WhatsAppGuides: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -70,6 +72,13 @@ export default function RootStackNavigator() {
         component={MirrorWorldScreen}
         options={{
           headerTitle: "Practice Zone",
+        }}
+      />
+      <Stack.Screen
+        name="WhatsAppGuides"
+        component={WhatsAppGuidesScreen}
+        options={{
+          headerTitle: "WhatsApp Guides",
         }}
       />
     </Stack.Navigator>
