@@ -354,44 +354,44 @@ function StepCard({
   const { t } = useTranslation();
   const isRTL = i18n.language === "he";
 
+  const handleCardPress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onPress();
+  };
+
+  const handleCompletePress = (event?: { stopPropagation?: () => void }) => {
+    if (event?.stopPropagation) {
+      event.stopPropagation();
+    }
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    onComplete();
+  };
+
   return (
     <Animated.View layout={Layout.springify()} entering={FadeInDown.delay(index * 100)}>
-      <Pressable onPress={onPress}>
-        <GlassCard
-          style={StyleSheet.flatten([
-            styles.stepCard,
-            isCompleted && { borderColor: theme.success, borderWidth: 2 },
-          ])}
-        >
+      <GlassCard
+        onPress={handleCardPress}
+        testID={`step-card-${step.id}`}
+        style={StyleSheet.flatten([
+          styles.stepCard,
+          isCompleted && { borderColor: theme.success, borderWidth: 2 },
+          isExpanded && { borderColor: theme.primary, borderWidth: 2 },
+        ])}
+      >
           <View style={[styles.stepHeader, isRTL && { flexDirection: "row-reverse" }]}>
-            <View
-              style={[
-                styles.stepNumber,
-                {
-                  backgroundColor: isCompleted
-                    ? theme.success
-                    : theme.primary + "20",
-                },
-                isRTL ? { marginLeft: Spacing.md, marginRight: 0 } : { marginRight: Spacing.md },
-              ]}
-            >
-              {isCompleted ? (
-                <Feather name="check" size={20} color="#FFFFFF" />
-              ) : (
-                <Feather 
-                  name={(step.icon as keyof typeof Feather.glyphMap) || "circle"} 
-                  size={20} 
-                  color={theme.primary} 
-                />
-              )}
-            </View>
+            <Feather
+              name={isExpanded ? "chevron-up" : "chevron-down"}
+              size={24}
+              color={isExpanded ? theme.primary : theme.textSecondary}
+              style={isRTL ? { marginLeft: Spacing.sm } : { marginRight: Spacing.sm }}
+            />
             <View style={[styles.stepTextContainer, { alignItems: isRTL ? "flex-end" : "flex-start" }]}>
               <ThemedText
                 type="body"
                 style={[
                   styles.stepTitle,
                   { textAlign: isRTL ? "right" : "left" },
-                  isCompleted && { textDecorationLine: "line-through" },
+                  isCompleted && { textDecorationLine: "line-through", color: theme.textSecondary },
                 ]}
               >
                 {step.title}
@@ -403,11 +403,26 @@ function StepCard({
                 {step.description}
               </ThemedText>
             </View>
-            <Feather
-              name={isExpanded ? "chevron-up" : "chevron-down"}
-              size={24}
-              color={theme.textSecondary}
-            />
+            <Pressable 
+              onPress={(e) => handleCompletePress(e)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              style={isRTL ? { marginRight: Spacing.sm } : { marginLeft: Spacing.sm }}
+              testID={`complete-checkbox-${step.id}`}
+            >
+              <View
+                style={[
+                  styles.stepCheckbox,
+                  {
+                    backgroundColor: isCompleted ? theme.success : "transparent",
+                    borderColor: isCompleted ? theme.success : theme.primary,
+                  },
+                ]}
+              >
+                {isCompleted ? (
+                  <Feather name="check" size={18} color="#FFFFFF" />
+                ) : null}
+              </View>
+            </Pressable>
           </View>
 
           {isExpanded ? (
@@ -417,26 +432,27 @@ function StepCard({
             >
               <View
                 style={[
-                  styles.adviceCard,
-                  { backgroundColor: theme.secondary + "15" },
+                  styles.tipCard,
+                  { backgroundColor: theme.primary + "10", borderLeftColor: theme.primary },
+                  isRTL && { borderLeftWidth: 0, borderRightWidth: 4, borderRightColor: theme.primary },
                 ]}
               >
-                <View style={[styles.adviceHeader, isRTL && { flexDirection: "row-reverse" }]}>
-                  <Feather name="message-circle" size={18} color={theme.secondary} />
+                <View style={[styles.tipHeader, isRTL && { flexDirection: "row-reverse" }]}>
+                  <Feather name="zap" size={20} color={theme.primary} />
                   <ThemedText
                     type="small"
                     style={[
-                      styles.adviceLabel,
-                      { color: theme.secondary },
+                      styles.tipLabel,
+                      { color: theme.primary },
                       isRTL ? { marginRight: Spacing.sm, marginLeft: 0 } : { marginLeft: Spacing.sm },
                     ]}
                   >
-                    {t("navigator.doriAdvice")}
+                    {isRTL ? "טיפ מועיל" : "Helpful Tip"}
                   </ThemedText>
                 </View>
                 <ThemedText 
                   type="body" 
-                  style={[styles.adviceText, { textAlign: isRTL ? "right" : "left" }]}
+                  style={[styles.tipText, { textAlign: isRTL ? "right" : "left" }]}
                 >
                   {step.doriAdvice}
                 </ThemedText>
@@ -448,25 +464,38 @@ function StepCard({
                     variant="secondary"
                     onPress={() => {}}
                     icon={<Feather name="play-circle" size={18} color={theme.primary} />}
-                    style={styles.sandboxButton}
+                    style={styles.actionButton}
                   >
                     {t("navigator.practiceButton")}
                   </GlassButton>
                 ) : null}
                 {!isCompleted ? (
                   <GlassButton
-                    onPress={onComplete}
+                    onPress={handleCompletePress}
                     icon={<Feather name="check" size={18} color="#FFFFFF" />}
-                    testID={`complete-step-${step.id}`}
+                    style={styles.actionButton}
+                    testID={`mark-done-${step.id}`}
                   >
-                    {t("common.done")}
+                    {isRTL ? "סיימתי שלב זה" : "Mark as Done"}
                   </GlassButton>
-                ) : null}
+                ) : (
+                  <View style={[styles.completedBadge, { backgroundColor: theme.success + "20" }]}>
+                    <Feather name="check-circle" size={18} color={theme.success} />
+                    <ThemedText 
+                      type="small" 
+                      style={[
+                        { color: theme.success, fontWeight: "600" },
+                        isRTL ? { marginRight: Spacing.sm } : { marginLeft: Spacing.sm }
+                      ]}
+                    >
+                      {isRTL ? "הושלם!" : "Completed!"}
+                    </ThemedText>
+                  </View>
+                )}
               </View>
             </Animated.View>
           ) : null}
-        </GlassCard>
-      </Pressable>
+      </GlassCard>
     </Animated.View>
   );
 }
@@ -576,12 +605,46 @@ const styles = StyleSheet.create({
   adviceText: {
     lineHeight: 28,
   },
+  stepCheckbox: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 2,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  tipCard: {
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    borderLeftWidth: 4,
+  },
+  tipHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: Spacing.sm,
+  },
+  tipLabel: {
+    fontWeight: "700",
+  },
+  tipText: {
+    lineHeight: 26,
+    fontSize: 16,
+  },
   stepActions: {
     flexDirection: "row",
     gap: Spacing.md,
+    flexWrap: "wrap",
   },
-  sandboxButton: {
+  actionButton: {
     flex: 1,
+    minWidth: 140,
+  },
+  completedBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.md,
   },
   backButton: {
     marginTop: Spacing.md,
