@@ -192,6 +192,117 @@ export default function MirrorWorldScreen() {
   const [currentStep, setCurrentStep] = useState(0);
   const [completed, setCompleted] = useState(false);
 
+  const handleSelectTask = (task: PracticeTask) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setSelectedTask(task);
+    setCurrentStep(0);
+    setCompleted(false);
+  };
+
+  const handleNextStep = () => {
+    if (!selectedTask) return;
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    if (currentStep < selectedTask.steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      setCompleted(true);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+  };
+
+  const handleRestart = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setCurrentStep(0);
+    setCompleted(false);
+  };
+
+  const handleBack = () => {
+    setSelectedTask(null);
+    setCurrentStep(0);
+    setCompleted(false);
+  };
+
+  const renderSimulation = () => {
+    if (!selectedTask) return null;
+
+    switch (selectedTask.id) {
+      case "videocall":
+        return (
+          <VideoCallSimulation 
+            stepIndex={currentStep} 
+            onComplete={handleNextStep} 
+          />
+        );
+      case "grocery":
+        return (
+          <GrocerySimulation 
+            stepIndex={currentStep} 
+            onComplete={handleNextStep} 
+          />
+        );
+      case "email":
+        return (
+          <EmailSimulation 
+            stepIndex={currentStep} 
+            onComplete={handleNextStep} 
+          />
+        );
+      case "whatsapp":
+        return (
+          <WhatsAppSimulation 
+            stepIndex={currentStep} 
+            onComplete={handleNextStep} 
+          />
+        );
+      case "bank":
+        return (
+          <BankSimulation 
+            stepIndex={currentStep} 
+            onComplete={handleNextStep} 
+          />
+        );
+      case "doctor":
+        return (
+          <DoctorSimulation 
+            stepIndex={currentStep} 
+            onComplete={handleNextStep} 
+          />
+        );
+      case "settings":
+        return (
+          <SettingsSimulation 
+            stepIndex={currentStep} 
+            onComplete={handleNextStep} 
+          />
+        );
+      case "taxi":
+        return (
+          <TaxiSimulation 
+            stepIndex={currentStep} 
+            onComplete={handleNextStep} 
+          />
+        );
+      case "photos":
+        return (
+          <PhotosSimulation 
+            stepIndex={currentStep} 
+            onComplete={handleNextStep} 
+          />
+        );
+      case "calendar":
+        return (
+          <CalendarSimulation 
+            stepIndex={currentStep} 
+            onComplete={handleNextStep} 
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   const renderTaskItem = ({ item, index }: { item: PracticeTask; index: number }) => (
     <Animated.View
       key={item.id}
