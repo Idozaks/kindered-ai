@@ -68,7 +68,11 @@ const EXAMPLE_PATHS: Record<string, GeneratedPath> = {
   },
 };
 
+import i18n from "@/lib/i18n";
+import { apiRequest } from "@/lib/query-client";
+
 export default function DecisionNavigatorScreen() {
+  const isRTL = i18n.language === "he";
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const { theme } = useTheme();
@@ -85,37 +89,86 @@ export default function DecisionNavigatorScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setIsLoading(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    // Call real AI for steps
+    try {
+      const response = await apiRequest("POST", "/api/ai/decision-help", {
+        goal: query,
+      });
+      const data = await response.json();
+      
+      // Parse steps from AI response (expecting a numbered list)
+      const aiSteps = data.response.split('\n')
+        .filter((line: string) => line.trim().match(/^\d+\./))
+        .map((line: string, index: number) => {
+          const content = line.replace(/^\d+\.\s*/, "").trim();
+          return {
+            id: String(index + 1),
+            title: content,
+            description: i18n.language === 'he' ? "לחץ למידע נוסף" : "Tap for more details",
+            doriAdvice: content,
+            hasSandbox: false,
+          };
+        });
 
-    const lowerQuery = query.toLowerCase();
-    if (lowerQuery.includes("passport")) {
-      setCurrentPath(EXAMPLE_PATHS.passport);
-    } else {
+      if (aiSteps.length > 0) {
+        setCurrentPath({
+          title: query,
+          steps: aiSteps,
+        });
+      } else {
+        // Fallback if AI response isn't formatted as expected
+        setCurrentPath({
+          title: query,
+          steps: [
+            {
+              id: "1",
+              title: i18n.language === 'he' ? "לחקור את האפשרויות" : "Research your options",
+              description: i18n.language === 'he' ? "ללמוד מה מעורב בתהליך" : "Learn about what's involved",
+              doriAdvice: i18n.language === 'he' ? "התחל בלהבין מה אתה צריך. זה כמו לקרוא מתכון לפני הבישול." : "Start by understanding what you need. It's like reading a recipe before cooking.",
+              hasSandbox: false,
+            },
+            {
+              id: "2",
+              title: i18n.language === 'he' ? "להכין את החומרים" : "Prepare your materials",
+              description: i18n.language === 'he' ? "לאסוף את כל מה שתצטרך" : "Gather everything you'll need",
+              doriAdvice: i18n.language === 'he' ? "הכן הכל מראש, כמו להכין בגדים ערב לפני." : "Get everything ready beforehand, like setting out clothes the night before.",
+              hasSandbox: false,
+            },
+            {
+              id: "3",
+              title: i18n.language === 'he' ? "לקחת את הצעד הראשון" : "Take the first step",
+              description: i18n.language === 'he' ? "להתחיל בתהליך" : "Begin the process",
+              doriAdvice: i18n.language === 'he' ? "החלק הכי קשה הוא להתחיל. ברגע שמתחילים, השאר מגיע בטבעיות." : "The hardest part is starting. Once you begin, the rest follows naturally.",
+              hasSandbox: true,
+            },
+          ],
+        });
+      }
+    } catch (error) {
+      console.error("Failed to get AI steps:", error);
+      // Fallback on error
       setCurrentPath({
         title: query,
         steps: [
           {
             id: "1",
-            title: "Research your options",
-            description: "Learn about what's involved",
-            doriAdvice:
-              "Start by understanding what you need. It's like reading a recipe before cooking.",
+            title: i18n.language === 'he' ? "לחקור את האפשרויות" : "Research your options",
+            description: i18n.language === 'he' ? "ללמוד מה מעורב בתהליך" : "Learn about what's involved",
+            doriAdvice: i18n.language === 'he' ? "התחל בלהבין מה אתה צריך. זה כמו לקרוא מתכון לפני הבישול." : "Start by understanding what you need. It's like reading a recipe before cooking.",
             hasSandbox: false,
           },
           {
             id: "2",
-            title: "Prepare your materials",
-            description: "Gather everything you'll need",
-            doriAdvice:
-              "Get everything ready beforehand, like setting out clothes the night before.",
+            title: i18n.language === 'he' ? "להכין את החומרים" : "Prepare your materials",
+            description: i18n.language === 'he' ? "לאסוף את כל מה שתצטרך" : "Gather everything you'll need",
+            doriAdvice: i18n.language === 'he' ? "הכן הכל מראש, כמו להכין בגדים ערב לפני." : "Get everything ready beforehand, like setting out clothes the night before.",
             hasSandbox: false,
           },
           {
             id: "3",
-            title: "Take the first step",
-            description: "Begin the process",
-            doriAdvice:
-              "The hardest part is starting. Once you begin, the rest follows naturally.",
+            title: i18n.language === 'he' ? "לקחת את הצעד הראשון" : "Take the first step",
+            description: i18n.language === 'he' ? "להתחיל בתהליך" : "Begin the process",
+            doriAdvice: i18n.language === 'he' ? "החלק הכי קשה הוא להתחיל. ברגע שמתחילים, השאר מגיע בטבעיות." : "The hardest part is starting. Once you begin, the rest follows naturally.",
             hasSandbox: true,
           },
         ],
@@ -225,7 +278,7 @@ export default function DecisionNavigatorScreen() {
               {currentPath.title}
             </ThemedText>
 
-            <View style={styles.progressBar}>
+            <View style={[styles.progressBar, isRTL && { transform: [{ scaleX: -1 }] }]}>
               <View
                 style={[
                   styles.progressFill,
@@ -238,9 +291,13 @@ export default function DecisionNavigatorScreen() {
             </View>
             <ThemedText
               type="small"
-              style={[styles.progressText, { color: theme.textSecondary }]}
+              style={[
+                styles.progressText,
+                { color: theme.textSecondary, textAlign: isRTL ? "right" : "left" },
+              ]}
             >
-              {completedSteps.length} / {currentPath.steps.length} steps completed
+              {completedSteps.length} / {currentPath.steps.length}{" "}
+              {isRTL ? "שלבים הושלמו" : "steps completed"}
             </ThemedText>
 
             <FlatList
@@ -295,6 +352,7 @@ function StepCard({
 }: StepCardProps) {
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const isRTL = i18n.language === "he";
 
   return (
     <Animated.View layout={Layout.springify()} entering={FadeInDown.delay(index * 100)}>
@@ -305,7 +363,7 @@ function StepCard({
             isCompleted && { borderColor: theme.success, borderWidth: 2 },
           ]}
         >
-          <View style={styles.stepHeader}>
+          <View style={[styles.stepHeader, isRTL && { flexDirection: "row-reverse" }]}>
             <View
               style={[
                 styles.stepNumber,
@@ -314,6 +372,7 @@ function StepCard({
                     ? theme.success
                     : theme.primary + "20",
                 },
+                isRTL ? { marginLeft: Spacing.md, marginRight: 0 } : { marginRight: Spacing.md },
               ]}
             >
               {isCompleted ? (
@@ -324,11 +383,12 @@ function StepCard({
                 </ThemedText>
               )}
             </View>
-            <View style={styles.stepTextContainer}>
+            <View style={[styles.stepTextContainer, { alignItems: isRTL ? "flex-end" : "flex-start" }]}>
               <ThemedText
                 type="body"
                 style={[
                   styles.stepTitle,
+                  { textAlign: isRTL ? "right" : "left" },
                   isCompleted && { textDecorationLine: "line-through" },
                 ]}
               >
@@ -336,7 +396,7 @@ function StepCard({
               </ThemedText>
               <ThemedText
                 type="small"
-                style={{ color: theme.textSecondary }}
+                style={{ color: theme.textSecondary, textAlign: isRTL ? "right" : "left" }}
               >
                 {step.description}
               </ThemedText>
@@ -359,21 +419,28 @@ function StepCard({
                   { backgroundColor: theme.secondary + "15" },
                 ]}
               >
-                <View style={styles.adviceHeader}>
+                <View style={[styles.adviceHeader, isRTL && { flexDirection: "row-reverse" }]}>
                   <Feather name="message-circle" size={18} color={theme.secondary} />
                   <ThemedText
                     type="small"
-                    style={[styles.adviceLabel, { color: theme.secondary }]}
+                    style={[
+                      styles.adviceLabel,
+                      { color: theme.secondary },
+                      isRTL ? { marginRight: Spacing.sm, marginLeft: 0 } : { marginLeft: Spacing.sm },
+                    ]}
                   >
                     {t("navigator.doriAdvice")}
                   </ThemedText>
                 </View>
-                <ThemedText type="body" style={styles.adviceText}>
+                <ThemedText 
+                  type="body" 
+                  style={[styles.adviceText, { textAlign: isRTL ? "right" : "left" }]}
+                >
                   {step.doriAdvice}
                 </ThemedText>
               </View>
 
-              <View style={styles.stepActions}>
+              <View style={[styles.stepActions, isRTL && { flexDirection: "row-reverse" }]}>
                 {step.hasSandbox ? (
                   <GlassButton
                     variant="secondary"
@@ -448,6 +515,7 @@ const styles = StyleSheet.create({
   },
   pathTitle: {
     marginBottom: Spacing.lg,
+    textAlign: "center",
   },
   progressBar: {
     height: 8,
