@@ -2,6 +2,7 @@ import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Pressable } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 import DashboardScreen from "@/screens/DashboardScreen";
 import SettingsScreen from "@/screens/SettingsScreen";
@@ -25,6 +26,7 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootStackNavigator() {
+  const { t } = useTranslation();
   const screenOptions = useScreenOptions();
   const { theme } = useTheme();
 
@@ -34,7 +36,7 @@ export default function RootStackNavigator() {
         name="Dashboard"
         component={DashboardScreen}
         options={({ navigation }) => ({
-          headerTitle: () => <HeaderTitle title="Kindred AI" />,
+          headerTitle: () => <HeaderTitle title={t("appName")} />,
           headerRight: () => (
             <Pressable
               onPress={() => navigation.navigate("Settings")}
@@ -50,35 +52,35 @@ export default function RootStackNavigator() {
         name="Settings"
         component={SettingsScreen}
         options={{
-          headerTitle: "Settings",
+          headerTitle: t("settings.title"),
         }}
       />
       <Stack.Screen
         name="GrandchildMode"
         component={GrandchildModeScreen}
         options={{
-          headerTitle: "Grandchild Mode",
+          headerTitle: t("grandchildMode.title"),
         }}
       />
       <Stack.Screen
         name="LetterHelper"
         component={LetterHelperScreen}
         options={{
-          headerTitle: "Letter Helper",
+          headerTitle: t("letterHelper.title"),
         }}
       />
       <Stack.Screen
         name="MirrorWorld"
         component={MirrorWorldScreen}
         options={{
-          headerTitle: "Practice Zone",
+          headerTitle: t("mirrorWorld.title"),
         }}
       />
       <Stack.Screen
         name="WhatsAppGuides"
         component={WhatsAppGuidesScreen}
         options={{
-          headerTitle: "WhatsApp Guides",
+          headerTitle: t("tools.whatsapp.title"),
         }}
       />
     </Stack.Navigator>
