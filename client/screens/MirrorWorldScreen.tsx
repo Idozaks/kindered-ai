@@ -46,7 +46,7 @@ export default function MirrorWorldScreen() {
       id: "grocery",
       title: t("mirrorWorld.tasks.grocery"),
       description: t("mirrorWorld.intro"),
-      icon: "shopping-cart",
+      icon: "🛒",
       color: "#52C41A",
       steps: [
         t("mirrorWorld.tasks.groceryStep1"),
@@ -60,7 +60,7 @@ export default function MirrorWorldScreen() {
       id: "videocall",
       title: t("mirrorWorld.tasks.videocall"),
       description: t("mirrorWorld.intro"),
-      icon: "video",
+      icon: "📹",
       color: "#5B9BD5",
       steps: [
         t("mirrorWorld.tasks.videoStep1"),
@@ -74,7 +74,7 @@ export default function MirrorWorldScreen() {
       id: "email",
       title: t("mirrorWorld.tasks.email"),
       description: t("mirrorWorld.intro"),
-      icon: "mail",
+      icon: "✉️",
       color: "#F4B942",
       steps: [
         t("mirrorWorld.tasks.emailStep1"),
@@ -88,7 +88,7 @@ export default function MirrorWorldScreen() {
       id: "whatsapp",
       title: t("mirrorWorld.tasks.whatsapp"),
       description: t("mirrorWorld.intro"),
-      icon: "message-circle",
+      icon: "💬",
       color: "#25D366",
       steps: [
         t("mirrorWorld.tasks.whatsappStep1"),
@@ -102,7 +102,7 @@ export default function MirrorWorldScreen() {
       id: "bank",
       title: t("mirrorWorld.tasks.bank"),
       description: t("mirrorWorld.intro"),
-      icon: "credit-card",
+      icon: "🏦",
       color: "#1E88E5",
       steps: [
         t("mirrorWorld.tasks.bankStep1"),
@@ -116,7 +116,7 @@ export default function MirrorWorldScreen() {
       id: "doctor",
       title: t("mirrorWorld.tasks.doctor"),
       description: t("mirrorWorld.intro"),
-      icon: "plus-square",
+      icon: "👨‍⚕️",
       color: "#E91E63",
       steps: [
         t("mirrorWorld.tasks.doctorStep1"),
@@ -129,7 +129,7 @@ export default function MirrorWorldScreen() {
       id: "settings",
       title: t("mirrorWorld.tasks.settings"),
       description: t("mirrorWorld.intro"),
-      icon: "settings",
+      icon: "⚙️",
       color: "#9B59B6",
       steps: [
         t("mirrorWorld.tasks.settingsStep1"),
@@ -142,7 +142,7 @@ export default function MirrorWorldScreen() {
       id: "taxi",
       title: t("mirrorWorld.tasks.taxi"),
       description: t("mirrorWorld.intro"),
-      icon: "truck",
+      icon: "🚕",
       color: "#FF9500",
       steps: [
         t("mirrorWorld.tasks.taxiStep1"),
@@ -158,7 +158,7 @@ export default function MirrorWorldScreen() {
       id: "photos",
       title: t("mirrorWorld.tasks.photos"),
       description: t("mirrorWorld.intro"),
-      icon: "image",
+      icon: "📸",
       color: "#52C41A",
       steps: [
         t("mirrorWorld.tasks.photosStep1"),
@@ -174,7 +174,7 @@ export default function MirrorWorldScreen() {
       id: "calendar",
       title: t("mirrorWorld.tasks.calendar"),
       description: t("mirrorWorld.intro"),
-      icon: "calendar",
+      icon: "📅",
       color: "#FF3B30",
       steps: [
         t("mirrorWorld.tasks.calendarStep1"),
@@ -315,7 +315,7 @@ export default function MirrorWorldScreen() {
         testID={`task-${item.id}`}
       >
         <View style={[styles.taskIconCircle, { backgroundColor: item.color + "20" }]}>
-          <Feather name={item.icon as any} size={32} color={item.color} />
+          <ThemedText style={{ fontSize: 32 }}>{item.icon}</ThemedText>
         </View>
         <ThemedText type="body" style={styles.taskTitleText}>{item.title}</ThemedText>
       </GlassCard>
@@ -344,7 +344,7 @@ export default function MirrorWorldScreen() {
                   { backgroundColor: "#9B59B6" + "20" },
                 ]}
               >
-                <Feather name="play-circle" size={48} color="#9B59B6" />
+                <ThemedText style={{ fontSize: 48 }}>🎮</ThemedText>
               </View>
               <ThemedText type="h2" style={styles.title}>
                 {t("mirrorWorld.title")}
@@ -388,7 +388,7 @@ export default function MirrorWorldScreen() {
                 { backgroundColor: theme.success + "20" },
               ]}
             >
-              <Feather name="star" size={80} color={theme.success} />
+              <ThemedText style={{ fontSize: 80 }}>✨</ThemedText>
             </View>
             <ThemedText type="h2" style={styles.successTitle}>
               {t("mirrorWorld.success")}
@@ -404,14 +404,14 @@ export default function MirrorWorldScreen() {
               <GlassButton
                 variant="secondary"
                 onPress={handleRestart}
-                icon={<Feather name="refresh-cw" size={20} color={theme.text} />}
+                icon={<ThemedText style={{ fontSize: 20 }}>🔄</ThemedText>}
                 style={styles.actionButton}
               >
                 {t("mirrorWorld.tryAgain")}
               </GlassButton>
               <GlassButton
                 onPress={handleBack}
-                icon={<Feather name="arrow-left" size={20} color="#FFFFFF" />}
+                icon={<ThemedText style={{ fontSize: 20 }}>⬅️</ThemedText>}
                 style={styles.actionButton}
               >
                 {t("common.back")}
@@ -439,7 +439,7 @@ export default function MirrorWorldScreen() {
                   { backgroundColor: selectedTask.color + "20" },
                 ]}
               >
-                <Feather name={selectedTask.icon as any} size={32} color={selectedTask.color} />
+                <ThemedText style={{ fontSize: 32 }}>{selectedTask.icon}</ThemedText>
               </View>
               <ThemedText type="h3">{selectedTask.title}</ThemedText>
             </View>

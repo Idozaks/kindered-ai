@@ -368,7 +368,7 @@ export default function GrandchildModeScreen() {
             ) : null}
           </ScrollView>
 
-          <View style={[styles.inputArea, { paddingBottom: insets.bottom + Spacing.md, backgroundColor: theme.backgroundDefault }]}>
+          <View style={[styles.inputArea, { paddingBottom: insets.bottom + Spacing.md, backgroundColor: theme.background }]}>
             {attachedImage ? (
               <View style={styles.attachedImageContainer}>
                 <Image source={{ uri: attachedImage }} style={styles.attachedImage} resizeMode="cover" />

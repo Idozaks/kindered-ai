@@ -62,7 +62,7 @@ function AppIcon({
       testID={`app-icon-${icon}`}
     >
       <View style={[styles.appIconBg, { backgroundColor: color }]}>
-        <Feather name={icon as any} size={32} color="#FFFFFF" />
+        <ThemedText style={{ fontSize: 32 }}>{icon}</ThemedText>
       </View>
       <ThemedText type="small" style={styles.appIconLabel}>{name}</ThemedText>
     </AnimatedPressable>
@@ -87,7 +87,7 @@ function ContactCard({
       style={[styles.contactCard, { backgroundColor: theme.card }]}
     >
       <View style={[styles.avatar, { backgroundColor: theme.primary + "30" }]}>
-        <Feather name="user" size={32} color={theme.primary} />
+        <ThemedText type="h3" style={{ color: theme.primary }}>{avatar}</ThemedText>
       </View>
       <View style={styles.contactInfo}>
         <ThemedText type="body" style={{ fontWeight: "600" }}>{name}</ThemedText>
@@ -119,13 +119,13 @@ export function VideoCallSimulation({ onComplete, stepIndex }: SimulationProps) 
         <View style={styles.homeScreen}>
           <AppIcon 
             name={t("mirrorWorld.tasks.appVideoCall")} 
-            icon="video" 
+            icon="📹" 
             color="#5B9BD5" 
             onPress={onComplete}
           />
-          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="image" color="#52C41A" onPress={() => {}} />
-          <AppIcon name={t("mirrorWorld.tasks.appMessages")} icon="message-circle" color="#F4B942" onPress={() => {}} />
-          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="settings" color="#9B59B6" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="📸" color="#52C41A" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appMessages")} icon="💬" color="#F4B942" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="⚙️" color="#9B59B6" onPress={() => {}} />
         </View>
       </View>
     );
@@ -146,7 +146,7 @@ export function VideoCallSimulation({ onComplete, stepIndex }: SimulationProps) 
             }}
           >
             <View style={[styles.avatar, { backgroundColor: "#5B9BD5" + "30" }]}>
-              <Feather name="user" size={24} color="#5B9BD5" />
+              <ThemedText style={{ color: "#5B9BD5" }}>S</ThemedText>
             </View>
             <ThemedText type="body">{t("mirrorWorld.tasks.contactSarah")}</ThemedText>
           </Pressable>
@@ -158,7 +158,7 @@ export function VideoCallSimulation({ onComplete, stepIndex }: SimulationProps) 
             }}
           >
             <View style={[styles.avatar, { backgroundColor: "#52C41A" + "30" }]}>
-              <Feather name="user" size={24} color="#52C41A" />
+              <ThemedText style={{ color: "#52C41A" }}>M</ThemedText>
             </View>
             <ThemedText type="body">{t("mirrorWorld.tasks.contactMichael")}</ThemedText>
           </Pressable>
@@ -170,7 +170,7 @@ export function VideoCallSimulation({ onComplete, stepIndex }: SimulationProps) 
             }}
           >
             <View style={[styles.avatar, { backgroundColor: "#F4B942" + "30" }]}>
-              <Feather name="user" size={24} color="#F4B942" />
+              <ThemedText style={{ color: "#F4B942" }}>E</ThemedText>
             </View>
             <ThemedText type="body">{t("mirrorWorld.tasks.contactEmma")}</ThemedText>
           </Pressable>
@@ -185,7 +185,7 @@ export function VideoCallSimulation({ onComplete, stepIndex }: SimulationProps) 
         <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
           {t("mirrorWorld.tasks.hintVideoStart")}
         </ThemedText>
-        <ContactCard name={t("mirrorWorld.tasks.contactSarah")} avatar="user" onVideoCall={onComplete} />
+        <ContactCard name={t("mirrorWorld.tasks.contactSarah")} avatar="S" onVideoCall={onComplete} />
       </View>
     );
   }
@@ -204,7 +204,7 @@ export function VideoCallSimulation({ onComplete, stepIndex }: SimulationProps) 
           }}
         >
           <Animated.View entering={ZoomIn.duration(500)} style={[styles.callingAvatar, { backgroundColor: "#5B9BD5" + "30" }]}>
-            <Feather name="user" size={64} color="#5B9BD5" />
+            <ThemedText type="h1" style={{ color: "#5B9BD5" }}>S</ThemedText>
           </Animated.View>
           <ThemedText type="h4" style={{ marginTop: Spacing.lg }}>{t("mirrorWorld.tasks.statusCalling", { name: t("mirrorWorld.tasks.contactSarah").split(" ")[0] })}</ThemedText>
           <Animated.View 
@@ -228,7 +228,7 @@ export function VideoCallSimulation({ onComplete, stepIndex }: SimulationProps) 
         </ThemedText>
         <View style={styles.videoCallScreen}>
           <View style={[styles.videoFeed, { backgroundColor: "#5B9BD5" + "20" }]}>
-            <Feather name="user" size={80} color="#5B9BD5" />
+            <ThemedText type="h1" style={{ color: "#5B9BD5" }}>S</ThemedText>
             <ThemedText type="body" style={{ marginTop: Spacing.sm }}>{t("mirrorWorld.tasks.contactSarah").split(" ")[0]}</ThemedText>
             <ThemedText type="small" style={{ color: theme.textSecondary }}>{t("mirrorWorld.tasks.statusConnected", { time: "0:42" })}</ThemedText>
           </View>
@@ -269,15 +269,15 @@ export function GrocerySimulation({ onComplete, stepIndex }: SimulationProps) {
           {t("mirrorWorld.tasks.hintVideoOpen").replace(t("mirrorWorld.tasks.appVideoCall"), t("mirrorWorld.tasks.appGroceries"))}
         </ThemedText>
         <View style={styles.homeScreen}>
-          <AppIcon name={t("mirrorWorld.tasks.appMessages")} icon="message-circle" color="#5B9BD5" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appMessages")} icon="💬" color="#5B9BD5" onPress={() => {}} />
           <AppIcon 
             name={t("mirrorWorld.tasks.appGroceries")} 
-            icon="shopping-cart" 
+            icon="🛒" 
             color="#52C41A" 
             onPress={onComplete}
           />
-          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="image" color="#F4B942" onPress={() => {}} />
-          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="settings" color="#9B59B6" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="📸" color="#F4B942" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="⚙️" color="#9B59B6" onPress={() => {}} />
         </View>
       </View>
     );
@@ -453,13 +453,13 @@ export function EmailSimulation({ onComplete, stepIndex }: SimulationProps) {
         <View style={styles.homeScreen}>
           <AppIcon 
             name={t("mirrorWorld.tasks.appEmail")} 
-            icon="mail" 
+            icon="✉️" 
             color="#F4B942" 
             onPress={onComplete}
           />
-          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="image" color="#52C41A" onPress={() => {}} />
-          <AppIcon name={t("mirrorWorld.tasks.appMessages")} icon="message-circle" color="#5B9BD5" onPress={() => {}} />
-          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="settings" color="#9B59B6" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="📸" color="#52C41A" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appMessages")} icon="💬" color="#5B9BD5" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="⚙️" color="#9B59B6" onPress={() => {}} />
         </View>
       </View>
     );
