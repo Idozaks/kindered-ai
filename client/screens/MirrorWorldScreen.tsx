@@ -28,56 +28,102 @@ interface PracticeTask {
   steps: string[];
 }
 
-const PRACTICE_TASKS: PracticeTask[] = [
-  {
-    id: "grocery",
-    title: "Order Groceries",
-    description: "Learn to order food online",
-    icon: "shopping-cart",
-    color: "#52C41A",
-    steps: [
-      "Open the grocery app",
-      "Search for items you need",
-      "Add items to your cart",
-      "Review your cart",
-      "Complete checkout",
-    ],
-  },
-  {
-    id: "videocall",
-    title: "Make a Video Call",
-    description: "Practice calling family and friends",
-    icon: "video",
-    color: "#5B9BD5",
-    steps: [
-      "Open the video call app",
-      "Find your contact",
-      "Tap the video call button",
-      "Wait for them to answer",
-      "End the call when finished",
-    ],
-  },
-  {
-    id: "email",
-    title: "Send an Email",
-    description: "Write and send messages",
-    icon: "mail",
-    color: "#F4B942",
-    steps: [
-      "Open your email app",
-      "Tap 'Compose' or the + button",
-      "Enter the recipient's email",
-      "Write your message",
-      "Tap Send",
-    ],
-  },
-];
+  const PRACTICE_TASKS: PracticeTask[] = [
+    {
+      id: "grocery",
+      title: t("mirrorWorld.tasks.grocery"),
+      description: t("mirrorWorld.intro"),
+      icon: "shopping-cart",
+      color: "#52C41A",
+      steps: [
+        t("mirrorWorld.stepProgress", { current: 1, total: 5 }),
+        t("mirrorWorld.stepProgress", { current: 2, total: 5 }),
+        t("mirrorWorld.stepProgress", { current: 3, total: 5 }),
+        t("mirrorWorld.stepProgress", { current: 4, total: 5 }),
+        t("mirrorWorld.stepProgress", { current: 5, total: 5 }),
+      ],
+    },
+    {
+      id: "videocall",
+      title: t("mirrorWorld.tasks.videocall"),
+      description: t("mirrorWorld.intro"),
+      icon: "video",
+      color: "#5B9BD5",
+      steps: [
+        t("mirrorWorld.stepProgress", { current: 1, total: 5 }),
+        t("mirrorWorld.stepProgress", { current: 2, total: 5 }),
+        t("mirrorWorld.stepProgress", { current: 3, total: 5 }),
+        t("mirrorWorld.stepProgress", { current: 4, total: 5 }),
+        t("mirrorWorld.stepProgress", { current: 5, total: 5 }),
+      ],
+    },
+    {
+      id: "email",
+      title: t("mirrorWorld.tasks.email"),
+      description: t("mirrorWorld.intro"),
+      icon: "mail",
+      color: "#F4B942",
+      steps: [
+        t("mirrorWorld.stepProgress", { current: 1, total: 5 }),
+        t("mirrorWorld.stepProgress", { current: 2, total: 5 }),
+        t("mirrorWorld.stepProgress", { current: 3, total: 5 }),
+        t("mirrorWorld.stepProgress", { current: 4, total: 5 }),
+        t("mirrorWorld.stepProgress", { current: 5, total: 5 }),
+      ],
+    },
+  ];
 
 export default function MirrorWorldScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const { theme } = useTheme();
   const { t } = useTranslation();
+
+  const PRACTICE_TASKS: PracticeTask[] = [
+    {
+      id: "grocery",
+      title: t("mirrorWorld.tasks.grocery"),
+      description: t("mirrorWorld.intro"),
+      icon: "shopping-cart",
+      color: "#52C41A",
+      steps: [
+        "Open the grocery app",
+        "Search for items you need",
+        "Add items to your cart",
+        "Review your cart",
+        "Complete checkout",
+      ],
+    },
+    {
+      id: "videocall",
+      title: t("mirrorWorld.tasks.videocall"),
+      description: t("mirrorWorld.intro"),
+      icon: "video",
+      color: "#5B9BD5",
+      steps: [
+        "Open the video call app",
+        "Find your contact",
+        "Tap the video call button",
+        "Wait for them to answer",
+        "End the call when finished",
+      ],
+    },
+    {
+      id: "email",
+      title: t("mirrorWorld.tasks.email"),
+      description: t("mirrorWorld.intro"),
+      icon: "mail",
+      color: "#F4B942",
+      steps: [
+        "Open your email app",
+        "Tap 'Compose' or the + button",
+        "Enter the recipient's email",
+        "Write your message",
+        "Tap Send",
+      ],
+    },
+  ];
+
   const [selectedTask, setSelectedTask] = useState<PracticeTask | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [completed, setCompleted] = useState(false);
@@ -241,7 +287,7 @@ export default function MirrorWorldScreen() {
               type="body"
               style={[styles.successSubtitle, { color: theme.textSecondary }]}
             >
-              You completed: {selectedTask.title}
+              {t("mirrorWorld.completedTask", { task: selectedTask.title })}
             </ThemedText>
 
             <View style={styles.completedActions}>
@@ -308,7 +354,7 @@ export default function MirrorWorldScreen() {
                 type="small"
                 style={{ color: theme.textSecondary }}
               >
-                Step {currentStep + 1} of {selectedTask.steps.length}
+                {t("mirrorWorld.stepProgress", { current: currentStep + 1, total: selectedTask.steps.length })}
               </ThemedText>
             </View>
 
