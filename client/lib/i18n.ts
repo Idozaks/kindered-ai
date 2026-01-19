@@ -15,10 +15,6 @@ const resources = {
           title: "Grandchild Mode",
           description: "Live help with your screen",
         },
-        navigator: {
-          title: "Decision Navigator",
-          description: "Break down complex tasks",
-        },
         letter: {
           title: "Letter Helper",
           description: "Understand any document",
@@ -54,17 +50,6 @@ const resources = {
         ready: "I'm here to help!",
         watching: "I can see your screen",
         hint: "Tell me what you need help with",
-      },
-      navigator: {
-        title: "Decision Navigator",
-        placeholder: "What would you like to accomplish?",
-        examples: "Examples:",
-        example1: "Renew my passport",
-        example2: "Pay a bill online",
-        example3: "Schedule a doctor appointment",
-        stepComplete: "Step completed!",
-        doriAdvice: "Dori's Advice",
-        practiceButton: "Practice in Sandbox",
       },
       letterHelper: {
         title: "Letter Helper",
@@ -105,10 +90,6 @@ const resources = {
           title: "מצב נכד",
           description: "עזרה חיה עם המסך שלך",
         },
-        navigator: {
-          title: "נווט החלטות",
-          description: "פירוק משימות מורכבות",
-        },
         letter: {
           title: "עוזר מכתבים",
           description: "הבנת כל מסמך",
@@ -144,17 +125,6 @@ const resources = {
         ready: "אני כאן לעזור!",
         watching: "אני רואה את המסך שלך",
         hint: "ספר לי במה אתה צריך עזרה",
-      },
-      navigator: {
-        title: "נווט החלטות",
-        placeholder: "מה תרצה להשיג?",
-        examples: "דוגמאות:",
-        example1: "לחדש את הדרכון",
-        example2: "לשלם חשבון באינטרנט",
-        example3: "לקבוע תור לרופא",
-        stepComplete: "השלב הושלם!",
-        doriAdvice: "העצה של דורי",
-        practiceButton: "תרגול בסביבה בטוחה",
       },
       letterHelper: {
         title: "עוזר מכתבים",

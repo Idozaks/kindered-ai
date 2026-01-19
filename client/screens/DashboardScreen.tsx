@@ -38,13 +38,6 @@ export default function DashboardScreen() {
       color: theme.primary,
     },
     {
-      id: "navigator",
-      title: t("tools.navigator.title"),
-      description: t("tools.navigator.description"),
-      icon: "compass" as const,
-      color: "#52C41A",
-    },
-    {
       id: "letter",
       title: t("tools.letter.title"),
       description: t("tools.letter.description"),
@@ -68,9 +61,6 @@ export default function DashboardScreen() {
       switch (toolId) {
         case "grandchild":
           navigation.navigate("GrandchildMode");
-          break;
-        case "navigator":
-          navigation.navigate("DecisionNavigator");
           break;
         case "letter":
           navigation.navigate("LetterHelper");

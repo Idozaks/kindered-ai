@@ -6,7 +6,6 @@ import { Feather } from "@expo/vector-icons";
 import DashboardScreen from "@/screens/DashboardScreen";
 import SettingsScreen from "@/screens/SettingsScreen";
 import GrandchildModeScreen from "@/screens/GrandchildModeScreen";
-import DecisionNavigatorScreen from "@/screens/DecisionNavigatorScreen";
 import LetterHelperScreen from "@/screens/LetterHelperScreen";
 import MirrorWorldScreen from "@/screens/MirrorWorldScreen";
 import { HeaderTitle } from "@/components/HeaderTitle";
@@ -17,7 +16,6 @@ export type RootStackParamList = {
   Dashboard: undefined;
   Settings: undefined;
   GrandchildMode: undefined;
-  DecisionNavigator: undefined;
   LetterHelper: undefined;
   MirrorWorld: undefined;
 };
@@ -58,13 +56,6 @@ export default function RootStackNavigator() {
         component={GrandchildModeScreen}
         options={{
           headerTitle: "Grandchild Mode",
-        }}
-      />
-      <Stack.Screen
-        name="DecisionNavigator"
-        component={DecisionNavigatorScreen}
-        options={{
-          headerTitle: "Decision Navigator",
         }}
       />
       <Stack.Screen
