@@ -14,10 +14,10 @@ const ai = new GoogleGenAI({
 
 router.post("/grandchild-help", async (req, res) => {
   try {
-    const { question, context, language, history } = req.body;
+    const { question, context, language, history, imageBase64 } = req.body;
 
-    if (!question) {
-      return res.status(400).json({ error: "Question is required" });
+    if (!question && !imageBase64) {
+      return res.status(400).json({ error: "Question or image is required" });
     }
 
     const isHebrew = language === "he";
@@ -39,8 +39,9 @@ router.post("/grandchild-help", async (req, res) => {
 3. דבר בשפה פשוטה של נכד עוזר.
 4. השתמש בתיאורים ברורים של כפתורים ואייקונים.
 5. התייחס לצבעים ומיקומים על המסך כשזה עוזר.
-6. בסוף התשובה שלך, הוסף תמיד בדיוק 3 שאלות המשך קצרות ורלוונטיות שהמשתמש עשוי לרצות לשאול.
-7. הפרד את השאלות מהתשובה שלך באמצעות השורה "---SUGGESTIONS---" ואז כל שאלה בשורה חדשה.`
+6. אם המשתמש שולח תמונה, תאר מה אתה רואה ועזור לו להבין את התוכן.
+7. בסוף התשובה שלך, הוסף תמיד בדיוק 3 שאלות המשך קצרות ורלוונטיות שהמשתמש עשוי לרצות לשאול.
+8. הפרד את השאלות מהתשובה שלך באמצעות השורה "---SUGGESTIONS---" ואז כל שאלה בשורה חדשה.`
       : `You are a kind, patient, and supportive AI assistant helping a senior citizen (someone 70+ years old) with technology. 
 
 Your personality:
@@ -56,8 +57,22 @@ Important guidelines:
 - Reference colors and positions on screen when helpful
 - Avoid technical terms - use everyday language
 - Be encouraging and supportive
+- If the user sends an image, describe what you see and help them understand the content
 - At the end of your response, always add exactly 3 short and relevant follow-up questions the user might want to ask.
 - Separate the questions from your answer using the line "---SUGGESTIONS---" and then each question on a new line.`;
+
+    const userParts: any[] = [];
+    
+    if (question) {
+      userParts.push({ text: `Context: ${context || "helping with technology"}\n\nUser's question: ${question}` });
+    }
+    
+    if (imageBase64) {
+      userParts.push({ inlineData: { mimeType: "image/jpeg", data: imageBase64 } });
+      if (!question) {
+        userParts.unshift({ text: isHebrew ? "מה אתה רואה בתמונה הזו? עזור לי להבין אותה." : "What do you see in this image? Help me understand it." });
+      }
+    }
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
@@ -68,7 +83,7 @@ Important guidelines:
         })),
         {
           role: "user",
-          parts: [{ text: `Context: ${context || "helping with technology"}\n\nUser's question: ${question}` }],
+          parts: userParts,
         },
       ],
       config: {

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { StyleSheet, View, Platform, ScrollView, TextInput, Pressable } from "react-native";
+import { StyleSheet, View, Platform, ScrollView, TextInput, Pressable, Image, Linking } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useNavigation } from "@react-navigation/native";
@@ -17,6 +17,7 @@ import Animated, {
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { useMutation } from "@tanstack/react-query";
+import * as ImagePicker from "expo-image-picker";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -31,6 +32,7 @@ interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
+  imageUri?: string;
 }
 
 export default function GrandchildModeScreen() {
@@ -46,6 +48,8 @@ export default function GrandchildModeScreen() {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [attachedImage, setAttachedImage] = useState<string | null>(null);
+  const [cameraPermission, requestCameraPermission] = ImagePicker.useCameraPermissions();
 
   const pulseValue = useSharedValue(1);
 
@@ -66,13 +70,33 @@ export default function GrandchildModeScreen() {
     transform: [{ scale: pulseValue.value }],
   }));
 
+  const uriToBase64 = async (uri: string): Promise<string> => {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        const base64 = result.split(",")[1];
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
   const aiMutation = useMutation({
-    mutationFn: async (question: string) => {
+    mutationFn: async ({ question, imageUri }: { question: string; imageUri?: string }) => {
+      let imageBase64: string | undefined;
+      if (imageUri) {
+        imageBase64 = await uriToBase64(imageUri);
+      }
       const response = await apiRequest("POST", "/api/ai/grandchild-help", {
         question,
         context: "helping a senior with technology",
         language: t("common.loading") === "טוען..." ? "he" : "en",
         history: messages.slice(-4).map(m => ({ role: m.role, content: m.content })),
+        imageBase64,
       });
       return response.json();
     },
@@ -120,26 +144,79 @@ export default function GrandchildModeScreen() {
     setSuggestions(QUICK_QUESTIONS);
   };
 
-  const handleSendMessage = (text: string) => {
-    if (!text.trim()) return;
+  const handleSendMessage = (text: string, imageUri?: string) => {
+    if (!text.trim() && !imageUri) return;
     
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
-      content: text.trim(),
+      content: text.trim() || (t("common.loading") === "טוען..." ? "שלחתי תמונה" : "I sent an image"),
+      imageUri,
     };
     setMessages((prev) => [...prev, userMessage]);
     setSuggestions([]);
     setInputText("");
+    setAttachedImage(null);
     setIsTyping(true);
     
     setTimeout(() => {
       scrollRef.current?.scrollToEnd({ animated: true });
     }, 100);
     
-    aiMutation.mutate(text.trim());
+    aiMutation.mutate({ question: text.trim(), imageUri });
+  };
+
+  const handlePickImage = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 0.7,
+      base64: false,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      setAttachedImage(result.assets[0].uri);
+    }
+  };
+
+  const handleOpenCamera = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    if (!cameraPermission) return;
+
+    if (!cameraPermission.granted) {
+      if (cameraPermission.status === "denied" && !cameraPermission.canAskAgain) {
+        if (Platform.OS !== "web") {
+          try {
+            await Linking.openSettings();
+          } catch (error) {
+          }
+        }
+        return;
+      }
+      const permission = await requestCameraPermission();
+      if (!permission.granted) return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 0.7,
+      base64: false,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      setAttachedImage(result.assets[0].uri);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setAttachedImage(null);
   };
 
   const handleQuickQuestion = (question: string) => {
@@ -233,6 +310,13 @@ export default function GrandchildModeScreen() {
                     </ThemedText>
                   </View>
                 ) : null}
+                {message.imageUri ? (
+                  <Image
+                    source={{ uri: message.imageUri }}
+                    style={styles.messageImage}
+                    resizeMode="cover"
+                  />
+                ) : null}
                 <ThemedText
                   type="body"
                   style={[
@@ -286,6 +370,42 @@ export default function GrandchildModeScreen() {
           </ScrollView>
 
           <View style={[styles.inputArea, { paddingBottom: insets.bottom + Spacing.md, backgroundColor: theme.background }]}>
+            {attachedImage ? (
+              <View style={styles.attachedImageContainer}>
+                <Image source={{ uri: attachedImage }} style={styles.attachedImage} resizeMode="cover" />
+                <Pressable 
+                  style={[styles.removeImageBtn, { backgroundColor: theme.danger }]} 
+                  onPress={handleRemoveImage}
+                  testID="remove-image-button"
+                >
+                  <Feather name="x" size={16} color="#FFFFFF" />
+                </Pressable>
+              </View>
+            ) : null}
+            
+            <View style={styles.attachmentButtons}>
+              <Pressable 
+                style={[styles.attachmentBtn, { backgroundColor: theme.backgroundSecondary, borderColor: theme.border }]} 
+                onPress={handleOpenCamera}
+                testID="camera-button"
+              >
+                <Feather name="camera" size={22} color={theme.primary} />
+                <ThemedText type="small" style={{ color: theme.textSecondary, marginLeft: Spacing.xs }}>
+                  {t("common.loading") === "טוען..." ? "מצלמה" : "Camera"}
+                </ThemedText>
+              </Pressable>
+              <Pressable 
+                style={[styles.attachmentBtn, { backgroundColor: theme.backgroundSecondary, borderColor: theme.border }]} 
+                onPress={handlePickImage}
+                testID="gallery-button"
+              >
+                <Feather name="image" size={22} color={theme.primary} />
+                <ThemedText type="small" style={{ color: theme.textSecondary, marginLeft: Spacing.xs }}>
+                  {t("common.loading") === "טוען..." ? "גלריה" : "Gallery"}
+                </ThemedText>
+              </Pressable>
+            </View>
+            
             <View style={[styles.inputRow, { backgroundColor: theme.card, borderColor: theme.border }]}>
               <TextInput
                 style={[styles.textInput, { color: theme.text, textAlign: t("common.loading") === "טוען..." ? "right" : "left" }]}
@@ -293,15 +413,16 @@ export default function GrandchildModeScreen() {
                 placeholderTextColor={theme.textSecondary}
                 value={inputText}
                 onChangeText={setInputText}
-                onSubmitEditing={() => handleSendMessage(inputText)}
+                onSubmitEditing={() => handleSendMessage(inputText, attachedImage || undefined)}
                 multiline
               />
               <Pressable
-                style={[styles.sendButton, { backgroundColor: inputText.trim() ? theme.primary : theme.backgroundSecondary }]}
-                onPress={() => handleSendMessage(inputText)}
-                disabled={!inputText.trim()}
+                style={[styles.sendButton, { backgroundColor: (inputText.trim() || attachedImage) ? theme.primary : theme.backgroundSecondary }]}
+                onPress={() => handleSendMessage(inputText, attachedImage || undefined)}
+                disabled={!inputText.trim() && !attachedImage}
+                testID="send-button"
               >
-                <Feather name="send" size={20} color={inputText.trim() ? "#FFFFFF" : theme.textSecondary} />
+                <Feather name="send" size={20} color={(inputText.trim() || attachedImage) ? "#FFFFFF" : theme.textSecondary} />
               </Pressable>
             </View>
             
@@ -411,6 +532,12 @@ const styles = StyleSheet.create({
   messageText: {
     lineHeight: 24,
   },
+  messageImage: {
+    width: "100%",
+    height: 180,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.sm,
+  },
   typingIndicator: {
     flexDirection: "row",
     alignItems: "center",
@@ -451,6 +578,39 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.md,
     borderTopWidth: 1,
     borderTopColor: "rgba(0,0,0,0.1)",
+  },
+  attachedImageContainer: {
+    position: "relative",
+    marginBottom: Spacing.md,
+    alignSelf: "flex-start",
+  },
+  attachedImage: {
+    width: 120,
+    height: 120,
+    borderRadius: BorderRadius.md,
+  },
+  removeImageBtn: {
+    position: "absolute",
+    top: -8,
+    right: -8,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  attachmentButtons: {
+    flexDirection: "row",
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
+  attachmentBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
   },
   inputRow: {
     flexDirection: "row",
