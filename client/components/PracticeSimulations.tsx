@@ -10,6 +10,7 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
+import { useTranslation } from "react-i18next";
 
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
@@ -73,6 +74,7 @@ function ContactCard({
   onVideoCall: () => void;
 }) {
   const { theme } = useTheme();
+  const { t } = useTranslation();
   
   return (
     <Animated.View 
@@ -84,7 +86,7 @@ function ContactCard({
       </View>
       <View style={styles.contactInfo}>
         <ThemedText type="body" style={{ fontWeight: "600" }}>{name}</ThemedText>
-        <ThemedText type="small" style={{ color: theme.textSecondary }}>Available</ThemedText>
+        <ThemedText type="small" style={{ color: theme.textSecondary }}>{t("common.loading") === "טוען..." ? "זמין" : "Available"}</ThemedText>
       </View>
       <Pressable 
         style={[styles.videoCallBtn, { backgroundColor: theme.primary }]}
@@ -101,26 +103,24 @@ function ContactCard({
 
 export function VideoCallSimulation({ onComplete, stepIndex }: SimulationProps) {
   const { theme } = useTheme();
-  const [showContacts, setShowContacts] = useState(false);
-  const [calling, setCalling] = useState(false);
-  const [connected, setConnected] = useState(false);
-
+  const { t } = useTranslation();
+  
   if (stepIndex === 0) {
     return (
       <View style={styles.simulationContainer}>
         <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
-          Tap the video app to open it
+          {t("mirrorWorld.tasks.hintVideoOpen")}
         </ThemedText>
         <View style={styles.homeScreen}>
           <AppIcon 
-            name="Video Call" 
+            name={t("mirrorWorld.tasks.appVideoCall")} 
             icon="video" 
             color="#5B9BD5" 
             onPress={onComplete}
           />
-          <AppIcon name="Photos" icon="image" color="#52C41A" onPress={() => {}} />
-          <AppIcon name="Messages" icon="message-circle" color="#F4B942" onPress={() => {}} />
-          <AppIcon name="Settings" icon="settings" color="#9B59B6" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="image" color="#52C41A" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appMessages")} icon="message-circle" color="#F4B942" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="settings" color="#9B59B6" onPress={() => {}} />
         </View>
       </View>
     );
@@ -130,7 +130,7 @@ export function VideoCallSimulation({ onComplete, stepIndex }: SimulationProps) 
     return (
       <View style={styles.simulationContainer}>
         <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
-          Tap on a contact to select them
+          {t("mirrorWorld.tasks.hintVideoSelect")}
         </ThemedText>
         <View style={styles.contactsList}>
           <Pressable 
@@ -143,7 +143,7 @@ export function VideoCallSimulation({ onComplete, stepIndex }: SimulationProps) 
             <View style={[styles.avatar, { backgroundColor: "#5B9BD5" + "30" }]}>
               <ThemedText style={{ color: "#5B9BD5" }}>S</ThemedText>
             </View>
-            <ThemedText type="body">Sarah (Daughter)</ThemedText>
+            <ThemedText type="body">{t("mirrorWorld.tasks.contactSarah")}</ThemedText>
           </Pressable>
           <Pressable 
             style={[styles.contactRow, { borderBottomColor: theme.border }]}
@@ -155,7 +155,7 @@ export function VideoCallSimulation({ onComplete, stepIndex }: SimulationProps) 
             <View style={[styles.avatar, { backgroundColor: "#52C41A" + "30" }]}>
               <ThemedText style={{ color: "#52C41A" }}>M</ThemedText>
             </View>
-            <ThemedText type="body">Michael (Son)</ThemedText>
+            <ThemedText type="body">{t("mirrorWorld.tasks.contactMichael")}</ThemedText>
           </Pressable>
           <Pressable 
             style={[styles.contactRow, { borderBottomColor: theme.border }]}
@@ -167,7 +167,7 @@ export function VideoCallSimulation({ onComplete, stepIndex }: SimulationProps) 
             <View style={[styles.avatar, { backgroundColor: "#F4B942" + "30" }]}>
               <ThemedText style={{ color: "#F4B942" }}>E</ThemedText>
             </View>
-            <ThemedText type="body">Emma (Granddaughter)</ThemedText>
+            <ThemedText type="body">{t("mirrorWorld.tasks.contactEmma")}</ThemedText>
           </Pressable>
         </View>
       </View>
@@ -178,9 +178,9 @@ export function VideoCallSimulation({ onComplete, stepIndex }: SimulationProps) 
     return (
       <View style={styles.simulationContainer}>
         <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
-          Tap the video button to start the call
+          {t("mirrorWorld.tasks.hintVideoStart")}
         </ThemedText>
-        <ContactCard name="Sarah (Daughter)" avatar="S" onVideoCall={onComplete} />
+        <ContactCard name={t("mirrorWorld.tasks.contactSarah")} avatar="S" onVideoCall={onComplete} />
       </View>
     );
   }
@@ -189,7 +189,7 @@ export function VideoCallSimulation({ onComplete, stepIndex }: SimulationProps) 
     return (
       <View style={styles.simulationContainer}>
         <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
-          Wait for them to answer... (Tap to simulate)
+          {t("mirrorWorld.tasks.hintVideoWait")}
         </ThemedText>
         <Pressable 
           style={styles.callingScreen}
@@ -201,7 +201,7 @@ export function VideoCallSimulation({ onComplete, stepIndex }: SimulationProps) 
           <Animated.View entering={ZoomIn.duration(500)} style={[styles.callingAvatar, { backgroundColor: "#5B9BD5" + "30" }]}>
             <ThemedText type="h1" style={{ color: "#5B9BD5" }}>S</ThemedText>
           </Animated.View>
-          <ThemedText type="h4" style={{ marginTop: Spacing.lg }}>Calling Sarah...</ThemedText>
+          <ThemedText type="h4" style={{ marginTop: Spacing.lg }}>{t("mirrorWorld.tasks.statusCalling", { name: t("mirrorWorld.tasks.contactSarah").split(" ")[0] })}</ThemedText>
           <Animated.View 
             entering={FadeIn.delay(500).duration(500)}
             style={styles.callingDots}
@@ -219,13 +219,13 @@ export function VideoCallSimulation({ onComplete, stepIndex }: SimulationProps) 
     return (
       <View style={styles.simulationContainer}>
         <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
-          Tap the red button to end the call
+          {t("mirrorWorld.tasks.hintVideoEnd")}
         </ThemedText>
         <View style={styles.videoCallScreen}>
           <View style={[styles.videoFeed, { backgroundColor: "#5B9BD5" + "20" }]}>
             <ThemedText type="h1" style={{ color: "#5B9BD5" }}>S</ThemedText>
-            <ThemedText type="body" style={{ marginTop: Spacing.sm }}>Sarah</ThemedText>
-            <ThemedText type="small" style={{ color: theme.textSecondary }}>Connected - 0:42</ThemedText>
+            <ThemedText type="body" style={{ marginTop: Spacing.sm }}>{t("mirrorWorld.tasks.contactSarah").split(" ")[0]}</ThemedText>
+            <ThemedText type="small" style={{ color: theme.textSecondary }}>{t("mirrorWorld.tasks.statusConnected", { time: "0:42" })}</ThemedText>
           </View>
           <View style={styles.callControls}>
             <View style={[styles.controlBtn, { backgroundColor: theme.backgroundSecondary }]}>
@@ -254,25 +254,25 @@ export function VideoCallSimulation({ onComplete, stepIndex }: SimulationProps) 
 
 export function GrocerySimulation({ onComplete, stepIndex }: SimulationProps) {
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const [searchText, setSearchText] = useState("");
-  const [cartItems, setCartItems] = useState<string[]>([]);
 
   if (stepIndex === 0) {
     return (
       <View style={styles.simulationContainer}>
         <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
-          Tap the grocery app to open it
+          {t("mirrorWorld.tasks.hintVideoOpen").replace(t("mirrorWorld.tasks.appVideoCall"), t("mirrorWorld.tasks.appGroceries"))}
         </ThemedText>
         <View style={styles.homeScreen}>
-          <AppIcon name="Messages" icon="message-circle" color="#5B9BD5" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appMessages")} icon="message-circle" color="#5B9BD5" onPress={() => {}} />
           <AppIcon 
-            name="Groceries" 
+            name={t("mirrorWorld.tasks.appGroceries")} 
             icon="shopping-cart" 
             color="#52C41A" 
             onPress={onComplete}
           />
-          <AppIcon name="Photos" icon="image" color="#F4B942" onPress={() => {}} />
-          <AppIcon name="Settings" icon="settings" color="#9B59B6" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="image" color="#F4B942" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="settings" color="#9B59B6" onPress={() => {}} />
         </View>
       </View>
     );
@@ -282,14 +282,14 @@ export function GrocerySimulation({ onComplete, stepIndex }: SimulationProps) {
     return (
       <View style={styles.simulationContainer}>
         <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
-          Type something in the search box, then tap Search
+          {t("common.loading") === "טוען..." ? "הקלד משהו בתיבת החיפוש, ואז הקש על חיפוש" : "Type something in the search box, then tap Search"}
         </ThemedText>
         <View style={styles.searchContainer}>
           <View style={[styles.searchBox, { backgroundColor: theme.backgroundSecondary, borderColor: theme.border }]}>
             <Feather name="search" size={20} color={theme.textSecondary} />
             <TextInput
-              style={[styles.searchInput, { color: theme.text }]}
-              placeholder="Search for groceries..."
+              style={[styles.searchInput, { color: theme.text, textAlign: t("common.loading") === "טוען..." ? "right" : "left" }]}
+              placeholder={t("mirrorWorld.tasks.placeholderSearch")}
               placeholderTextColor={theme.textSecondary}
               value={searchText}
               onChangeText={setSearchText}
@@ -302,7 +302,7 @@ export function GrocerySimulation({ onComplete, stepIndex }: SimulationProps) {
               onComplete();
             }}
           >
-            <ThemedText style={{ color: "#FFFFFF" }}>Search</ThemedText>
+            <ThemedText style={{ color: "#FFFFFF" }}>{t("mirrorWorld.tasks.btnSearch")}</ThemedText>
           </Pressable>
         </View>
       </View>
@@ -313,13 +313,13 @@ export function GrocerySimulation({ onComplete, stepIndex }: SimulationProps) {
     return (
       <View style={styles.simulationContainer}>
         <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
-          Tap "Add" on any item to add it to your cart
+          {t("common.loading") === "טוען..." ? "הקש על 'הוסף' ליד כל פריט כדי להוסיף אותו לעגלה" : 'Tap "Add" on any item to add it to your cart'}
         </ThemedText>
         <View style={styles.productList}>
           {[
-            { name: "Fresh Milk", price: "$4.99" },
-            { name: "Bread", price: "$3.49" },
-            { name: "Eggs (12)", price: "$5.99" },
+            { name: t("mirrorWorld.tasks.productMilk"), price: "₪18.00" },
+            { name: t("mirrorWorld.tasks.productBread"), price: "₪12.00" },
+            { name: t("mirrorWorld.tasks.productEggs"), price: "₪22.00" },
           ].map((item, index) => (
             <Animated.View 
               key={item.name}
@@ -340,7 +340,7 @@ export function GrocerySimulation({ onComplete, stepIndex }: SimulationProps) {
                   onComplete();
                 }}
               >
-                <ThemedText style={{ color: "#FFFFFF", fontWeight: "600" }}>Add</ThemedText>
+                <ThemedText style={{ color: "#FFFFFF", fontWeight: "600" }}>{t("mirrorWorld.tasks.btnAdd")}</ThemedText>
               </Pressable>
             </Animated.View>
           ))}
@@ -353,20 +353,20 @@ export function GrocerySimulation({ onComplete, stepIndex }: SimulationProps) {
     return (
       <View style={styles.simulationContainer}>
         <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
-          Review your cart and tap "Checkout"
+          {t("common.loading") === "טוען..." ? "בדוק את העגלה והקש על 'תשלום'" : 'Review your cart and tap "Checkout"'}
         </ThemedText>
         <View style={styles.cartContainer}>
           <View style={[styles.cartItem, { borderBottomColor: theme.border }]}>
-            <ThemedText type="body">Fresh Milk</ThemedText>
-            <ThemedText type="body" style={{ color: theme.primary }}>$4.99</ThemedText>
+            <ThemedText type="body">{t("mirrorWorld.tasks.productMilk")}</ThemedText>
+            <ThemedText type="body" style={{ color: theme.primary }}>₪18.00</ThemedText>
           </View>
           <View style={[styles.cartItem, { borderBottomColor: theme.border }]}>
-            <ThemedText type="body">Bread</ThemedText>
-            <ThemedText type="body" style={{ color: theme.primary }}>$3.49</ThemedText>
+            <ThemedText type="body">{t("mirrorWorld.tasks.productBread")}</ThemedText>
+            <ThemedText type="body" style={{ color: theme.primary }}>₪12.00</ThemedText>
           </View>
           <View style={[styles.cartTotal, { borderTopColor: theme.border }]}>
-            <ThemedText type="h4">Total</ThemedText>
-            <ThemedText type="h4" style={{ color: theme.primary }}>$8.48</ThemedText>
+            <ThemedText type="h4">{t("common.loading") === "טוען..." ? "סה\"כ" : "Total"}</ThemedText>
+            <ThemedText type="h4" style={{ color: theme.primary }}>₪30.00</ThemedText>
           </View>
           <Pressable 
             style={[styles.checkoutBtn, { backgroundColor: theme.primary }]}
@@ -377,7 +377,7 @@ export function GrocerySimulation({ onComplete, stepIndex }: SimulationProps) {
           >
             <Feather name="shopping-bag" size={20} color="#FFFFFF" />
             <ThemedText style={{ color: "#FFFFFF", fontWeight: "600", marginLeft: Spacing.sm }}>
-              Checkout
+              {t("mirrorWorld.tasks.btnCheckout")}
             </ThemedText>
           </Pressable>
         </View>
@@ -389,29 +389,29 @@ export function GrocerySimulation({ onComplete, stepIndex }: SimulationProps) {
     return (
       <View style={styles.simulationContainer}>
         <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
-          Confirm your payment method and tap "Place Order"
+          {t("common.loading") === "טוען..." ? "אשר את אמצעי התשלום והקש על 'בצע הזמנה'" : 'Confirm your payment method and tap "Place Order"'}
         </ThemedText>
         <View style={styles.checkoutScreen}>
           <View style={[styles.paymentCard, { backgroundColor: theme.card }]}>
             <Feather name="credit-card" size={24} color={theme.primary} />
             <View style={{ marginLeft: Spacing.md, flex: 1 }}>
-              <ThemedText type="body">Visa ending in 4242</ThemedText>
-              <ThemedText type="small" style={{ color: theme.textSecondary }}>Default payment</ThemedText>
+              <ThemedText type="body">{t("mirrorWorld.tasks.paymentVisa")}</ThemedText>
+              <ThemedText type="small" style={{ color: theme.textSecondary }}>{t("mirrorWorld.tasks.paymentDefault")}</ThemedText>
             </View>
             <Feather name="check-circle" size={24} color={theme.success} />
           </View>
           <View style={[styles.orderSummary, { backgroundColor: theme.backgroundSecondary }]}>
             <View style={styles.summaryRow}>
-              <ThemedText type="body">Subtotal</ThemedText>
-              <ThemedText type="body">$8.48</ThemedText>
+              <ThemedText type="body">{t("mirrorWorld.tasks.summarySubtotal")}</ThemedText>
+              <ThemedText type="body">₪30.00</ThemedText>
             </View>
             <View style={styles.summaryRow}>
-              <ThemedText type="body">Delivery</ThemedText>
-              <ThemedText type="body" style={{ color: theme.success }}>Free</ThemedText>
+              <ThemedText type="body">{t("mirrorWorld.tasks.summaryDelivery")}</ThemedText>
+              <ThemedText type="body" style={{ color: theme.success }}>{t("mirrorWorld.tasks.summaryFree")}</ThemedText>
             </View>
             <View style={[styles.summaryRow, { marginTop: Spacing.sm }]}>
-              <ThemedText type="h4">Total</ThemedText>
-              <ThemedText type="h4" style={{ color: theme.primary }}>$8.48</ThemedText>
+              <ThemedText type="h4">{t("common.loading") === "טוען..." ? "סה\"כ" : "Total"}</ThemedText>
+              <ThemedText type="h4" style={{ color: theme.primary }}>₪30.00</ThemedText>
             </View>
           </View>
           <Pressable 
@@ -422,7 +422,7 @@ export function GrocerySimulation({ onComplete, stepIndex }: SimulationProps) {
             }}
           >
             <ThemedText style={{ color: "#FFFFFF", fontWeight: "700", fontSize: 18 }}>
-              Place Order
+              {t("mirrorWorld.tasks.btnPlaceOrder")}
             </ThemedText>
           </Pressable>
         </View>
@@ -435,6 +435,7 @@ export function GrocerySimulation({ onComplete, stepIndex }: SimulationProps) {
 
 export function EmailSimulation({ onComplete, stepIndex }: SimulationProps) {
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const [emailTo, setEmailTo] = useState("");
   const [emailBody, setEmailBody] = useState("");
 
@@ -442,18 +443,18 @@ export function EmailSimulation({ onComplete, stepIndex }: SimulationProps) {
     return (
       <View style={styles.simulationContainer}>
         <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
-          Tap the email app to open it
+          {t("mirrorWorld.tasks.hintVideoOpen").replace(t("mirrorWorld.tasks.appVideoCall"), t("mirrorWorld.tasks.appEmail"))}
         </ThemedText>
         <View style={styles.homeScreen}>
           <AppIcon 
-            name="Email" 
+            name={t("mirrorWorld.tasks.appEmail")} 
             icon="mail" 
             color="#F4B942" 
             onPress={onComplete}
           />
-          <AppIcon name="Photos" icon="image" color="#52C41A" onPress={() => {}} />
-          <AppIcon name="Messages" icon="message-circle" color="#5B9BD5" onPress={() => {}} />
-          <AppIcon name="Settings" icon="settings" color="#9B59B6" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="image" color="#52C41A" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appMessages")} icon="message-circle" color="#5B9BD5" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="settings" color="#9B59B6" onPress={() => {}} />
         </View>
       </View>
     );
@@ -463,11 +464,11 @@ export function EmailSimulation({ onComplete, stepIndex }: SimulationProps) {
     return (
       <View style={styles.simulationContainer}>
         <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
-          Tap the compose button to write a new email
+          {t("common.loading") === "טוען..." ? "הקש על כפתור החיבור כדי לכתוב אימייל חדש" : "Tap the compose button to write a new email"}
         </ThemedText>
         <View style={styles.inboxScreen}>
           <View style={[styles.inboxHeader, { borderBottomColor: theme.border }]}>
-            <ThemedText type="h4">Inbox</ThemedText>
+            <ThemedText type="h4">{t("mirrorWorld.tasks.labelInbox")}</ThemedText>
             <Pressable 
               style={[styles.composeBtn, { backgroundColor: theme.primary }]}
               onPress={() => {
@@ -482,14 +483,14 @@ export function EmailSimulation({ onComplete, stepIndex }: SimulationProps) {
             <View style={[styles.emailDot, { backgroundColor: theme.primary }]} />
             <View style={{ flex: 1 }}>
               <ThemedText type="body" style={{ fontWeight: "600" }}>Amazon</ThemedText>
-              <ThemedText type="small" style={{ color: theme.textSecondary }}>Your order has shipped...</ThemedText>
+              <ThemedText type="small" style={{ color: theme.textSecondary }}>{t("mirrorWorld.tasks.statusOrderShipped")}</ThemedText>
             </View>
           </View>
           <View style={[styles.emailRow, { borderBottomColor: theme.border }]}>
             <View style={styles.emailDot} />
             <View style={{ flex: 1 }}>
               <ThemedText type="body">Newsletter</ThemedText>
-              <ThemedText type="small" style={{ color: theme.textSecondary }}>Weekly updates...</ThemedText>
+              <ThemedText type="small" style={{ color: theme.textSecondary }}>{t("mirrorWorld.tasks.labelNewsletter")}</ThemedText>
             </View>
           </View>
         </View>
@@ -501,14 +502,14 @@ export function EmailSimulation({ onComplete, stepIndex }: SimulationProps) {
     return (
       <View style={styles.simulationContainer}>
         <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
-          Type the recipient's email address
+          {t("common.loading") === "טוען..." ? "הקלד את כתובת האימייל של הנמען" : "Type the recipient's email address"}
         </ThemedText>
         <View style={styles.composeScreen}>
           <View style={[styles.emailField, { borderBottomColor: theme.border }]}>
-            <ThemedText type="body" style={{ width: 50, color: theme.textSecondary }}>To:</ThemedText>
+            <ThemedText type="body" style={{ width: 50, color: theme.textSecondary }}>{t("mirrorWorld.tasks.labelTo")}</ThemedText>
             <TextInput
-              style={[styles.emailInput, { color: theme.text }]}
-              placeholder="Enter email address"
+              style={[styles.emailInput, { color: theme.text, textAlign: t("common.loading") === "טוען..." ? "right" : "left" }]}
+              placeholder={t("mirrorWorld.tasks.placeholderEmail")}
               placeholderTextColor={theme.textSecondary}
               value={emailTo}
               onChangeText={setEmailTo}
@@ -522,7 +523,7 @@ export function EmailSimulation({ onComplete, stepIndex }: SimulationProps) {
               onComplete();
             }}
           >
-            <ThemedText style={{ color: "#FFFFFF" }}>Continue</ThemedText>
+            <ThemedText style={{ color: "#FFFFFF" }}>{t("mirrorWorld.tasks.btnContinue")}</ThemedText>
           </Pressable>
         </View>
       </View>
@@ -533,16 +534,16 @@ export function EmailSimulation({ onComplete, stepIndex }: SimulationProps) {
     return (
       <View style={styles.simulationContainer}>
         <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
-          Type your message in the box
+          {t("common.loading") === "טוען..." ? "כתוב את ההודעה שלך בתיבה" : "Type your message in the box"}
         </ThemedText>
         <View style={styles.composeScreen}>
           <View style={[styles.emailField, { borderBottomColor: theme.border }]}>
-            <ThemedText type="body" style={{ width: 50, color: theme.textSecondary }}>To:</ThemedText>
-            <ThemedText type="body">sarah@email.com</ThemedText>
+            <ThemedText type="body" style={{ width: 50, color: theme.textSecondary }}>{t("mirrorWorld.tasks.labelTo")}</ThemedText>
+            <ThemedText type="body">{t("mirrorWorld.tasks.emailSarah")}</ThemedText>
           </View>
           <TextInput
-            style={[styles.messageInput, { color: theme.text, backgroundColor: theme.backgroundSecondary }]}
-            placeholder="Write your message here..."
+            style={[styles.messageInput, { color: theme.text, backgroundColor: theme.backgroundSecondary, textAlign: t("common.loading") === "טוען..." ? "right" : "left" }]}
+            placeholder={t("mirrorWorld.tasks.placeholderMessage")}
             placeholderTextColor={theme.textSecondary}
             value={emailBody}
             onChangeText={setEmailBody}
@@ -556,7 +557,7 @@ export function EmailSimulation({ onComplete, stepIndex }: SimulationProps) {
               onComplete();
             }}
           >
-            <ThemedText style={{ color: "#FFFFFF" }}>Continue</ThemedText>
+            <ThemedText style={{ color: "#FFFFFF" }}>{t("mirrorWorld.tasks.btnContinue")}</ThemedText>
           </Pressable>
         </View>
       </View>
@@ -567,15 +568,15 @@ export function EmailSimulation({ onComplete, stepIndex }: SimulationProps) {
     return (
       <View style={styles.simulationContainer}>
         <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
-          Tap the Send button to send your email
+          {t("common.loading") === "טוען..." ? "הקש על כפתור השליחה כדי לשלוח את האימייל" : "Tap the Send button to send your email"}
         </ThemedText>
         <View style={styles.composeScreen}>
           <View style={[styles.emailField, { borderBottomColor: theme.border }]}>
-            <ThemedText type="body" style={{ width: 50, color: theme.textSecondary }}>To:</ThemedText>
-            <ThemedText type="body">sarah@email.com</ThemedText>
+            <ThemedText type="body" style={{ width: 50, color: theme.textSecondary }}>{t("mirrorWorld.tasks.labelTo")}</ThemedText>
+            <ThemedText type="body">{t("mirrorWorld.tasks.emailSarah")}</ThemedText>
           </View>
           <View style={[styles.messagePreview, { backgroundColor: theme.backgroundSecondary }]}>
-            <ThemedText type="body">Hi Sarah,{"\n\n"}Hope you're doing well! Just wanted to say hello.{"\n\n"}Love,{"\n"}Mom/Dad</ThemedText>
+            <ThemedText type="body" style={{ textAlign: t("common.loading") === "טוען..." ? "right" : "left" }}>{t("mirrorWorld.tasks.emailPreview")}</ThemedText>
           </View>
           <Pressable 
             style={[styles.sendBtn, { backgroundColor: theme.primary }]}
@@ -586,7 +587,7 @@ export function EmailSimulation({ onComplete, stepIndex }: SimulationProps) {
           >
             <Feather name="send" size={20} color="#FFFFFF" />
             <ThemedText style={{ color: "#FFFFFF", fontWeight: "600", marginLeft: Spacing.sm }}>
-              Send Email
+              {t("mirrorWorld.tasks.btnSendEmail")}
             </ThemedText>
           </Pressable>
         </View>
@@ -616,21 +617,21 @@ const styles = StyleSheet.create({
   },
   appIcon: {
     alignItems: "center",
-    width: 72,
+    width: 80,
   },
   appIconBg: {
-    width: 60,
-    height: 60,
-    borderRadius: 16,
+    width: 64,
+    height: 64,
+    borderRadius: BorderRadius.lg,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: Spacing.xs,
   },
   appIconLabel: {
     textAlign: "center",
-    fontSize: 12,
   },
   contactsList: {
+    flex: 1,
     width: "100%",
   },
   contactRow: {
@@ -638,52 +639,53 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: Spacing.md,
     borderBottomWidth: 1,
-    gap: Spacing.md,
-  },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: "center",
-    justifyContent: "center",
   },
   contactCard: {
-    flexDirection: "row",
-    alignItems: "center",
     padding: Spacing.lg,
     borderRadius: BorderRadius.lg,
-    gap: Spacing.md,
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
   },
-  contactInfo: {
-    flex: 1,
-  },
-  videoCallBtn: {
+  avatar: {
     width: 48,
     height: 48,
     borderRadius: 24,
     alignItems: "center",
     justifyContent: "center",
+    marginRight: Spacing.md,
+  },
+  contactInfo: {
+    flex: 1,
+  },
+  videoCallBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
   },
   callingScreen: {
+    flex: 1,
     alignItems: "center",
-    padding: Spacing.xl,
+    justifyContent: "center",
   },
   callingAvatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     alignItems: "center",
     justifyContent: "center",
   },
   callingDots: {
     flexDirection: "row",
     gap: Spacing.sm,
-    marginTop: Spacing.lg,
+    marginTop: Spacing.xl,
   },
   dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
   },
   videoCallScreen: {
     flex: 1,
@@ -691,76 +693,81 @@ const styles = StyleSheet.create({
   },
   videoFeed: {
     flex: 1,
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.xl,
     alignItems: "center",
     justifyContent: "center",
-    minHeight: 150,
+    marginBottom: Spacing.xl,
   },
   callControls: {
     flexDirection: "row",
     justifyContent: "center",
     gap: Spacing.xl,
-    marginTop: Spacing.lg,
+    paddingBottom: Spacing.xl,
   },
   controlBtn: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     alignItems: "center",
     justifyContent: "center",
   },
   endCallBtn: {
-    backgroundColor: "#E74C3C",
+    backgroundColor: "#FF3B30",
   },
   searchContainer: {
-    width: "100%",
+    flexDirection: "row",
+    gap: Spacing.md,
+    alignItems: "center",
   },
   searchBox: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    paddingHorizontal: Spacing.md,
+    height: 50,
     borderWidth: 1,
-    gap: Spacing.sm,
+    borderRadius: BorderRadius.md,
   },
   searchInput: {
     flex: 1,
+    marginLeft: Spacing.sm,
     fontSize: 16,
   },
   searchBtn: {
-    padding: Spacing.md,
+    height: 50,
+    paddingHorizontal: Spacing.lg,
     borderRadius: BorderRadius.md,
-    alignItems: "center",
-    marginTop: Spacing.md,
+    justifyContent: "center",
   },
   productList: {
-    width: "100%",
     gap: Spacing.md,
   },
   productCard: {
     flexDirection: "row",
     alignItems: "center",
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
-    gap: Spacing.md,
+    borderRadius: BorderRadius.lg,
   },
   productImage: {
-    width: 50,
-    height: 50,
-    borderRadius: BorderRadius.sm,
+    width: 48,
+    height: 48,
+    borderRadius: BorderRadius.md,
     alignItems: "center",
     justifyContent: "center",
+    marginRight: Spacing.md,
   },
   productInfo: {
     flex: 1,
   },
   addBtn: {
-    paddingHorizontal: Spacing.lg,
+    paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.md,
   },
   cartContainer: {
-    width: "100%",
+    backgroundColor: "rgba(0,0,0,0.02)",
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.xl,
   },
   cartItem: {
     flexDirection: "row",
@@ -771,7 +778,7 @@ const styles = StyleSheet.create({
   cartTotal: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingTop: Spacing.lg,
+    paddingVertical: Spacing.lg,
     marginTop: Spacing.sm,
     borderTopWidth: 2,
   },
@@ -779,38 +786,37 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    padding: Spacing.lg,
+    height: 56,
     borderRadius: BorderRadius.md,
-    marginTop: Spacing.xl,
+    marginTop: Spacing.lg,
   },
   checkoutScreen: {
-    width: "100%",
+    gap: Spacing.lg,
   },
   paymentCard: {
     flexDirection: "row",
     alignItems: "center",
     padding: Spacing.lg,
-    borderRadius: BorderRadius.md,
-    marginBottom: Spacing.lg,
+    borderRadius: BorderRadius.lg,
   },
   orderSummary: {
     padding: Spacing.lg,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.lg,
+    gap: Spacing.sm,
   },
   summaryRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: Spacing.xs,
   },
   placeOrderBtn: {
+    height: 60,
+    borderRadius: BorderRadius.md,
     alignItems: "center",
     justifyContent: "center",
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.md,
-    marginTop: Spacing.xl,
+    marginTop: Spacing.md,
   },
   inboxScreen: {
-    width: "100%",
+    flex: 1,
   },
   inboxHeader: {
     flexDirection: "row",
@@ -821,9 +827,9 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   composeBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -832,15 +838,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: Spacing.md,
     borderBottomWidth: 1,
-    gap: Spacing.md,
   },
   emailDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: Spacing.md,
   },
   composeScreen: {
-    width: "100%",
+    gap: Spacing.lg,
   },
   emailField: {
     flexDirection: "row",
@@ -851,33 +857,31 @@ const styles = StyleSheet.create({
   emailInput: {
     flex: 1,
     fontSize: 16,
+    paddingVertical: 0,
   },
   messageInput: {
-    padding: Spacing.md,
+    height: 150,
     borderRadius: BorderRadius.md,
-    marginTop: Spacing.lg,
+    padding: Spacing.md,
     fontSize: 16,
-    minHeight: 100,
     textAlignVertical: "top",
   },
   messagePreview: {
-    padding: Spacing.md,
+    padding: Spacing.lg,
     borderRadius: BorderRadius.md,
-    marginTop: Spacing.md,
-    minHeight: 100,
+    minHeight: 120,
   },
   continueBtn: {
-    alignItems: "center",
-    padding: Spacing.md,
+    height: 50,
     borderRadius: BorderRadius.md,
-    marginTop: Spacing.lg,
+    alignItems: "center",
+    justifyContent: "center",
   },
   sendBtn: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    padding: Spacing.lg,
+    height: 56,
     borderRadius: BorderRadius.md,
-    marginTop: Spacing.xl,
   },
 });
