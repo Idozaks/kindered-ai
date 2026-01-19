@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { StyleSheet, View, Platform } from "react-native";
+import React, { useState, useRef } from "react";
+import { StyleSheet, View, Platform, ScrollView, TextInput, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useNavigation } from "@react-navigation/native";
@@ -8,6 +8,7 @@ import { Feather } from "@expo/vector-icons";
 import Animated, {
   FadeIn,
   FadeInUp,
+  FadeInDown,
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
@@ -15,6 +16,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
+import { useMutation } from "@tanstack/react-query";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -22,7 +24,21 @@ import { GlassCard } from "@/components/GlassCard";
 import { GlassButton } from "@/components/GlassButton";
 import { FloatingMicButton } from "@/components/FloatingMicButton";
 import { useTheme } from "@/hooks/useTheme";
-import { Spacing, BorderRadius, Shadows } from "@/constants/theme";
+import { Spacing, BorderRadius } from "@/constants/theme";
+import { apiRequest } from "@/lib/query-client";
+
+interface Message {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+}
+
+const QUICK_QUESTIONS = [
+  "How do I send a photo?",
+  "Help me with WhatsApp",
+  "What is this button?",
+  "I'm confused about something",
+];
 
 export default function GrandchildModeScreen() {
   const insets = useSafeAreaInsets();
@@ -30,8 +46,12 @@ export default function GrandchildModeScreen() {
   const navigation = useNavigation();
   const { theme } = useTheme();
   const { t } = useTranslation();
-  const [isListening, setIsListening] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
+  
   const [isActive, setIsActive] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [inputText, setInputText] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
 
   const pulseValue = useSharedValue(1);
 
@@ -52,28 +72,91 @@ export default function GrandchildModeScreen() {
     transform: [{ scale: pulseValue.value }],
   }));
 
+  const aiMutation = useMutation({
+    mutationFn: async (question: string) => {
+      const response = await apiRequest("POST", "/api/ai/grandchild-help", {
+        question,
+        context: "helping a senior with technology",
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      const assistantMessage: Message = {
+        id: Date.now().toString(),
+        role: "assistant",
+        content: data.response || "I'm here to help! Could you tell me more about what you need?",
+      };
+      setMessages((prev) => [...prev, assistantMessage]);
+      setIsTyping(false);
+      setTimeout(() => {
+        scrollRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    },
+    onError: () => {
+      const assistantMessage: Message = {
+        id: Date.now().toString(),
+        role: "assistant",
+        content: "I'm having trouble connecting right now. Let me try to help anyway! What would you like to do?",
+      };
+      setMessages((prev) => [...prev, assistantMessage]);
+      setIsTyping(false);
+    },
+  });
+
   const handleStartSession = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setIsActive(true);
+    const welcomeMessage: Message = {
+      id: "welcome",
+      role: "assistant",
+      content: "Hi there! I'm here to help you with anything on your phone or tablet. Just ask me a question, or tap one of the suggestions below!",
+    };
+    setMessages([welcomeMessage]);
+  };
+
+  const handleSendMessage = (text: string) => {
+    if (!text.trim()) return;
+    
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: text.trim(),
+    };
+    setMessages((prev) => [...prev, userMessage]);
+    setInputText("");
+    setIsTyping(true);
+    
+    setTimeout(() => {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    }, 100);
+    
+    aiMutation.mutate(text.trim());
+  };
+
+  const handleQuickQuestion = (question: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    handleSendMessage(question);
   };
 
   const handleMicPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setIsListening(!isListening);
+    handleSendMessage("I need help with something on my screen");
   };
 
   return (
     <ThemedView style={styles.container}>
-      <View
-        style={[
-          styles.content,
-          {
-            paddingTop: headerHeight + Spacing.xl,
-            paddingBottom: insets.bottom + 120,
-          },
-        ]}
-      >
-        {!isActive ? (
+      {!isActive ? (
+        <View
+          style={[
+            styles.content,
+            {
+              paddingTop: headerHeight + Spacing.xl,
+              paddingBottom: insets.bottom + Spacing.xl,
+            },
+          ]}
+        >
           <Animated.View
             entering={FadeInUp.duration(600)}
             style={styles.introContainer}
@@ -109,85 +192,132 @@ export default function GrandchildModeScreen() {
             >
               {t("common.start")}
             </GlassButton>
-
-            {Platform.OS === "web" ? (
-              <GlassCard style={styles.webNotice}>
-                <View style={styles.noticeRow}>
-                  <Feather
-                    name="info"
-                    size={20}
-                    color={theme.warning}
-                    style={styles.noticeIcon}
-                  />
-                  <ThemedText type="small">
-                    Run in Expo Go for full screen sharing
-                  </ThemedText>
-                </View>
-              </GlassCard>
-            ) : null}
           </Animated.View>
-        ) : (
-          <Animated.View
-            entering={FadeIn.duration(600)}
-            style={styles.activeContainer}
+        </View>
+      ) : (
+        <View style={[styles.chatContainer, { paddingTop: headerHeight }]}>
+          <ScrollView
+            ref={scrollRef}
+            style={styles.messageList}
+            contentContainerStyle={[
+              styles.messageContent,
+              { paddingBottom: Spacing.lg },
+            ]}
+            showsVerticalScrollIndicator={false}
           >
-            <Animated.View style={[styles.visualizer, pulseStyle]}>
-              <View
+            {messages.map((message, index) => (
+              <Animated.View
+                key={message.id}
+                entering={FadeInDown.delay(index === messages.length - 1 ? 0 : 0).duration(300)}
                 style={[
-                  styles.visualizerInner,
-                  { backgroundColor: theme.primary + "30" },
+                  styles.messageBubble,
+                  message.role === "user"
+                    ? [styles.userBubble, { backgroundColor: theme.primary }]
+                    : [styles.assistantBubble, { backgroundColor: theme.card }],
                 ]}
               >
-                <View
+                {message.role === "assistant" ? (
+                  <View style={styles.assistantHeader}>
+                    <View style={[styles.assistantAvatar, { backgroundColor: theme.primary + "20" }]}>
+                      <Feather name="heart" size={16} color={theme.primary} />
+                    </View>
+                    <ThemedText type="small" style={{ color: theme.textSecondary, fontWeight: "600" }}>
+                      Kindred AI
+                    </ThemedText>
+                  </View>
+                ) : null}
+                <ThemedText
+                  type="body"
                   style={[
-                    styles.visualizerCore,
-                    { backgroundColor: theme.primary },
+                    styles.messageText,
+                    message.role === "user" ? { color: "#FFFFFF" } : {},
                   ]}
                 >
-                  <Feather name="eye" size={48} color="#FFFFFF" />
-                </View>
-              </View>
-            </Animated.View>
-
-            <GlassCard style={styles.statusCard}>
-              <View style={styles.statusRow}>
-                <View
-                  style={[styles.statusDot, { backgroundColor: theme.success }]}
-                />
-                <ThemedText type="body" style={styles.statusText}>
-                  {t("grandchildMode.watching")}
+                  {message.content}
                 </ThemedText>
-              </View>
-              <ThemedText
-                type="small"
-                style={[styles.statusHint, { color: theme.textSecondary }]}
+              </Animated.View>
+            ))}
+            
+            {isTyping ? (
+              <Animated.View
+                entering={FadeIn.duration(200)}
+                style={[styles.typingIndicator, { backgroundColor: theme.card }]}
               >
-                {isListening
-                  ? t("common.listening")
-                  : t("common.tapToSpeak")}
-              </ThemedText>
-            </GlassCard>
+                <View style={styles.typingDots}>
+                  <View style={[styles.dot, { backgroundColor: theme.primary }]} />
+                  <View style={[styles.dot, { backgroundColor: theme.primary, opacity: 0.7 }]} />
+                  <View style={[styles.dot, { backgroundColor: theme.primary, opacity: 0.4 }]} />
+                </View>
+                <ThemedText type="small" style={{ color: theme.textSecondary }}>
+                  Thinking...
+                </ThemedText>
+              </Animated.View>
+            ) : null}
+            
+            {messages.length === 1 ? (
+              <Animated.View 
+                entering={FadeInUp.delay(300).duration(400)}
+                style={styles.quickQuestions}
+              >
+                <ThemedText type="small" style={[styles.quickLabel, { color: theme.textSecondary }]}>
+                  Common questions:
+                </ThemedText>
+                {QUICK_QUESTIONS.map((question, index) => (
+                  <Pressable
+                    key={index}
+                    style={[styles.quickButton, { backgroundColor: theme.backgroundSecondary, borderColor: theme.border }]}
+                    onPress={() => handleQuickQuestion(question)}
+                  >
+                    <Feather name="help-circle" size={16} color={theme.primary} />
+                    <ThemedText type="body" style={styles.quickText}>{question}</ThemedText>
+                  </Pressable>
+                ))}
+              </Animated.View>
+            ) : null}
+          </ScrollView>
 
-            <GlassButton
-              variant="secondary"
+          <View style={[styles.inputArea, { paddingBottom: insets.bottom + Spacing.md, backgroundColor: theme.background }]}>
+            <View style={[styles.inputRow, { backgroundColor: theme.card, borderColor: theme.border }]}>
+              <TextInput
+                style={[styles.textInput, { color: theme.text }]}
+                placeholder="Type your question here..."
+                placeholderTextColor={theme.textSecondary}
+                value={inputText}
+                onChangeText={setInputText}
+                onSubmitEditing={() => handleSendMessage(inputText)}
+                multiline
+              />
+              <Pressable
+                style={[styles.sendButton, { backgroundColor: inputText.trim() ? theme.primary : theme.backgroundSecondary }]}
+                onPress={() => handleSendMessage(inputText)}
+                disabled={!inputText.trim()}
+              >
+                <Feather name="send" size={20} color={inputText.trim() ? "#FFFFFF" : theme.textSecondary} />
+              </Pressable>
+            </View>
+            
+            <Pressable
+              style={[styles.endSessionBtn, { borderColor: theme.danger }]}
               onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                 setIsActive(false);
+                setMessages([]);
                 navigation.goBack();
               }}
-              icon={<Feather name="x" size={20} color={theme.danger} />}
-              style={styles.endButton}
-              testID="end-session-button"
             >
-              {t("common.end")}
-            </GlassButton>
-          </Animated.View>
-        )}
-      </View>
+              <Feather name="x" size={16} color={theme.danger} />
+              <ThemedText type="small" style={{ color: theme.danger, marginLeft: Spacing.xs }}>
+                End Session
+              </ThemedText>
+            </Pressable>
+          </View>
+        </View>
+      )}
 
       {isActive ? (
         <FloatingMicButton
           onPress={handleMicPress}
-          isListening={isListening}
+          isListening={false}
           testID="mic-button"
         />
       ) : null}
@@ -232,66 +362,116 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 300,
   },
-  webNotice: {
-    marginTop: Spacing["2xl"],
-    padding: Spacing.lg,
-  },
-  noticeRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  noticeIcon: {
-    marginRight: Spacing.sm,
-  },
-  activeContainer: {
+  chatContainer: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
   },
-  visualizer: {
-    marginBottom: Spacing["3xl"],
+  messageList: {
+    flex: 1,
   },
-  visualizerInner: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    alignItems: "center",
-    justifyContent: "center",
+  messageContent: {
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.lg,
   },
-  visualizerCore: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    alignItems: "center",
-    justifyContent: "center",
-    ...Shadows.floating,
+  messageBubble: {
+    maxWidth: "85%",
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.md,
   },
-  statusCard: {
-    padding: Spacing.xl,
-    alignItems: "center",
-    marginBottom: Spacing["2xl"],
-    width: "100%",
-    maxWidth: 300,
+  userBubble: {
+    alignSelf: "flex-end",
+    borderBottomRightRadius: BorderRadius.sm,
   },
-  statusRow: {
+  assistantBubble: {
+    alignSelf: "flex-start",
+    borderBottomLeftRadius: BorderRadius.sm,
+  },
+  assistantHeader: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: Spacing.sm,
   },
-  statusDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+  assistantAvatar: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: Spacing.sm,
   },
-  statusText: {
-    fontWeight: "600",
+  messageText: {
+    lineHeight: 24,
   },
-  statusHint: {
-    textAlign: "center",
+  typingIndicator: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    alignSelf: "flex-start",
+    marginBottom: Spacing.md,
   },
-  endButton: {
-    width: "100%",
-    maxWidth: 300,
+  typingDots: {
+    flexDirection: "row",
+    marginRight: Spacing.sm,
+    gap: 4,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  quickQuestions: {
+    marginTop: Spacing.lg,
+  },
+  quickLabel: {
+    marginBottom: Spacing.md,
+  },
+  quickButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    marginBottom: Spacing.sm,
+  },
+  quickText: {
+    marginLeft: Spacing.sm,
+  },
+  inputArea: {
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(0,0,0,0.1)",
+  },
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+  },
+  textInput: {
+    flex: 1,
+    fontSize: 18,
+    maxHeight: 100,
+    paddingVertical: Spacing.sm,
+  },
+  sendButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: Spacing.sm,
+  },
+  endSessionBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: Spacing.md,
+    marginTop: Spacing.sm,
+    borderWidth: 1,
+    borderRadius: BorderRadius.md,
   },
 });
