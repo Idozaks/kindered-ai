@@ -6,7 +6,14 @@ Kindred AI is an ultra-accessible digital companion mobile application designed 
 
 Key features include:
 - **Grandchild Mode**: Live screen sharing with AI guidance
-- **Decision Navigator**: Step-by-step task breakdown for complex goals
+- **Decision Navigator**: AI-powered step-by-step task breakdown with interactive UI featuring:
+  - Animated progress ring with percentage display
+  - Encouraging messages that change based on progress
+  - Difficulty badges (Easy/Medium/Complex) and time estimates
+  - Expandable step cards with subtask checklists
+  - Helpful tips section with task-specific AI guidance
+  - Celebration overlay when all steps completed
+  - Full Hebrew RTL support
 - **Letter Helper**: Document scanning and plain-language translation
 - **Mirror World**: Safe practice environment for learning digital tasks
 - **Global Mic Button**: Voice-first interaction available throughout the app
