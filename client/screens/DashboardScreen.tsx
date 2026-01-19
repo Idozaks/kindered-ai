@@ -20,11 +20,11 @@ import { RootStackParamList } from "@/navigation/RootStackNavigator";
 
 // Import tool icons
 // @ts-ignore
-import monitorIcon from "../../assets/images/monitor-tool.png";
+import monitorIcon from "@/assets/images/monitor-tool.png";
 // @ts-ignore
-import letterIcon from "../../assets/images/letter-tool.png";
+import letterIcon from "@/assets/images/letter-tool.png";
 // @ts-ignore
-import mirrorIcon from "../../assets/images/mirror-tool.png";
+import mirrorIcon from "@/assets/images/mirror-tool.png";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
