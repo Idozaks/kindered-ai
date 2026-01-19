@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { StyleSheet, View, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
-import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import { Feather } from "@expo/vector-icons";
 import Animated, { FadeInDown, FadeInUp, ZoomIn } from "react-native-reanimated";
@@ -12,6 +11,11 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { GlassCard } from "@/components/GlassCard";
 import { GlassButton } from "@/components/GlassButton";
+import { 
+  VideoCallSimulation, 
+  GrocerySimulation, 
+  EmailSimulation 
+} from "@/components/PracticeSimulations";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 
@@ -72,7 +76,6 @@ const PRACTICE_TASKS: PracticeTask[] = [
 export default function MirrorWorldScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
-  const navigation = useNavigation();
   const { theme } = useTheme();
   const { t } = useTranslation();
   const [selectedTask, setSelectedTask] = useState<PracticeTask | null>(null);
@@ -109,6 +112,36 @@ export default function MirrorWorldScreen() {
     setSelectedTask(null);
     setCurrentStep(0);
     setCompleted(false);
+  };
+
+  const renderSimulation = () => {
+    if (!selectedTask) return null;
+
+    switch (selectedTask.id) {
+      case "videocall":
+        return (
+          <VideoCallSimulation 
+            stepIndex={currentStep} 
+            onComplete={handleNextStep} 
+          />
+        );
+      case "grocery":
+        return (
+          <GrocerySimulation 
+            stepIndex={currentStep} 
+            onComplete={handleNextStep} 
+          />
+        );
+      case "email":
+        return (
+          <EmailSimulation 
+            stepIndex={currentStep} 
+            onComplete={handleNextStep} 
+          />
+        );
+      default:
+        return null;
+    }
   };
 
   return (
@@ -295,24 +328,8 @@ export default function MirrorWorldScreen() {
               <ThemedText type="h4" style={styles.stepText}>
                 {selectedTask.steps[currentStep]}
               </ThemedText>
-              <View
-                style={[
-                  styles.mockScreen,
-                  { backgroundColor: theme.backgroundSecondary },
-                ]}
-              >
-                <Feather
-                  name={selectedTask.icon}
-                  size={64}
-                  color={theme.textSecondary}
-                  style={{ opacity: 0.3 }}
-                />
-                <ThemedText
-                  type="small"
-                  style={{ color: theme.textSecondary, marginTop: Spacing.md }}
-                >
-                  Simulated screen area
-                </ThemedText>
+              <View style={styles.simulationArea}>
+                {renderSimulation()}
               </View>
             </GlassCard>
 
@@ -323,16 +340,6 @@ export default function MirrorWorldScreen() {
                 style={styles.backButton}
               >
                 {t("common.back")}
-              </GlassButton>
-              <GlassButton
-                onPress={handleNextStep}
-                icon={<Feather name="arrow-right" size={20} color="#FFFFFF" />}
-                style={styles.nextButton}
-                testID="next-step-button"
-              >
-                {currentStep < selectedTask.steps.length - 1
-                  ? t("common.next")
-                  : t("common.done")}
               </GlassButton>
             </View>
           </Animated.View>
@@ -413,7 +420,7 @@ const styles = StyleSheet.create({
     marginRight: Spacing.lg,
   },
   progressContainer: {
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.lg,
   },
   progressBar: {
     height: 8,
@@ -428,11 +435,12 @@ const styles = StyleSheet.create({
   },
   stepCard: {
     flex: 1,
-    padding: Spacing.xl,
+    padding: Spacing.lg,
     alignItems: "center",
+    minHeight: 400,
   },
   stepNumberContainer: {
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.md,
   },
   stepNumber: {
     width: 48,
@@ -448,26 +456,20 @@ const styles = StyleSheet.create({
   },
   stepText: {
     textAlign: "center",
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.lg,
   },
-  mockScreen: {
+  simulationArea: {
     flex: 1,
     width: "100%",
-    borderRadius: BorderRadius.md,
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: 200,
+    minHeight: 280,
   },
   practiceActions: {
     flexDirection: "row",
     gap: Spacing.md,
-    marginTop: Spacing.xl,
+    marginTop: Spacing.lg,
   },
   backButton: {
     flex: 1,
-  },
-  nextButton: {
-    flex: 2,
   },
   completedContainer: {
     flex: 1,
