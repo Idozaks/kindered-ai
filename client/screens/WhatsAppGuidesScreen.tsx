@@ -107,57 +107,54 @@ export default function WhatsAppGuidesScreen() {
             key={journey.id}
             entering={FadeInDown.delay(100 + index * 50).duration(400)}
           >
-            <Pressable
+            <GlassCard
+              style={styles.journeyCard}
               onPress={() => handleSelectJourney(journey)}
               testID={`journey-${journey.id}`}
-            >
-              <GlassCard
-                style={styles.journeyCard}
-                icon={
-                  <View
-                    style={[
-                      styles.journeyNumber,
-                      { backgroundColor: WHATSAPP_GREEN + "20" },
-                    ]}
-                  >
-                    <ThemedText
-                      style={[styles.journeyNumberText, { color: WHATSAPP_GREEN }]}
-                    >
-                      {index + 1}
-                    </ThemedText>
-                  </View>
-                }
-              >
-                <View style={styles.journeyTextContainer}>
-                  <ThemedText type="h4" style={styles.journeyTitle}>
-                    {journey.title}
-                  </ThemedText>
+              icon={
+                <View
+                  style={[
+                    styles.journeyNumber,
+                    { backgroundColor: WHATSAPP_GREEN + "20" },
+                  ]}
+                >
                   <ThemedText
-                    type="small"
-                    style={[styles.journeyDescription, { color: theme.textSecondary }]}
+                    style={[styles.journeyNumberText, { color: WHATSAPP_GREEN }]}
                   >
-                    {journey.description}
+                    {index + 1}
                   </ThemedText>
-                  <View style={styles.stepCountRow}>
-                    <Feather
-                      name="list"
-                      size={14}
-                      color={theme.textSecondary}
-                    />
-                    <ThemedText
-                      style={[styles.stepCount, { color: theme.textSecondary }]}
-                    >
-                      {journey.steps.length} steps
-                    </ThemedText>
-                  </View>
                 </View>
-                <Feather
-                  name="chevron-right"
-                  size={24}
-                  color={theme.textSecondary}
-                />
-              </GlassCard>
-            </Pressable>
+              }
+            >
+              <View style={styles.journeyTextContainer}>
+                <ThemedText type="h4" style={styles.journeyTitle}>
+                  {journey.title}
+                </ThemedText>
+                <ThemedText
+                  type="small"
+                  style={[styles.journeyDescription, { color: theme.textSecondary }]}
+                >
+                  {journey.description}
+                </ThemedText>
+                <View style={styles.stepCountRow}>
+                  <Feather
+                    name="list"
+                    size={14}
+                    color={theme.textSecondary}
+                  />
+                  <ThemedText
+                    style={[styles.stepCount, { color: theme.textSecondary }]}
+                  >
+                    {journey.steps.length} steps
+                  </ThemedText>
+                </View>
+              </View>
+              <Feather
+                name="chevron-right"
+                size={24}
+                color={theme.textSecondary}
+              />
+            </GlassCard>
           </Animated.View>
         ))}
       </View>
