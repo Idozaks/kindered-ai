@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet, View, FlatList } from "react-native";
+import { StyleSheet, View, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useNavigation } from "@react-navigation/native";
@@ -13,7 +13,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { GlassCard } from "@/components/GlassCard";
 import { GlassButton } from "@/components/GlassButton";
 import { useTheme } from "@/hooks/useTheme";
-import { Spacing, BorderRadius, Shadows } from "@/constants/theme";
+import { Spacing, BorderRadius } from "@/constants/theme";
 
 interface PracticeTask {
   id: string;
@@ -113,16 +113,18 @@ export default function MirrorWorldScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <View
-        style={[
-          styles.content,
-          {
-            paddingTop: headerHeight + Spacing.xl,
-            paddingBottom: insets.bottom + Spacing.xl,
-          },
-        ]}
-      >
-        {!selectedTask ? (
+      {!selectedTask ? (
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={[
+            styles.scrollContent,
+            {
+              paddingTop: headerHeight + Spacing.xl,
+              paddingBottom: insets.bottom + Spacing.xl,
+            },
+          ]}
+          showsVerticalScrollIndicator={false}
+        >
           <Animated.View entering={FadeInDown.duration(500)}>
             <View style={styles.header}>
               <View
@@ -148,35 +150,43 @@ export default function MirrorWorldScreen() {
               {t("mirrorWorld.selectTask")}
             </ThemedText>
 
-            <FlatList
-              data={PRACTICE_TASKS}
-              keyExtractor={(item) => item.id}
-              renderItem={({ item, index }) => (
-                <Animated.View entering={FadeInUp.delay(index * 100).duration(400)}>
-                  <GlassCard
-                    onPress={() => handleSelectTask(item)}
-                    style={styles.taskCard}
-                    icon={
-                      <View
-                        style={[
-                          styles.taskIcon,
-                          { backgroundColor: item.color + "20" },
-                        ]}
-                      >
-                        <Feather name={item.icon} size={28} color={item.color} />
-                      </View>
-                    }
-                    title={item.title}
-                    description={item.description}
-                    testID={`task-${item.id}`}
-                  />
-                </Animated.View>
-              )}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.taskList}
-            />
+            {PRACTICE_TASKS.map((task, index) => (
+              <Animated.View
+                key={task.id}
+                entering={FadeInUp.delay(index * 100).duration(400)}
+                style={styles.taskCardWrapper}
+              >
+                <GlassCard
+                  onPress={() => handleSelectTask(task)}
+                  style={styles.taskCard}
+                  icon={
+                    <View
+                      style={[
+                        styles.taskIcon,
+                        { backgroundColor: task.color + "20" },
+                      ]}
+                    >
+                      <Feather name={task.icon} size={28} color={task.color} />
+                    </View>
+                  }
+                  title={task.title}
+                  description={task.description}
+                  testID={`task-${task.id}`}
+                />
+              </Animated.View>
+            ))}
           </Animated.View>
-        ) : completed ? (
+        </ScrollView>
+      ) : completed ? (
+        <View
+          style={[
+            styles.content,
+            {
+              paddingTop: headerHeight + Spacing.xl,
+              paddingBottom: insets.bottom + Spacing.xl,
+            },
+          ]}
+        >
           <Animated.View
             entering={ZoomIn.duration(500)}
             style={styles.completedContainer}
@@ -217,7 +227,17 @@ export default function MirrorWorldScreen() {
               </GlassButton>
             </View>
           </Animated.View>
-        ) : (
+        </View>
+      ) : (
+        <View
+          style={[
+            styles.content,
+            {
+              paddingTop: headerHeight + Spacing.xl,
+              paddingBottom: insets.bottom + Spacing.xl,
+            },
+          ]}
+        >
           <Animated.View entering={FadeInUp.duration(500)} style={styles.practiceContainer}>
             <View style={styles.practiceHeader}>
               <View
@@ -312,8 +332,8 @@ export default function MirrorWorldScreen() {
               </GlassButton>
             </View>
           </Animated.View>
-        )}
-      </View>
+        </View>
+      )}
     </ThemedView>
   );
 }
@@ -321,6 +341,12 @@ export default function MirrorWorldScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: Spacing.lg,
   },
   content: {
     flex: 1,
@@ -348,8 +374,8 @@ const styles = StyleSheet.create({
   sectionTitle: {
     marginBottom: Spacing.lg,
   },
-  taskList: {
-    gap: Spacing.md,
+  taskCardWrapper: {
+    marginBottom: Spacing.md,
   },
   taskCard: {
     flexDirection: "row",
