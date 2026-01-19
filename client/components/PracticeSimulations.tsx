@@ -617,13 +617,13 @@ export function WhatsAppSimulation({ onComplete, stepIndex }: SimulationProps) {
         <View style={styles.homeScreen}>
           <AppIcon 
             name={t("mirrorWorld.tasks.appWhatsApp")} 
-            icon="message-circle" 
+            icon="💬" 
             color="#25D366" 
             onPress={onComplete}
           />
-          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="image" color="#52C41A" onPress={() => {}} />
-          <AppIcon name={t("mirrorWorld.tasks.appEmail")} icon="mail" color="#F4B942" onPress={() => {}} />
-          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="settings" color="#9B59B6" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="📸" color="#52C41A" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appEmail")} icon="📧" color="#F4B942" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="⚙️" color="#9B59B6" onPress={() => {}} />
         </View>
       </View>
     );
@@ -807,15 +807,15 @@ export function BankSimulation({ onComplete, stepIndex }: SimulationProps) {
           {t("common.loading") === "טוען..." ? "הקש על אפליקציית הבנק כדי לפתוח אותה" : "Tap the Bank app to open it"}
         </ThemedText>
         <View style={styles.homeScreen}>
-          <AppIcon name={t("mirrorWorld.tasks.appWhatsApp")} icon="message-circle" color="#25D366" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appWhatsApp")} icon="💬" color="#25D366" onPress={() => {}} />
           <AppIcon 
             name={t("mirrorWorld.tasks.appBank")} 
-            icon="credit-card" 
+            icon="💳" 
             color="#1E88E5" 
             onPress={onComplete}
           />
-          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="image" color="#52C41A" onPress={() => {}} />
-          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="settings" color="#9B59B6" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="📸" color="#52C41A" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="⚙️" color="#9B59B6" onPress={() => {}} />
         </View>
       </View>
     );
@@ -952,15 +952,15 @@ export function DoctorSimulation({ onComplete, stepIndex }: SimulationProps) {
           {t("common.loading") === "טוען..." ? "הקש על אפליקציית הבריאות כדי לפתוח אותה" : "Tap the Health app to open it"}
         </ThemedText>
         <View style={styles.homeScreen}>
-          <AppIcon name={t("mirrorWorld.tasks.appBank")} icon="credit-card" color="#1E88E5" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appBank")} icon="💳" color="#1E88E5" onPress={() => {}} />
           <AppIcon 
             name={t("mirrorWorld.tasks.appHealth")} 
             icon="heart" 
             color="#E91E63" 
             onPress={onComplete}
           />
-          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="image" color="#52C41A" onPress={() => {}} />
-          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="settings" color="#9B59B6" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="📸" color="#52C41A" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="⚙️" color="#9B59B6" onPress={() => {}} />
         </View>
       </View>
     );
@@ -1093,12 +1093,12 @@ export function SettingsSimulation({ onComplete, stepIndex }: SimulationProps) {
           {t("common.loading") === "טוען..." ? "הקש על הגדרות כדי לפתוח אותן" : "Tap Settings to open it"}
         </ThemedText>
         <View style={styles.homeScreen}>
-          <AppIcon name={t("mirrorWorld.tasks.appWhatsApp")} icon="message-circle" color="#25D366" onPress={() => {}} />
-          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="image" color="#52C41A" onPress={() => {}} />
-          <AppIcon name={t("mirrorWorld.tasks.appEmail")} icon="mail" color="#F4B942" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appWhatsApp")} icon="💬" color="#25D366" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="📸" color="#52C41A" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appEmail")} icon="📧" color="#F4B942" onPress={() => {}} />
           <AppIcon 
             name={t("mirrorWorld.tasks.appSettings")} 
-            icon="settings" 
+            icon="⚙️" 
             color="#9B59B6" 
             onPress={onComplete}
           />
@@ -1239,15 +1239,15 @@ export function TaxiSimulation({ onComplete, stepIndex }: SimulationProps) {
           {t("common.loading") === "טוען..." ? "הקש על אפליקציית המוניות" : "Tap the Taxi app"}
         </ThemedText>
         <View style={styles.homeScreen}>
-          <AppIcon name={t("mirrorWorld.tasks.appWhatsApp")} icon="message-circle" color="#25D366" onPress={() => {}} />
-          <AppIcon name={t("mirrorWorld.tasks.appBank")} icon="credit-card" color="#1E88E5" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appWhatsApp")} icon="💬" color="#25D366" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appBank")} icon="💳" color="#1E88E5" onPress={() => {}} />
           <AppIcon 
             name={t("mirrorWorld.tasks.appTaxi")} 
             icon="navigation" 
             color="#FF9500" 
             onPress={onComplete}
           />
-          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="settings" color="#9B59B6" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="⚙️" color="#9B59B6" onPress={() => {}} />
         </View>
       </View>
     );
@@ -1479,15 +1479,15 @@ export function PhotosSimulation({ onComplete, stepIndex }: SimulationProps) {
           {t("common.loading") === "טוען..." ? "הקש על אפליקציית התמונות" : "Tap the Photos app"}
         </ThemedText>
         <View style={styles.homeScreen}>
-          <AppIcon name={t("mirrorWorld.tasks.appWhatsApp")} icon="message-circle" color="#25D366" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appWhatsApp")} icon="💬" color="#25D366" onPress={() => {}} />
           <AppIcon 
             name={t("mirrorWorld.tasks.appPhotos")} 
-            icon="image" 
+            icon="📸" 
             color="#52C41A" 
             onPress={onComplete}
           />
-          <AppIcon name={t("mirrorWorld.tasks.appCalendar")} icon="calendar" color="#FF3B30" onPress={() => {}} />
-          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="settings" color="#9B59B6" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appCalendar")} icon="📅" color="#FF3B30" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="⚙️" color="#9B59B6" onPress={() => {}} />
         </View>
       </View>
     );
@@ -1754,15 +1754,15 @@ export function CalendarSimulation({ onComplete, stepIndex }: SimulationProps) {
           {t("common.loading") === "טוען..." ? "הקש על אפליקציית היומן" : "Tap the Calendar app"}
         </ThemedText>
         <View style={styles.homeScreen}>
-          <AppIcon name={t("mirrorWorld.tasks.appWhatsApp")} icon="message-circle" color="#25D366" onPress={() => {}} />
-          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="image" color="#52C41A" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appWhatsApp")} icon="💬" color="#25D366" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="📸" color="#52C41A" onPress={() => {}} />
           <AppIcon 
             name={t("mirrorWorld.tasks.appCalendar")} 
-            icon="calendar" 
+            icon="📅" 
             color="#FF3B30" 
             onPress={onComplete}
           />
-          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="settings" color="#9B59B6" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="⚙️" color="#9B59B6" onPress={() => {}} />
         </View>
       </View>
     );
