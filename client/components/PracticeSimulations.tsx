@@ -30,7 +30,7 @@ function AppIcon({
   onPress 
 }: { 
   name: string; 
-  icon: keyof typeof Feather.glyphMap; 
+  icon: string; 
   color: string;
   onPress: () => void;
 }) {
@@ -62,7 +62,7 @@ function AppIcon({
       testID={`app-icon-${icon}`}
     >
       <View style={[styles.appIconBg, { backgroundColor: color }]}>
-        <Feather name={icon} size={32} color="#FFFFFF" />
+        <ThemedText style={{ fontSize: 32 }}>{icon}</ThemedText>
       </View>
       <ThemedText type="small" style={styles.appIconLabel}>{name}</ThemedText>
     </AnimatedPressable>
@@ -119,13 +119,13 @@ export function VideoCallSimulation({ onComplete, stepIndex }: SimulationProps) 
         <View style={styles.homeScreen}>
           <AppIcon 
             name={t("mirrorWorld.tasks.appVideoCall")} 
-            icon="video" 
+            icon="📹" 
             color="#5B9BD5" 
             onPress={onComplete}
           />
-          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="image" color="#52C41A" onPress={() => {}} />
-          <AppIcon name={t("mirrorWorld.tasks.appMessages")} icon="message-circle" color="#F4B942" onPress={() => {}} />
-          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="settings" color="#9B59B6" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="📸" color="#52C41A" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appMessages")} icon="💬" color="#F4B942" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="⚙️" color="#9B59B6" onPress={() => {}} />
         </View>
       </View>
     );
@@ -269,15 +269,15 @@ export function GrocerySimulation({ onComplete, stepIndex }: SimulationProps) {
           {t("mirrorWorld.tasks.hintVideoOpen").replace(t("mirrorWorld.tasks.appVideoCall"), t("mirrorWorld.tasks.appGroceries"))}
         </ThemedText>
         <View style={styles.homeScreen}>
-          <AppIcon name={t("mirrorWorld.tasks.appMessages")} icon="message-circle" color="#5B9BD5" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appMessages")} icon="💬" color="#5B9BD5" onPress={() => {}} />
           <AppIcon 
             name={t("mirrorWorld.tasks.appGroceries")} 
-            icon="shopping-cart" 
+            icon="🛒" 
             color="#52C41A" 
             onPress={onComplete}
           />
-          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="image" color="#F4B942" onPress={() => {}} />
-          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="settings" color="#9B59B6" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="📸" color="#F4B942" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="⚙️" color="#9B59B6" onPress={() => {}} />
         </View>
       </View>
     );
@@ -453,13 +453,13 @@ export function EmailSimulation({ onComplete, stepIndex }: SimulationProps) {
         <View style={styles.homeScreen}>
           <AppIcon 
             name={t("mirrorWorld.tasks.appEmail")} 
-            icon="mail" 
+            icon="✉️" 
             color="#F4B942" 
             onPress={onComplete}
           />
-          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="image" color="#52C41A" onPress={() => {}} />
-          <AppIcon name={t("mirrorWorld.tasks.appMessages")} icon="message-circle" color="#5B9BD5" onPress={() => {}} />
-          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="settings" color="#9B59B6" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appPhotos")} icon="📸" color="#52C41A" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appMessages")} icon="💬" color="#5B9BD5" onPress={() => {}} />
+          <AppIcon name={t("mirrorWorld.tasks.appSettings")} icon="⚙️" color="#9B59B6" onPress={() => {}} />
         </View>
       </View>
     );
