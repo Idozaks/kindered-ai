@@ -20,8 +20,8 @@ const resources = {
           description: "Understand any document",
         },
         mirror: {
-          title: "Mirror World",
-          description: "Practice before doing",
+          title: "Practice Area",
+          description: "Learn Safely",
         },
       },
       settings: {
@@ -64,8 +64,8 @@ const resources = {
         urgencyLow: "Not urgent",
       },
       mirrorWorld: {
-        title: "Practice Zone",
-        intro: "Practice any task safely here",
+        title: "Practice Area",
+        intro: "Learn Safely",
         selectTask: "Choose what to practice",
         tasks: {
           grocery: "Order Groceries",
@@ -151,8 +151,8 @@ const resources = {
           description: "הבנת כל מסמך",
         },
         mirror: {
-          title: "עולם המראה",
-          description: "תרגול לפני ביצוע",
+          title: "אזור תרגול",
+          description: "למד בבטחה",
         },
       },
       settings: {
@@ -196,7 +196,7 @@ const resources = {
       },
       mirrorWorld: {
         title: "אזור תרגול",
-        intro: "תרגל כל משימה בבטחה כאן",
+        intro: "למד בבטחה",
         selectTask: "בחר מה לתרגל",
         tasks: {
           grocery: "להזמין מצרכים",
