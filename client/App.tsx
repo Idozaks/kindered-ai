@@ -53,7 +53,7 @@ export default function App() {
               <NavigationContainer>
                 <RootStackNavigator />
               </NavigationContainer>
-              <StatusBar style="auto" />
+              <StatusBar style="dark" />
             </KeyboardProvider>
           </GestureHandlerRootView>
         </SafeAreaProvider>
