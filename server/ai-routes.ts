@@ -14,7 +14,7 @@ const ai = new GoogleGenAI({
 
 router.post("/grandchild-help", async (req, res) => {
   try {
-    const { question, context, language } = req.body;
+    const { question, context, language, history } = req.body;
 
     if (!question) {
       return res.status(400).json({ error: "Question is required" });
@@ -38,7 +38,9 @@ router.post("/grandchild-help", async (req, res) => {
 2. אל תשתמש במילים באנגלית, גם לא בסוגריים.
 3. דבר בשפה פשוטה של נכד עוזר.
 4. השתמש בתיאורים ברורים של כפתורים ואייקונים.
-5. התייחס לצבעים ומיקומים על המסך כשזה עוזר.`
+5. התייחס לצבעים ומיקומים על המסך כשזה עוזר.
+6. בסוף התשובה שלך, הוסף תמיד בדיוק 3 שאלות המשך קצרות ורלוונטיות שהמשתמש עשוי לרצות לשאול.
+7. הפרד את השאלות מהתשובה שלך באמצעות השורה "---SUGGESTIONS---" ואז כל שאלה בשורה חדשה.`
       : `You are a kind, patient, and supportive AI assistant helping a senior citizen (someone 70+ years old) with technology. 
 
 Your personality:
@@ -54,11 +56,16 @@ Important guidelines:
 - Reference colors and positions on screen when helpful
 - Avoid technical terms - use everyday language
 - Be encouraging and supportive
-- If unsure, ask a clarifying question in a friendly way`;
+- At the end of your response, always add exactly 3 short and relevant follow-up questions the user might want to ask.
+- Separate the questions from your answer using the line "---SUGGESTIONS---" and then each question on a new line.`;
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: [
+        ...(history || []).map((m: any) => ({
+          role: m.role === "assistant" ? "model" : "user",
+          parts: [{ text: m.content }],
+        })),
         {
           role: "user",
           parts: [{ text: `Context: ${context || "helping with technology"}\n\nUser's question: ${question}` }],
@@ -70,9 +77,15 @@ Important guidelines:
       },
     });
 
-    const text = response.text || "I'm here to help! Could you tell me a bit more about what you need?";
+    const fullText = response.text || (isHebrew ? "אני כאן לעזור! תוכל לספר לי עוד קצת על מה שאתה צריך?" : "I'm here to help! Could you tell me a bit more about what you need?");
+    
+    const parts = fullText.split("---SUGGESTIONS---");
+    const answer = parts[0].trim();
+    const suggestions = parts[1] 
+      ? parts[1].split("\n").map(s => s.trim().replace(/^-\s*/, "")).filter(s => s.length > 0).slice(0, 3)
+      : [];
 
-    res.json({ response: text });
+    res.json({ response: answer, suggestions });
   } catch (error) {
     console.error("AI help error:", error);
     res.status(500).json({ 

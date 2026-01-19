@@ -33,7 +33,6 @@ interface Message {
   content: string;
 }
 
-
 export default function GrandchildModeScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
@@ -44,6 +43,7 @@ export default function GrandchildModeScreen() {
   
   const [isActive, setIsActive] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
 
@@ -72,6 +72,7 @@ export default function GrandchildModeScreen() {
         question,
         context: "helping a senior with technology",
         language: t("common.loading") === "טוען..." ? "he" : "en",
+        history: messages.slice(-4).map(m => ({ role: m.role, content: m.content })),
       });
       return response.json();
     },
@@ -79,9 +80,10 @@ export default function GrandchildModeScreen() {
       const assistantMessage: Message = {
         id: Date.now().toString(),
         role: "assistant",
-        content: data.response || "I'm here to help! Could you tell me more about what you need?",
+        content: data.response || t("grandchildMode.errorMessage"),
       };
       setMessages((prev) => [...prev, assistantMessage]);
+      setSuggestions(data.suggestions || []);
       setIsTyping(false);
       setTimeout(() => {
         scrollRef.current?.scrollToEnd({ animated: true });
@@ -94,6 +96,7 @@ export default function GrandchildModeScreen() {
         content: t("grandchildMode.errorMessage"),
       };
       setMessages((prev) => [...prev, assistantMessage]);
+      setSuggestions([]);
       setIsTyping(false);
     },
   });
@@ -114,6 +117,7 @@ export default function GrandchildModeScreen() {
       content: t("grandchildMode.welcomeMessage"),
     };
     setMessages([welcomeMessage]);
+    setSuggestions(QUICK_QUESTIONS);
   };
 
   const handleSendMessage = (text: string) => {
@@ -127,6 +131,7 @@ export default function GrandchildModeScreen() {
       content: text.trim(),
     };
     setMessages((prev) => [...prev, userMessage]);
+    setSuggestions([]);
     setInputText("");
     setIsTyping(true);
     
@@ -210,7 +215,7 @@ export default function GrandchildModeScreen() {
             {messages.map((message, index) => (
               <Animated.View
                 key={message.id}
-                entering={FadeInDown.delay(index === messages.length - 1 ? 0 : 0).duration(300)}
+                entering={FadeInDown.delay(0).duration(300)}
                 style={[
                   styles.messageBubble,
                   message.role === "user"
@@ -256,17 +261,19 @@ export default function GrandchildModeScreen() {
               </Animated.View>
             ) : null}
             
-            {messages.length === 1 ? (
+            {messages.length >= 1 ? (
               <Animated.View 
                 entering={FadeInUp.delay(300).duration(400)}
                 style={styles.quickQuestions}
               >
-                <ThemedText type="small" style={[styles.quickLabel, { color: theme.textSecondary }]}>
-                  {t("grandchildMode.commonQuestions")}
-                </ThemedText>
-                {QUICK_QUESTIONS.map((question, index) => (
+                {suggestions.length > 0 && (
+                  <ThemedText type="small" style={[styles.quickLabel, { color: theme.textSecondary }]}>
+                    {t("grandchildMode.commonQuestions")}
+                  </ThemedText>
+                )}
+                {suggestions.map((question, index) => (
                   <Pressable
-                    key={index}
+                    key={`${question}-${index}`}
                     style={[styles.quickButton, { backgroundColor: theme.backgroundSecondary, borderColor: theme.border }]}
                     onPress={() => handleQuickQuestion(question)}
                   >
