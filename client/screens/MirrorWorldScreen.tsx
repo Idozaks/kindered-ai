@@ -178,14 +178,16 @@ export default function MirrorWorldScreen() {
           </Animated.View>
         </ScrollView>
       ) : completed ? (
-        <View
-          style={[
-            styles.content,
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={[
+            styles.completedScrollContent,
             {
               paddingTop: headerHeight + Spacing.xl,
               paddingBottom: insets.bottom + Spacing.xl,
             },
           ]}
+          showsVerticalScrollIndicator={false}
         >
           <Animated.View
             entering={ZoomIn.duration(500)}
@@ -227,16 +229,18 @@ export default function MirrorWorldScreen() {
               </GlassButton>
             </View>
           </Animated.View>
-        </View>
+        </ScrollView>
       ) : (
-        <View
-          style={[
-            styles.content,
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={[
+            styles.practiceScrollContent,
             {
               paddingTop: headerHeight + Spacing.xl,
               paddingBottom: insets.bottom + Spacing.xl,
             },
           ]}
+          showsVerticalScrollIndicator={false}
         >
           <Animated.View entering={FadeInUp.duration(500)} style={styles.practiceContainer}>
             <View style={styles.practiceHeader}>
@@ -332,7 +336,7 @@ export default function MirrorWorldScreen() {
               </GlassButton>
             </View>
           </Animated.View>
-        </View>
+        </ScrollView>
       )}
     </ThemedView>
   );
@@ -348,8 +352,12 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: Spacing.lg,
   },
-  content: {
-    flex: 1,
+  practiceScrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: Spacing.lg,
+  },
+  completedScrollContent: {
+    flexGrow: 1,
     paddingHorizontal: Spacing.lg,
   },
   header: {
