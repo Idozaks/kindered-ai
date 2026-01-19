@@ -12,12 +12,16 @@ import Animated, {
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { ToolCarousel } from "@/components/ToolCarousel";
 import { ToolGrid } from "@/components/ToolGrid";
 import { FloatingMicButton } from "@/components/FloatingMicButton";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing } from "@/constants/theme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
+
+// Import tool icons
+import monitorIcon from "../../assets/images/monitor-tool.png";
+import letterIcon from "../../assets/images/letter-tool.png";
+import mirrorIcon from "../../assets/images/mirror-tool.png";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -29,29 +33,26 @@ export default function DashboardScreen() {
   const { t } = useTranslation();
   const [isListening, setIsListening] = useState(false);
 
-  const primaryTools = [
+  const tools = [
     {
       id: "grandchild",
       title: t("tools.grandchild.title"),
       description: t("tools.grandchild.description"),
-      icon: "monitor" as const,
+      image: monitorIcon,
       color: theme.primary,
     },
     {
       id: "letter",
       title: t("tools.letter.title"),
       description: t("tools.letter.description"),
-      icon: "file-text" as const,
+      image: letterIcon,
       color: "#F4B942",
     },
-  ];
-
-  const secondaryTools = [
     {
       id: "mirror",
       title: t("tools.mirror.title"),
       description: t("tools.mirror.description"),
-      icon: "play-circle" as const,
+      image: mirrorIcon,
       color: "#9B59B6",
     },
   ];
@@ -115,17 +116,13 @@ export default function DashboardScreen() {
         </Animated.View>
 
         <Animated.View entering={FadeInUp.delay(200).duration(600)}>
-          <ToolCarousel tools={primaryTools} onToolPress={handleToolPress} />
-        </Animated.View>
-
-        <Animated.View entering={FadeInUp.delay(400).duration(600)}>
           <ThemedText
             type="h4"
             style={[styles.sectionTitle, { paddingHorizontal: Spacing.lg }]}
           >
-            More Tools
+            Your Tools
           </ThemedText>
-          <ToolGrid tools={secondaryTools} onToolPress={handleToolPress} />
+          <ToolGrid tools={tools} onToolPress={handleToolPress} />
         </Animated.View>
       </ScrollView>
 

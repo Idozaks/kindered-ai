@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, Image, ImageSourcePropType } from "react-native";
 import { Feather } from "@expo/vector-icons";
 
 import { GlassCard } from "@/components/GlassCard";
@@ -9,7 +9,8 @@ interface Tool {
   id: string;
   title: string;
   description: string;
-  icon: keyof typeof Feather.glyphMap;
+  icon?: keyof typeof Feather.glyphMap;
+  image?: ImageSourcePropType;
   color: string;
 }
 
@@ -28,9 +29,13 @@ export function ToolGrid({ tools, onToolPress }: ToolGridProps) {
             description={tool.description}
             onPress={() => onToolPress(tool.id)}
             icon={
-              <View style={[styles.iconBg, { backgroundColor: tool.color + "20" }]}>
-                <Feather name={tool.icon} size={28} color={tool.color} />
-              </View>
+              tool.image ? (
+                <Image source={tool.image} style={styles.toolImage} />
+              ) : (
+                <View style={[styles.iconBg, { backgroundColor: tool.color + "20" }]}>
+                  <Feather name={tool.icon as any} size={28} color={tool.color} />
+                </View>
+              )
             }
             testID={`tool-grid-${tool.id}`}
           />
@@ -58,5 +63,10 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
+  },
+  toolImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
   },
 });
