@@ -140,12 +140,6 @@ export default function DashboardScreen() {
           <ToolGrid tools={tools} onToolPress={handleToolPress} />
         </Animated.View>
       </ScrollView>
-
-      <FloatingMicButton
-        onPress={handleMicPress}
-        isListening={isListening}
-        testID="floating-mic-button"
-      />
     </ThemedView>
   );
 }
