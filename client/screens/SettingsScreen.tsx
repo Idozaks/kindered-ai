@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View, Switch, Pressable } from "react-native";
+import { StyleSheet, View, Switch, Pressable, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useTranslation } from "react-i18next";
@@ -11,8 +11,10 @@ import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollV
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { GlassCard } from "@/components/GlassCard";
+import { GlassButton } from "@/components/GlassButton";
 import { useTheme } from "@/hooks/useTheme";
-import { Spacing, BorderRadius } from "@/constants/theme";
+import { useAuth } from "@/contexts/AuthContext";
+import { Spacing, BorderRadius, Colors } from "@/constants/theme";
 import { storage, UserSettings } from "@/lib/storage";
 import i18n from "@/lib/i18n";
 
@@ -21,6 +23,8 @@ export default function SettingsScreen() {
   const headerHeight = useHeaderHeight();
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const { user, logout, isLoading: authLoading } = useAuth();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [settings, setSettings] = useState<UserSettings>({
     language: "en",
     highContrast: false,
@@ -58,6 +62,18 @@ export default function SettingsScreen() {
     { value: "large", label: "A", size: 22 },
     { value: "xlarge", label: "A", size: 26 },
   ];
+
+  const handleLogout = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setIsLoggingOut(true);
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -202,6 +218,39 @@ export default function SettingsScreen() {
             />
           </GlassCard>
         </Animated.View>
+
+        <Animated.View entering={FadeInDown.delay(400).duration(500)}>
+          <GlassCard style={styles.section}>
+            <ThemedText type="h4" style={styles.sectionTitle}>
+              {t("settings.account")}
+            </ThemedText>
+            {user ? (
+              <View style={styles.accountInfo}>
+                <View style={[styles.avatarCircle, { backgroundColor: theme.primary + "20" }]}>
+                  <Feather name="user" size={28} color={theme.primary} />
+                </View>
+                <View style={styles.accountDetails}>
+                  <ThemedText type="body" style={styles.accountName}>
+                    {user.displayName || user.email.split("@")[0]}
+                  </ThemedText>
+                  <ThemedText type="small" style={{ color: theme.textSecondary }}>
+                    {user.email}
+                  </ThemedText>
+                </View>
+              </View>
+            ) : null}
+            <GlassButton
+              onPress={handleLogout}
+              variant="secondary"
+              icon={<Feather name="log-out" size={20} color={theme.text} />}
+              disabled={isLoggingOut}
+              style={styles.logoutButton}
+              testID="logout-button"
+            >
+              {isLoggingOut ? t("settings.loggingOut") : t("settings.logout")}
+            </GlassButton>
+          </GlassCard>
+        </Animated.View>
       </KeyboardAwareScrollViewCompat>
     </ThemedView>
   );
@@ -317,5 +366,28 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     marginVertical: Spacing.md,
+  },
+  accountInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: Spacing.lg,
+  },
+  avatarCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: Spacing.md,
+  },
+  accountDetails: {
+    flex: 1,
+  },
+  accountName: {
+    fontWeight: "600",
+    marginBottom: 2,
+  },
+  logoutButton: {
+    marginTop: Spacing.sm,
   },
 });

@@ -45,6 +45,9 @@ const resources = {
         narrator: "Narrator Mode",
         privacy: "Privacy Shield",
         privacyDesc: "Automatically pause when detecting sensitive information",
+        account: "Account",
+        logout: "Sign Out",
+        loggingOut: "Signing Out...",
       },
       common: {
         back: "Back",
@@ -251,6 +254,9 @@ const resources = {
         narrator: "מצב קריין",
         privacy: "מגן פרטיות",
         privacyDesc: "השהייה אוטומטית בזיהוי מידע רגיש",
+        account: "חשבון",
+        logout: "התנתק",
+        loggingOut: "מתנתק...",
       },
       common: {
         back: "חזרה",
