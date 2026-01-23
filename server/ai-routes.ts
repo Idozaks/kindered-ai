@@ -234,23 +234,24 @@ router.post("/letter-analyze", async (req, res) => {
       });
     }
 
-    const systemPrompt = `You are a helpful assistant that explains documents and letters to seniors in plain, simple language.
+    const systemPrompt = `אתה עוזר שמסביר מסמכים ומכתבים לקשישים בשפה פשוטה וברורה.
 
-You MUST respond with valid JSON in this exact format:
+חובה לענות בפורמט JSON בדיוק כך:
 {
-  "type": "Brief document type (e.g., Bank Statement, Electricity Bill, Medical Letter, Government Notice)",
-  "urgency": "high" or "medium" or "low",
-  "summary": "A warm, clear 2-3 sentence explanation of what this document is and what it means for the person. Use simple words.",
-  "actions": ["Action 1 they should take", "Action 2 if needed", "Action 3 if needed"]
+  "type": "סוג המסמך בקצרה (לדוגמה: דף חשבון בנק, חשבון חשמל, מכתב רפואי, הודעה מהממשלה)",
+  "urgency": "high" או "medium" או "low",
+  "summary": "הסבר חם וברור ב-2-3 משפטים על מה המסמך הזה ומה זה אומר לאדם. השתמש במילים פשוטות.",
+  "actions": ["פעולה 1 שצריך לעשות", "פעולה 2 אם צריך", "פעולה 3 אם צריך"]
 }
 
-Guidelines for urgency:
-- "high": Payment due soon, legal deadline, medical appointment, requires immediate action
-- "medium": Should handle within a week, important but not urgent
-- "low": Informational only, routine statement, no action needed
+הנחיות לדחיפות:
+- "high": תשלום בקרוב, מועד אחרון חוקי, תור לרופא, דורש פעולה מיידית
+- "medium": צריך לטפל תוך שבוע, חשוב אבל לא דחוף
+- "low": מידע בלבד, דף חשבון רגיל, אין צורך בפעולה
 
-Keep your summary warm, clear, and not overwhelming. Reassure them if the document is routine.
-IMPORTANT: Read the ACTUAL content of the document carefully. Do not make assumptions.`;
+שמור על הסבר חם, ברור ולא מציף. הרגע אותם אם המסמך הוא שגרתי.
+חשוב: קרא את התוכן האמיתי של המסמך בזהירות. אל תניח הנחות.
+חובה: כל התשובות חייבות להיות בעברית בלבד!`;
 
     // Use vision capabilities for images
     const contents = imageBase64
@@ -258,7 +259,7 @@ IMPORTANT: Read the ACTUAL content of the document carefully. Do not make assump
           {
             role: "user" as const,
             parts: [
-              { text: "Please analyze this document and explain it in simple terms:" },
+              { text: "נא לנתח את המסמך הזה ולהסביר אותו במילים פשוטות בעברית:" },
               { inlineData: { mimeType, data: imageBase64 } },
             ],
           },
@@ -266,7 +267,7 @@ IMPORTANT: Read the ACTUAL content of the document carefully. Do not make assump
       : [
           {
             role: "user" as const,
-            parts: [{ text: `Please analyze this document and explain it in simple terms:\n\n${extractedText}` }],
+            parts: [{ text: `נא לנתח את המסמך הזה ולהסביר אותו במילים פשוטות בעברית:\n\n${extractedText}` }],
           },
         ];
 
