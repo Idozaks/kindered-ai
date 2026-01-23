@@ -26,6 +26,8 @@ import letterIcon from "@/assets/images/letter-tool.png";
 import mirrorIcon from "@/assets/images/mirror-tool.png";
 // @ts-ignore
 import whatsappIcon from "@/assets/images/whatsapp-tool.png";
+// @ts-ignore
+import gmailIcon from "@/assets/images/gmail-tool.png";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -66,6 +68,13 @@ export default function DashboardScreen() {
       image: whatsappIcon,
       color: "#25D366",
     },
+    {
+      id: "gmail",
+      title: t("tools.gmail.title"),
+      description: t("tools.gmail.description"),
+      image: gmailIcon,
+      color: "#EA4335",
+    },
   ];
 
   const handleToolPress = useCallback(
@@ -82,6 +91,9 @@ export default function DashboardScreen() {
           break;
         case "whatsapp":
           navigation.navigate("WhatsAppGuides");
+          break;
+        case "gmail":
+          navigation.navigate("GmailGuides");
           break;
       }
     },
