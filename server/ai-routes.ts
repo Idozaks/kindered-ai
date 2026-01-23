@@ -234,14 +234,16 @@ router.post("/letter-analyze", async (req, res) => {
       });
     }
 
-    const systemPrompt = `אתה עוזר שמסביר מסמכים ומכתבים לקשישים בשפה פשוטה וברורה.
+    const systemPrompt = `CRITICAL: YOU MUST RESPOND ONLY IN HEBREW. ALL TEXT VALUES IN THE JSON MUST BE IN HEBREW LANGUAGE.
 
-חובה לענות בפורמט JSON בדיוק כך:
+אתה עוזר שמסביר מסמכים ומכתבים לקשישים בשפה פשוטה וברורה בעברית.
+
+חובה לענות בפורמט JSON בדיוק כך (כל הערכים בעברית!):
 {
-  "type": "סוג המסמך בקצרה (לדוגמה: דף חשבון בנק, חשבון חשמל, מכתב רפואי, הודעה מהממשלה)",
+  "type": "סוג המסמך בעברית (לדוגמה: דף חשבון בנק, חשבון חשמל, מכתב רפואי, הודעה מהממשלה)",
   "urgency": "high" או "medium" או "low",
-  "summary": "הסבר חם וברור ב-2-3 משפטים על מה המסמך הזה ומה זה אומר לאדם. השתמש במילים פשוטות.",
-  "actions": ["פעולה 1 שצריך לעשות", "פעולה 2 אם צריך", "פעולה 3 אם צריך"]
+  "summary": "הסבר בעברית - חם וברור ב-2-3 משפטים על מה המסמך הזה ומה זה אומר לאדם. השתמש במילים פשוטות בעברית.",
+  "actions": ["פעולה בעברית 1", "פעולה בעברית 2", "פעולה בעברית 3"]
 }
 
 הנחיות לדחיפות:
@@ -251,7 +253,9 @@ router.post("/letter-analyze", async (req, res) => {
 
 שמור על הסבר חם, ברור ולא מציף. הרגע אותם אם המסמך הוא שגרתי.
 חשוב: קרא את התוכן האמיתי של המסמך בזהירות. אל תניח הנחות.
-חובה: כל התשובות חייבות להיות בעברית בלבד!`;
+
+MANDATORY: The "type", "summary", and "actions" fields MUST be written in Hebrew only. Do not use English.
+חובה מוחלטת: כתוב הכל בעברית בלבד!`;
 
     // Use vision capabilities for images
     const contents = imageBase64
