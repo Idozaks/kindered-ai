@@ -1,19 +1,27 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { Pressable } from "react-native";
+import { Pressable, View, ActivityIndicator, StyleSheet } from "react-native";
 import { Feather } from "@expo/vector-icons";
 
+import { useAuth } from "@/contexts/AuthContext";
 import DashboardScreen from "@/screens/DashboardScreen";
 import SettingsScreen from "@/screens/SettingsScreen";
 import GrandchildModeScreen from "@/screens/GrandchildModeScreen";
 import LetterHelperScreen from "@/screens/LetterHelperScreen";
 import MirrorWorldScreen from "@/screens/MirrorWorldScreen";
 import WhatsAppGuidesScreen from "@/screens/WhatsAppGuidesScreen";
+import LoginScreen from "@/screens/LoginScreen";
+import RegisterScreen from "@/screens/RegisterScreen";
 import { HeaderTitle } from "@/components/HeaderTitle";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useTheme } from "@/hooks/useTheme";
 
-export type RootStackParamList = {
+export type AuthStackParamList = {
+  Login: undefined;
+  Register: undefined;
+};
+
+export type MainStackParamList = {
   Dashboard: undefined;
   Settings: undefined;
   GrandchildMode: undefined;
@@ -22,9 +30,22 @@ export type RootStackParamList = {
   WhatsAppGuides: undefined;
 };
 
+export type RootStackParamList = AuthStackParamList & MainStackParamList;
+
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-export default function RootStackNavigator() {
+function AuthStack() {
+  const screenOptions = useScreenOptions();
+
+  return (
+    <Stack.Navigator screenOptions={{ ...screenOptions, headerShown: false }}>
+      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="Register" component={RegisterScreen} />
+    </Stack.Navigator>
+  );
+}
+
+function MainStack() {
   const screenOptions = useScreenOptions();
   const { theme } = useTheme();
 
@@ -84,3 +105,26 @@ export default function RootStackNavigator() {
     </Stack.Navigator>
   );
 }
+
+export default function RootStackNavigator() {
+  const { isAuthenticated, isLoading } = useAuth();
+  const { theme } = useTheme();
+
+  if (isLoading) {
+    return (
+      <View style={[styles.loadingContainer, { backgroundColor: theme.backgroundRoot }]}>
+        <ActivityIndicator size="large" color={theme.primary} />
+      </View>
+    );
+  }
+
+  return isAuthenticated ? <MainStack /> : <AuthStack />;
+}
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});
