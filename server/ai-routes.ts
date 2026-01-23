@@ -305,10 +305,10 @@ MANDATORY: The "type", "summary", and "actions" fields MUST be written in Hebrew
       const parsed = JSON.parse(jsonStr);
       
       res.json({ 
-        type: parsed.type || "Document",
+        type: parsed.type || "מסמך",
         urgency: parsed.urgency || "low",
-        summary: parsed.summary || "I couldn't fully analyze this document.",
-        actions: Array.isArray(parsed.actions) ? parsed.actions : ["Review the document carefully"],
+        summary: parsed.summary || "לא הצלחתי לנתח את המסמך במלואו.",
+        actions: Array.isArray(parsed.actions) ? parsed.actions : ["עיין במסמך בזהירות"],
       });
     } catch (parseError: any) {
       console.error("JSON parse error:", parseError.message);
@@ -321,17 +321,17 @@ MANDATORY: The "type", "summary", and "actions" fields MUST be written in Hebrew
       
       if (typeMatch || summaryMatch) {
         res.json({ 
-          type: typeMatch?.[1] || "Document",
+          type: typeMatch?.[1] || "מסמך",
           urgency: urgencyMatch?.[1] || "low",
-          summary: summaryMatch?.[1] || "I analyzed your document. Please review it carefully.",
-          actions: ["Review the document carefully"],
+          summary: summaryMatch?.[1] || "ניתחתי את המסמך שלך. אנא עיין בו בזהירות.",
+          actions: ["עיין במסמך בזהירות"],
         });
       } else {
         res.json({ 
-          type: "Document",
+          type: "מסמך",
           urgency: "low",
-          summary: "I analyzed your document but had trouble formatting the response. Please try again.",
-          actions: ["Try uploading the document again"],
+          summary: "ניתחתי את המסמך שלך אבל הייתה בעיה בעיבוד התשובה. נסה שוב בבקשה.",
+          actions: ["נסה להעלות את המסמך שוב"],
         });
       }
     }
@@ -340,7 +340,7 @@ MANDATORY: The "type", "summary", and "actions" fields MUST be written in Hebrew
     console.error("Full error:", JSON.stringify(error, null, 2));
     res.status(500).json({ 
       error: "Unable to analyze document",
-      response: "I'm having trouble reading this document. Try taking another photo with good lighting.",
+      response: "קשה לי לקרוא את המסמך הזה. נסה לצלם תמונה נוספת עם תאורה טובה.",
       debug: error?.message 
     });
   }
