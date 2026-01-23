@@ -32,7 +32,7 @@ type LoginScreenProps = {
 
 export default function LoginScreen({ navigation }: LoginScreenProps) {
   const { theme, isDark } = useTheme();
-  const { login } = useAuth();
+  const { login, continueAsGuest } = useAuth();
   const insets = useSafeAreaInsets();
 
   const [email, setEmail] = useState("");
@@ -79,9 +79,9 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
             <View style={[styles.iconContainer, { backgroundColor: theme.primary }]}>
               <Feather name="heart" size={48} color="#FFFFFF" />
             </View>
-            <Text style={[styles.title, { color: theme.text }]}>Welcome Back</Text>
+            <Text style={[styles.title, { color: theme.text }]}>שלום!</Text>
             <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-              Sign in to continue learning
+              התחבר כדי להמשיך ללמוד
             </Text>
           </View>
 
@@ -99,7 +99,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
               ) : null}
 
               <View style={styles.inputGroup}>
-                <Text style={[styles.label, { color: theme.text }]}>Email Address</Text>
+                <Text style={[styles.label, { color: theme.text }]}>אימייל</Text>
                 <View style={[styles.inputContainer, { borderColor: theme.border, backgroundColor: theme.backgroundDefault }]}>
                   <Feather name="mail" size={22} color={theme.textSecondary} />
                   <TextInput
@@ -119,7 +119,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={[styles.label, { color: theme.text }]}>Password</Text>
+                <Text style={[styles.label, { color: theme.text }]}>סיסמה</Text>
                 <View style={[styles.inputContainer, { borderColor: theme.border, backgroundColor: theme.backgroundDefault }]}>
                   <Feather name="lock" size={22} color={theme.textSecondary} />
                   <TextInput
@@ -158,21 +158,30 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
                 {isLoading ? (
                   <ActivityIndicator color="#FFFFFF" />
                 ) : (
-                  <Text style={styles.buttonText}>Sign In</Text>
+                  <Text style={styles.buttonText}>כניסה</Text>
                 )}
               </Pressable>
             </View>
           </BlurView>
 
+          <Pressable
+            style={[styles.guestButton, { backgroundColor: Colors.light.success }]}
+            onPress={continueAsGuest}
+            testID="button-guest"
+          >
+            <Feather name="arrow-left" size={24} color="#FFFFFF" />
+            <Text style={styles.guestButtonText}>המשך ללא הרשמה</Text>
+          </Pressable>
+
           <View style={styles.footer}>
             <Text style={[styles.footerText, { color: theme.textSecondary }]}>
-              New to Kindred AI?
+              עוד לא נרשמת?
             </Text>
             <Pressable
               onPress={() => navigation.navigate("Register")}
               testID="button-go-to-register"
             >
-              <Text style={[styles.linkText, { color: theme.primary }]}>Create Account</Text>
+              <Text style={[styles.linkText, { color: theme.primary }]}>צור חשבון</Text>
             </Pressable>
           </View>
         </ScrollView>
@@ -271,6 +280,21 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     ...Typography.button,
+    color: "#FFFFFF",
+  },
+  guestButton: {
+    height: 72,
+    borderRadius: BorderRadius.lg,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: Spacing["2xl"],
+    gap: Spacing.md,
+    ...Shadows.floating,
+  },
+  guestButtonText: {
+    fontSize: 24,
+    fontWeight: "700",
     color: "#FFFFFF",
   },
   footer: {

@@ -1,21 +1,23 @@
 import React from "react";
-import { View, StyleSheet, Image } from "react-native";
+import { View, StyleSheet } from "react-native";
+import { Feather } from "@expo/vector-icons";
 
 import { ThemedText } from "@/components/ThemedText";
-import { Spacing } from "@/constants/theme";
+import { useTheme } from "@/hooks/useTheme";
+import { Spacing, Colors } from "@/constants/theme";
 
 interface HeaderTitleProps {
   title: string;
 }
 
 export function HeaderTitle({ title }: HeaderTitleProps) {
+  const { theme } = useTheme();
+  
   return (
     <View style={styles.container}>
-      <Image
-        source={require("../../assets/images/icon.png")}
-        style={styles.icon}
-        resizeMode="contain"
-      />
+      <View style={[styles.iconContainer, { backgroundColor: Colors.light.primary }]}>
+        <Feather name="heart" size={18} color="#FFFFFF" />
+      </View>
       <ThemedText style={styles.title}>{title}</ThemedText>
     </View>
   );
@@ -27,11 +29,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "flex-start",
   },
-  icon: {
+  iconContainer: {
     width: 32,
     height: 32,
-    marginRight: Spacing.sm,
     borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: Spacing.sm,
   },
   title: {
     fontSize: 20,

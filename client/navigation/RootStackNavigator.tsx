@@ -122,7 +122,7 @@ function MainStack() {
 }
 
 export default function RootStackNavigator() {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading, user, isGuest } = useAuth();
   const { theme } = useTheme();
 
   if (isLoading) {
@@ -135,6 +135,10 @@ export default function RootStackNavigator() {
 
   if (!isAuthenticated) {
     return <AuthStack />;
+  }
+
+  if (isGuest) {
+    return <MainStack />;
   }
 
   if (!user?.onboardingCompleted) {

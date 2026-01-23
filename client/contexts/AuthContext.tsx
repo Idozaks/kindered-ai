@@ -28,6 +28,7 @@ interface AuthState {
   subscription: Subscription | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isGuest: boolean;
 }
 
 interface AuthContextType extends AuthState {
@@ -36,6 +37,7 @@ interface AuthContextType extends AuthState {
   logout: () => Promise<void>;
   updateUser: (updates: Partial<User>) => Promise<void>;
   completeOnboarding: () => Promise<void>;
+  continueAsGuest: () => void;
 }
 
 interface RegisterData {
@@ -50,6 +52,8 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 const TOKEN_KEY = "kindred_auth_token";
 
+const GUEST_KEY = "kindred_guest_mode";
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({
     user: null,
@@ -57,6 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     subscription: null,
     isLoading: true,
     isAuthenticated: false,
+    isGuest: false,
   });
 
   useEffect(() => {
@@ -79,10 +84,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             subscription: data.subscription,
             isLoading: false,
             isAuthenticated: true,
+            isGuest: false,
           });
           return;
         }
         await AsyncStorage.removeItem(TOKEN_KEY);
+      }
+
+      const isGuest = await AsyncStorage.getItem(GUEST_KEY);
+      if (isGuest === "true") {
+        setState({
+          user: null,
+          token: null,
+          subscription: null,
+          isLoading: false,
+          isAuthenticated: true,
+          isGuest: true,
+        });
+        return;
       }
     } catch (error) {
       console.error("Auth load error:", error);
@@ -104,12 +123,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const data = await response.json();
     await AsyncStorage.setItem(TOKEN_KEY, data.token);
+    await AsyncStorage.removeItem(GUEST_KEY);
     setState({
       user: data.user,
       token: data.token,
       subscription: { plan: "free", status: "active" },
       isLoading: false,
       isAuthenticated: true,
+      isGuest: false,
     });
   }
 
@@ -127,12 +148,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const data = await response.json();
     await AsyncStorage.setItem(TOKEN_KEY, data.token);
+    await AsyncStorage.removeItem(GUEST_KEY);
     setState({
       user: data.user,
       token: data.token,
       subscription: { plan: "free", status: "active" },
       isLoading: false,
       isAuthenticated: true,
+      isGuest: false,
     });
   }
 
@@ -148,12 +171,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error("Logout error:", error);
     }
     await AsyncStorage.removeItem(TOKEN_KEY);
+    await AsyncStorage.removeItem(GUEST_KEY);
     setState({
       user: null,
       token: null,
       subscription: null,
       isLoading: false,
       isAuthenticated: false,
+      isGuest: false,
+    });
+  }
+
+  async function continueAsGuest() {
+    await AsyncStorage.setItem(GUEST_KEY, "true");
+    setState({
+      user: null,
+      token: null,
+      subscription: null,
+      isLoading: false,
+      isAuthenticated: true,
+      isGuest: true,
     });
   }
 
@@ -204,6 +241,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logout,
         updateUser,
         completeOnboarding,
+        continueAsGuest,
       }}
     >
       {children}
