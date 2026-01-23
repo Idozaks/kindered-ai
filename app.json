@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.kindred.ai"
+      "bundleIdentifier": "com.dori.ai"
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +21,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.kindred.ai"
+      "package": "com.dori.ai"
     },
     "web": {
       "output": "single",
