@@ -58,6 +58,11 @@ Preferred communication style: Simple, everyday language.
 - **Replit AI Integrations**: Gemini API access via `AI_INTEGRATIONS_GEMINI_API_KEY` and `AI_INTEGRATIONS_GEMINI_BASE_URL` environment variables
 - **Google GenAI SDK**: `@google/genai` for AI model interactions
 
+### Payment/Subscription (NOT YET CONFIGURED)
+- **Stripe**: User dismissed the Stripe integration. If subscription features are needed in the future, either:
+  1. Set up Stripe via Replit integrations, OR
+  2. Request `STRIPE_SECRET_KEY` and `STRIPE_PUBLISHABLE_KEY` as secrets for manual integration
+
 ### Database
 - **PostgreSQL**: Primary database (requires `DATABASE_URL` environment variable)
 - **Drizzle ORM**: Schema management and migrations in `./migrations`
