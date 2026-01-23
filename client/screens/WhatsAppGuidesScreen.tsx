@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import {
   StyleSheet,
   View,
@@ -25,9 +25,10 @@ import { ThemedView } from "@/components/ThemedView";
 import { GlassButton } from "@/components/GlassButton";
 import { GlassCard } from "@/components/GlassCard";
 import { useTheme } from "@/hooks/useTheme";
-import { Spacing, BorderRadius, Typography } from "@/constants/theme";
+import { Spacing, BorderRadius, Typography, Colors } from "@/constants/theme";
 import { whatsappJourneys, Journey, getStepImage } from "@/data/whatsappJourneys";
 import { Image } from "expo-image";
+import { useJourneyProgress, useAllProgress } from "@/hooks/useJourneyProgress";
 
 const WHATSAPP_GREEN = "#25D366";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -40,12 +41,40 @@ export default function WhatsAppGuidesScreen() {
   const [selectedJourney, setSelectedJourney] = useState<Journey | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [showTrainerNotes, setShowTrainerNotes] = useState(false);
+  const stepStartTime = useRef<number>(Date.now());
+
+  const { allProgress } = useAllProgress();
+  const { 
+    progress, 
+    updateProgress, 
+    recordStepCompletion,
+    isUpdating 
+  } = useJourneyProgress(selectedJourney?.id || null);
+
+  useEffect(() => {
+    if (selectedJourney && progress.currentStep > 0 && !progress.completed) {
+      setCurrentStep(progress.currentStep);
+    }
+  }, [selectedJourney, progress]);
+
+  useEffect(() => {
+    stepStartTime.current = Date.now();
+  }, [currentStep, selectedJourney]);
+
+  const getJourneyProgress = useCallback((journeyId: string) => {
+    return allProgress.find(p => p.journeyId === journeyId);
+  }, [allProgress]);
 
   const handleSelectJourney = useCallback((journey: Journey) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSelectedJourney(journey);
-    setCurrentStep(0);
-  }, []);
+    const savedProgress = allProgress.find(p => p.journeyId === journey.id);
+    if (savedProgress && savedProgress.currentStep > 0 && !savedProgress.completed) {
+      setCurrentStep(savedProgress.currentStep);
+    } else {
+      setCurrentStep(0);
+    }
+  }, [allProgress]);
 
   const handleBack = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -54,24 +83,54 @@ export default function WhatsAppGuidesScreen() {
     }
   }, [currentStep]);
 
-  const handleNext = useCallback(() => {
+  const handleNext = useCallback(async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     if (selectedJourney && currentStep < selectedJourney.steps.length - 1) {
-      setCurrentStep((prev) => prev + 1);
+      const timeSpent = Math.round((Date.now() - stepStartTime.current) / 1000);
+      const nextStep = currentStep + 1;
+      
+      try {
+        await recordStepCompletion(currentStep, timeSpent);
+        await updateProgress(nextStep, false);
+      } catch (error) {
+        console.log("Progress tracking error (non-critical):", error);
+      }
+      
+      setCurrentStep(nextStep);
     }
-  }, [selectedJourney, currentStep]);
+  }, [selectedJourney, currentStep, recordStepCompletion, updateProgress]);
 
-  const handleFinish = useCallback(() => {
+  const handleFinish = useCallback(async () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    
+    if (selectedJourney) {
+      const timeSpent = Math.round((Date.now() - stepStartTime.current) / 1000);
+      try {
+        await recordStepCompletion(currentStep, timeSpent);
+        await updateProgress(selectedJourney.steps.length, true);
+      } catch (error) {
+        console.log("Progress tracking error (non-critical):", error);
+      }
+    }
+    
     setSelectedJourney(null);
     setCurrentStep(0);
-  }, []);
+  }, [selectedJourney, currentStep, recordStepCompletion, updateProgress]);
 
-  const handleBackToList = useCallback(() => {
+  const handleBackToList = useCallback(async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    
+    if (selectedJourney && currentStep > 0) {
+      try {
+        await updateProgress(currentStep, false);
+      } catch (error) {
+        console.log("Progress tracking error (non-critical):", error);
+      }
+    }
+    
     setSelectedJourney(null);
     setCurrentStep(0);
-  }, []);
+  }, [selectedJourney, currentStep, updateProgress]);
 
   const toggleTrainerNotes = useCallback(() => {
     setShowTrainerNotes((prev) => !prev);
@@ -105,7 +164,12 @@ export default function WhatsAppGuidesScreen() {
       </Animated.View>
 
       <View style={styles.journeyList}>
-        {whatsappJourneys.map((journey, index) => (
+        {whatsappJourneys.map((journey, index) => {
+          const journeyProg = getJourneyProgress(journey.id);
+          const isCompleted = journeyProg?.completed;
+          const isInProgress = journeyProg && !journeyProg.completed && (journeyProg.currentStep ?? 0) > 0;
+          
+          return (
           <Animated.View
             key={journey.id}
             entering={FadeInDown.delay(100 + index * 50).duration(400)}
@@ -115,24 +179,48 @@ export default function WhatsAppGuidesScreen() {
               onPress={() => handleSelectJourney(journey)}
               testID={`journey-${journey.id}`}
               icon={
-                <View
-                  style={[
-                    styles.journeyNumber,
-                    { backgroundColor: WHATSAPP_GREEN + "20" },
-                  ]}
-                >
-                  <ThemedText
-                    style={[styles.journeyNumberText, { color: WHATSAPP_GREEN }]}
+                isCompleted ? (
+                  <View
+                    style={[
+                      styles.journeyNumber,
+                      { backgroundColor: Colors.light.success + "20" },
+                    ]}
                   >
-                    {index + 1}
-                  </ThemedText>
-                </View>
+                    <Feather name="check" size={20} color={Colors.light.success} />
+                  </View>
+                ) : (
+                  <View
+                    style={[
+                      styles.journeyNumber,
+                      { backgroundColor: WHATSAPP_GREEN + "20" },
+                    ]}
+                  >
+                    <ThemedText
+                      style={[styles.journeyNumberText, { color: WHATSAPP_GREEN }]}
+                    >
+                      {index + 1}
+                    </ThemedText>
+                  </View>
+                )
               }
             >
               <View style={styles.journeyTextContainer}>
-                <ThemedText type="h4" style={styles.journeyTitle}>
-                  {journey.titleHe || journey.title}
-                </ThemedText>
+                <View style={styles.journeyTitleRow}>
+                  <ThemedText type="h4" style={styles.journeyTitle}>
+                    {journey.titleHe || journey.title}
+                  </ThemedText>
+                  {isCompleted ? (
+                    <View style={[styles.progressBadge, { backgroundColor: Colors.light.success }]}>
+                      <ThemedText style={styles.progressBadgeText}>Done</ThemedText>
+                    </View>
+                  ) : isInProgress ? (
+                    <View style={[styles.progressBadge, { backgroundColor: Colors.light.primary }]}>
+                      <ThemedText style={styles.progressBadgeText}>
+                        {journeyProg.currentStep}/{journey.steps.length}
+                      </ThemedText>
+                    </View>
+                  ) : null}
+                </View>
                 <ThemedText
                   type="small"
                   style={[styles.journeyDescription, { color: theme.textSecondary }]}
@@ -159,7 +247,8 @@ export default function WhatsAppGuidesScreen() {
               />
             </GlassCard>
           </Animated.View>
-        ))}
+          );
+        })}
       </View>
 
       <Animated.View
@@ -400,6 +489,22 @@ const styles = StyleSheet.create({
   },
   journeyTitle: {
     marginBottom: 2,
+    flex: 1,
+  },
+  journeyTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
+  },
+  progressBadge: {
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 2,
+    borderRadius: BorderRadius.xs,
+  },
+  progressBadgeText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#FFFFFF",
   },
   journeyDescription: {
     marginBottom: Spacing.xs,
