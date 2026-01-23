@@ -247,7 +247,7 @@ export default function WhatsAppGuidesScreen() {
               />
             </GlassCard>
           </Animated.View>
-          );
+        );
         })}
       </View>
 

@@ -26,7 +26,7 @@ export default function SettingsScreen() {
   const { user, logout, isLoading: authLoading } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [settings, setSettings] = useState<UserSettings>({
-    language: "en",
+    language: "he",
     highContrast: false,
     fontSize: "normal",
     narratorMode: false,
