@@ -12,8 +12,8 @@ const resources = {
       },
       tools: {
         grandchild: {
-          title: "Grandchild Mode",
-          description: "Live help with your screen",
+          title: "Ask Kindred",
+          description: "Your patient digital helper",
         },
         letter: {
           title: "Letter Helper",
@@ -75,9 +75,9 @@ const resources = {
         listening: "Listening...",
       },
       grandchildMode: {
-        title: "Grandchild Mode",
+        title: "Ask Kindred",
         ready: "I'm here to help!",
-        watching: "I can see your screen",
+        watching: "Ask me anything",
         hint: "Tell me what you need help with",
         welcomeMessage: "Hi there! I'm here to help you with anything on your phone or tablet. Just ask me a question, or tap one of the suggestions below!",
         commonQuestions: "Common questions:",
@@ -234,8 +234,8 @@ const resources = {
       },
       tools: {
         grandchild: {
-          title: "מצב נכד",
-          description: "עזרה חיה עם המסך שלך",
+          title: "שאל את קינדרד",
+          description: "העוזר הדיגיטלי הסבלני שלך",
         },
         letter: {
           title: "עוזר מכתבים",
@@ -297,9 +297,9 @@ const resources = {
         listening: "מאזין...",
       },
       grandchildMode: {
-        title: "מצב נכד",
+        title: "שאל את קינדרד",
         ready: "אני כאן לעזור!",
-        watching: "אני רואה את המסך שלך",
+        watching: "שאל אותי כל דבר",
         hint: "ספר לי במה אתה צריך עזרה",
         welcomeMessage: "שלום! אני כאן לעזור לך עם כל דבר בטלפון או בטאבלט שלך. פשוט שאל אותי שאלה, או הקש על אחת מההצעות למטה!",
         commonQuestions: "שאלות נפוצות:",

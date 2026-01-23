@@ -7,7 +7,7 @@ Kindred AI is an ultra-accessible digital companion mobile application designed 
 Key features include:
 - **Guest Mode**: Users can explore the app without signing up first - no barriers to entry
 - **Simplified Onboarding**: Single welcome screen with clear, large text in Hebrew
-- **Grandchild Mode**: Live screen sharing with AI guidance
+- **Ask Kindred**: AI chat assistant that acts as a patient, helpful digital companion for answering questions and guiding users
 - **Letter Helper**: Document scanning and plain-language translation
 - **Mirror World**: Safe practice environment for learning digital tasks
 - **WhatsApp Guides**: Step-by-step tutorials for common WhatsApp tasks (reading messages, sending texts/photos, video calls, privacy settings, group safety)
