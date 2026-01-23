@@ -3,6 +3,7 @@ import { createServer, type Server } from "node:http";
 import aiRoutes from "./ai-routes";
 import authRoutes from "./auth-routes";
 import progressRoutes from "./progress-routes";
+import gmailProgressRoutes from "./gmail-progress-routes";
 import { registerImageRoutes } from "./replit_integrations/image";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -11,6 +12,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Progress tracking routes
   app.use("/api/progress", progressRoutes);
+  
+  // Gmail progress tracking routes
+  app.use("/api/gmail-progress", gmailProgressRoutes);
 
   // AI routes for Kindred AI features
   app.use("/api/ai", aiRoutes);
