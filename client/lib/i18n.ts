@@ -13,7 +13,7 @@ const resources = {
       tools: {
         grandchild: {
           title: "Ask Kindred",
-          description: "Your patient digital helper",
+          description: "Questions, photos & documents",
         },
         letter: {
           title: "Letter Helper",
@@ -235,7 +235,7 @@ const resources = {
       tools: {
         grandchild: {
           title: "שאל את קינדרד",
-          description: "העוזר הדיגיטלי הסבלני שלך",
+          description: "שאלות, תמונות ומסמכים",
         },
         letter: {
           title: "עוזר מכתבים",
