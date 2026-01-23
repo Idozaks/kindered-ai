@@ -280,30 +280,43 @@ IMPORTANT: Read the ACTUAL content of the document carefully. Do not make assump
     });
 
     const text = response.text || "";
+    console.log("AI response text:", text.substring(0, 500));
     
     // Try to parse as JSON
     try {
       // Extract JSON from the response (handle markdown code blocks)
-      let jsonStr = text;
-      const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-      if (jsonMatch) {
-        jsonStr = jsonMatch[1].trim();
+      let jsonStr = text.trim();
+      
+      // Try multiple patterns to extract JSON
+      const codeBlockMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (codeBlockMatch) {
+        jsonStr = codeBlockMatch[1].trim();
+      } else {
+        // Try to find JSON object directly
+        const jsonObjectMatch = jsonStr.match(/\{[\s\S]*\}/);
+        if (jsonObjectMatch) {
+          jsonStr = jsonObjectMatch[0];
+        }
       }
       
+      console.log("Extracted JSON:", jsonStr.substring(0, 300));
       const parsed = JSON.parse(jsonStr);
+      
       res.json({ 
         type: parsed.type || "Document",
         urgency: parsed.urgency || "low",
         summary: parsed.summary || "I couldn't fully analyze this document.",
-        actions: parsed.actions || ["Review the document carefully"],
+        actions: Array.isArray(parsed.actions) ? parsed.actions : ["Review the document carefully"],
       });
-    } catch (parseError) {
-      // Fallback if JSON parsing fails
+    } catch (parseError: any) {
+      console.error("JSON parse error:", parseError.message);
+      console.error("Raw text was:", text.substring(0, 500));
+      // Fallback if JSON parsing fails - try to extract useful info
       res.json({ 
         type: "Document",
         urgency: "low",
-        summary: text || "I couldn't fully analyze this document. Could you try taking a clearer photo?",
-        actions: ["Review the document carefully"],
+        summary: "I analyzed your document but had trouble formatting the response. Please try again.",
+        actions: ["Try uploading the document again"],
       });
     }
   } catch (error: any) {
