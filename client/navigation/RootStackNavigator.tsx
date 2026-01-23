@@ -12,6 +12,7 @@ import MirrorWorldScreen from "@/screens/MirrorWorldScreen";
 import WhatsAppGuidesScreen from "@/screens/WhatsAppGuidesScreen";
 import LoginScreen from "@/screens/LoginScreen";
 import RegisterScreen from "@/screens/RegisterScreen";
+import OnboardingScreen from "@/screens/OnboardingScreen";
 import { HeaderTitle } from "@/components/HeaderTitle";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useTheme } from "@/hooks/useTheme";
@@ -19,6 +20,10 @@ import { useTheme } from "@/hooks/useTheme";
 export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
+};
+
+export type OnboardingStackParamList = {
+  Onboarding: undefined;
 };
 
 export type MainStackParamList = {
@@ -30,7 +35,7 @@ export type MainStackParamList = {
   WhatsAppGuides: undefined;
 };
 
-export type RootStackParamList = AuthStackParamList & MainStackParamList;
+export type RootStackParamList = AuthStackParamList & OnboardingStackParamList & MainStackParamList;
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -41,6 +46,16 @@ function AuthStack() {
     <Stack.Navigator screenOptions={{ ...screenOptions, headerShown: false }}>
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
+    </Stack.Navigator>
+  );
+}
+
+function OnboardingStack() {
+  const screenOptions = useScreenOptions();
+
+  return (
+    <Stack.Navigator screenOptions={{ ...screenOptions, headerShown: false }}>
+      <Stack.Screen name="Onboarding" component={OnboardingScreen} />
     </Stack.Navigator>
   );
 }
@@ -107,7 +122,7 @@ function MainStack() {
 }
 
 export default function RootStackNavigator() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const { theme } = useTheme();
 
   if (isLoading) {
@@ -118,7 +133,15 @@ export default function RootStackNavigator() {
     );
   }
 
-  return isAuthenticated ? <MainStack /> : <AuthStack />;
+  if (!isAuthenticated) {
+    return <AuthStack />;
+  }
+
+  if (!user?.onboardingCompleted) {
+    return <OnboardingStack />;
+  }
+
+  return <MainStack />;
 }
 
 const styles = StyleSheet.create({
