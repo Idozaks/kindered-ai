@@ -4,7 +4,7 @@ import { initReactI18next } from "react-i18next";
 const resources = {
   en: {
     translation: {
-      appName: "Kindred AI",
+      appName: "Dori AI",
       tagline: "Your Patient Digital Companion",
       dashboard: {
         greeting: "Hello, Friend",
@@ -12,7 +12,7 @@ const resources = {
       },
       tools: {
         grandchild: {
-          title: "Ask Kindred",
+          title: "Ask Dori",
           description: "Questions, photos & documents",
         },
         letter: {
@@ -75,7 +75,7 @@ const resources = {
         listening: "Listening...",
       },
       grandchildMode: {
-        title: "Ask Kindred",
+        title: "Ask Dori",
         ready: "I'm here to help!",
         watching: "Ask me anything",
         hint: "Tell me what you need help with",
@@ -89,7 +89,7 @@ const resources = {
         endSession: "End Session",
         thinking: "Thinking...",
         errorMessage: "I'm having trouble connecting right now. Let me try to help anyway! What would you like to do?",
-        assistantName: "Kindred AI",
+        assistantName: "Dori AI",
       },
       letterHelper: {
         title: "Letter Helper",
@@ -226,7 +226,7 @@ const resources = {
   },
   he: {
     translation: {
-      appName: "קינדרד AI",
+      appName: "דורי AI",
       tagline: "המלווה הדיגיטלי הסבלני שלך",
       dashboard: {
         greeting: "שלום, חבר",
@@ -234,7 +234,7 @@ const resources = {
       },
       tools: {
         grandchild: {
-          title: "שאל את קינדרד",
+          title: "שאל את דורי",
           description: "שאלות, תמונות ומסמכים",
         },
         letter: {
@@ -297,7 +297,7 @@ const resources = {
         listening: "מאזין...",
       },
       grandchildMode: {
-        title: "שאל את קינדרד",
+        title: "שאל את דורי",
         ready: "אני כאן לעזור!",
         watching: "שאל אותי כל דבר",
         hint: "ספר לי במה אתה צריך עזרה",
@@ -311,7 +311,7 @@ const resources = {
         endSession: "סיום פגישה",
         thinking: "חושב...",
         errorMessage: "יש לי בעיה בחיבור כרגע. תן לי לנסות לעזור בכל זאת! מה תרצה לעשות?",
-        assistantName: "קינדרד AI",
+        assistantName: "דורי AI",
       },
       letterHelper: {
         title: "עוזר מכתבים",

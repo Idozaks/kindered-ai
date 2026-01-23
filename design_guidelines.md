@@ -1,4 +1,4 @@
-# Design Guidelines: Kindred AI
+# Design Guidelines: Dori AI
 
 ## Brand Identity
 **Purpose**: A digital companion for seniors (70+) that feels like a "patient, technically brilliant grandchild" bridging traditional life and modern technology.

@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Kindred AI",
-    "slug": "kindred-ai",
+    "name": "Dori AI",
+    "slug": "dori-ai",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "kindred-ai",
+    "scheme": "dori-ai",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {

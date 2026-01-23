@@ -16,7 +16,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Gmail progress tracking routes
   app.use("/api/gmail-progress", gmailProgressRoutes);
 
-  // AI routes for Kindred AI features
+  // AI routes for Dori AI features
   app.use("/api/ai", aiRoutes);
 
   // Image generation routes
