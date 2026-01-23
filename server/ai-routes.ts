@@ -217,7 +217,7 @@ Create 3 short, specific steps. Return JSON only:
 
 router.post("/letter-analyze", async (req, res) => {
   try {
-    const { documentText, imageBase64 } = req.body;
+    const { documentText, imageBase64, mimeType = "image/jpeg" } = req.body;
 
     if (!documentText && !imageBase64) {
       return res.status(400).json({ error: "Document text or image is required" });
@@ -247,7 +247,7 @@ IMPORTANT: Read the ACTUAL content of the document carefully. Do not make assump
             role: "user" as const,
             parts: [
               { text: "Please analyze this document and explain it in simple terms:" },
-              { inlineData: { mimeType: "image/jpeg", data: imageBase64 } },
+              { inlineData: { mimeType, data: imageBase64 } },
             ],
           },
         ]

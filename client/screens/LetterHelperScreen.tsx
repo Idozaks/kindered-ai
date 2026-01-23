@@ -5,6 +5,7 @@ import { useHeaderHeight } from "@react-navigation/elements";
 import { useTranslation } from "react-i18next";
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import * as DocumentPicker from "expo-document-picker";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import * as FileSystem from "expo-file-system";
@@ -30,7 +31,9 @@ export default function LetterHelperScreen() {
   const headerHeight = useHeaderHeight();
   const { theme } = useTheme();
   const { t } = useTranslation();
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [fileType, setFileType] = useState<"image" | "pdf" | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
 
@@ -48,7 +51,9 @@ export default function LetterHelperScreen() {
     });
 
     if (!pickerResult.canceled && pickerResult.assets[0]) {
-      setSelectedImage(pickerResult.assets[0].uri);
+      setSelectedFile(pickerResult.assets[0].uri);
+      setFileType("image");
+      setFileName(null);
       setResult(null);
     }
   };
@@ -70,38 +75,62 @@ export default function LetterHelperScreen() {
     });
 
     if (!pickerResult.canceled && pickerResult.assets[0]) {
-      setSelectedImage(pickerResult.assets[0].uri);
+      setSelectedFile(pickerResult.assets[0].uri);
+      setFileType("image");
+      setFileName(null);
       setResult(null);
     }
   };
 
+  const handlePickPDF = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: "application/pdf",
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        setSelectedFile(result.assets[0].uri);
+        setFileType("pdf");
+        setFileName(result.assets[0].name);
+        setResult(null);
+      }
+    } catch (error) {
+      console.error("PDF picker error:", error);
+    }
+  };
+
   const handleAnalyze = async () => {
-    if (!selectedImage) return;
+    if (!selectedFile) return;
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setIsAnalyzing(true);
 
     try {
-      // Convert image to base64
-      let imageBase64: string;
+      // Convert file to base64
+      let fileBase64: string;
       
-      if (selectedImage.startsWith("data:")) {
+      if (selectedFile.startsWith("data:")) {
         // Already base64 (web)
-        imageBase64 = selectedImage.split(",")[1];
+        fileBase64 = selectedFile.split(",")[1];
       } else {
         // File URI (native) - read as base64
-        const base64 = await FileSystem.readAsStringAsync(selectedImage, {
+        const base64 = await FileSystem.readAsStringAsync(selectedFile, {
           encoding: "base64",
         });
-        imageBase64 = base64;
+        fileBase64 = base64;
       }
 
-      // Call the AI API
+      // Call the AI API with appropriate mime type
       const baseUrl = getApiUrl();
+      const mimeType = fileType === "pdf" ? "application/pdf" : "image/jpeg";
       const response = await fetch(new URL("/api/ai/letter-analyze", baseUrl).href, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageBase64 }),
+        body: JSON.stringify({ 
+          imageBase64: fileBase64,
+          mimeType,
+        }),
       });
 
       if (!response.ok) {
@@ -172,17 +201,28 @@ export default function LetterHelperScreen() {
       >
         <Animated.View entering={FadeInDown.duration(500)}>
           <GlassCard style={styles.uploadCard}>
-            {selectedImage ? (
+            {selectedFile ? (
               <View style={styles.imageContainer}>
-                <Image
-                  source={{ uri: selectedImage }}
-                  style={styles.previewImage}
-                  resizeMode="cover"
-                />
+                {fileType === "image" ? (
+                  <Image
+                    source={{ uri: selectedFile }}
+                    style={styles.previewImage}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View style={[styles.pdfPreview, { backgroundColor: theme.card }]}>
+                    <Feather name="file-text" size={64} color={theme.primary} />
+                    <ThemedText type="body" style={styles.pdfFileName} numberOfLines={2}>
+                      {fileName || "PDF Document"}
+                    </ThemedText>
+                  </View>
+                )}
                 <Pressable
                   style={[styles.removeButton, { backgroundColor: theme.danger }]}
                   onPress={() => {
-                    setSelectedImage(null);
+                    setSelectedFile(null);
+                    setFileType(null);
+                    setFileName(null);
                     setResult(null);
                   }}
                 >
@@ -210,7 +250,7 @@ export default function LetterHelperScreen() {
                 variant="secondary"
                 onPress={handlePickImage}
                 icon={<Feather name="image" size={20} color={theme.primary} />}
-                style={styles.halfButton}
+                style={styles.thirdButton}
                 testID="pick-image-button"
               >
                 Gallery
@@ -220,15 +260,24 @@ export default function LetterHelperScreen() {
                   variant="secondary"
                   onPress={handleTakePhoto}
                   icon={<Feather name="camera" size={20} color={theme.primary} />}
-                  style={styles.halfButton}
+                  style={styles.thirdButton}
                   testID="take-photo-button"
                 >
                   Camera
                 </GlassButton>
               ) : null}
+              <GlassButton
+                variant="secondary"
+                onPress={handlePickPDF}
+                icon={<Feather name="file" size={20} color={theme.primary} />}
+                style={styles.thirdButton}
+                testID="pick-pdf-button"
+              >
+                PDF
+              </GlassButton>
             </View>
 
-            {selectedImage && !result ? (
+            {selectedFile && !result ? (
               <GlassButton
                 onPress={handleAnalyze}
                 disabled={isAnalyzing}
@@ -403,6 +452,21 @@ const styles = StyleSheet.create({
   },
   halfButton: {
     flex: 1,
+  },
+  thirdButton: {
+    flex: 1,
+  },
+  pdfPreview: {
+    width: "100%",
+    height: 200,
+    borderRadius: BorderRadius.md,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: Spacing.md,
+  },
+  pdfFileName: {
+    textAlign: "center",
+    paddingHorizontal: Spacing.lg,
   },
   resultCard: {
     padding: Spacing.xl,
