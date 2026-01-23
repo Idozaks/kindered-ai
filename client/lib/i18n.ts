@@ -235,7 +235,7 @@ const resources = {
       tools: {
         grandchild: {
           title: "שאל את דורי",
-          description: "שאלות, תמונות ומסמכים",
+          description: "עוזר בינה מלאכותית לכל שאלה",
         },
         letter: {
           title: "עוזר מכתבים",

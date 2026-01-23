@@ -72,7 +72,7 @@ function MainStack() {
         name="Dashboard"
         component={DashboardScreen}
         options={({ navigation }) => ({
-          headerTitle: () => <HeaderTitle title="Kindred AI" />,
+          headerTitle: () => <HeaderTitle title="Dori AI" />,
           headerRight: () => (
             <Pressable
               onPress={() => navigation.navigate("Settings")}

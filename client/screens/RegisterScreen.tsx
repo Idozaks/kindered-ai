@@ -103,7 +103,7 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
             </View>
             <Text style={[styles.title, { color: theme.text }]}>Create Account</Text>
             <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-              Join Kindred AI and start learning
+              Join Dori AI and start learning
             </Text>
           </View>
 
