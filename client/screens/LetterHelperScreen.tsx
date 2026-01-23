@@ -173,10 +173,10 @@ export default function LetterHelperScreen() {
       }
       
       setResult({
-        type: data.type || "Document",
+        type: data.type || "מסמך",
         urgency: data.urgency || "low",
-        summary: data.summary || "I couldn't fully analyze this document.",
-        actions: data.actions || ["Review the document carefully"],
+        summary: data.summary || "לא הצלחתי לנתח את המסמך במלואו.",
+        actions: data.actions || ["עיין במסמך בזהירות"],
       });
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
