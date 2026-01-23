@@ -1,26 +1,7 @@
 import { Router } from "express";
 import { GoogleGenAI } from "@google/genai";
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { PDFParse } = require("pdf-parse");
 
 const router = Router();
-
-// Helper to extract text from PDF buffer
-async function extractPdfText(base64Data: string): Promise<string> {
-  try {
-    const buffer = Buffer.from(base64Data, "base64");
-    // PDFParse requires Uint8Array, not Buffer
-    const uint8Array = new Uint8Array(buffer);
-    const pdfParser = new PDFParse(uint8Array);
-    await pdfParser.load();
-    const text = await pdfParser.getText();
-    pdfParser.destroy();
-    return text || "";
-  } catch (error) {
-    console.error("PDF extraction error:", error);
-    throw new Error("Could not read PDF content");
-  }
-}
 
 // This is using Replit's AI Integrations service for Gemini access
 const ai = new GoogleGenAI({
@@ -242,29 +223,15 @@ router.post("/letter-analyze", async (req, res) => {
       return res.status(400).json({ error: "Document text or image is required" });
     }
 
-    // Check if this is a PDF and extract text
+    // Check if this is a PDF - PDFs should be uploaded as photos instead
     let extractedText = documentText;
     const isPdf = mimeType === "application/pdf";
     
-    if (isPdf && imageBase64) {
-      try {
-        console.log("Extracting text from PDF...");
-        extractedText = await extractPdfText(imageBase64);
-        console.log("PDF text extracted, length:", extractedText?.length || 0);
-        
-        if (!extractedText || extractedText.trim().length < 10) {
-          return res.status(400).json({ 
-            error: "Could not read PDF content",
-            response: "This PDF appears to be a scanned image or has no readable text. Please take a photo of the document instead."
-          });
-        }
-      } catch (pdfError: any) {
-        console.error("PDF extraction failed:", pdfError);
-        return res.status(400).json({ 
-          error: "Could not read PDF content",
-          response: "I had trouble reading this PDF. Please try taking a photo of the document instead."
-        });
-      }
+    if (isPdf) {
+      return res.status(400).json({ 
+        error: "PDF not supported",
+        response: "Please take a photo of your document instead of uploading a PDF. Photos work better for analyzing letters and documents."
+      });
     }
 
     const systemPrompt = `You are a helpful assistant that explains documents and letters to seniors in plain, simple language.
@@ -285,8 +252,8 @@ Guidelines for urgency:
 Keep your summary warm, clear, and not overwhelming. Reassure them if the document is routine.
 IMPORTANT: Read the ACTUAL content of the document carefully. Do not make assumptions.`;
 
-    // For PDFs, use extracted text. For images, use vision capabilities.
-    const contents = (imageBase64 && !isPdf)
+    // Use vision capabilities for images
+    const contents = imageBase64
       ? [
           {
             role: "user" as const,
