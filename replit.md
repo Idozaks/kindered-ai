@@ -11,6 +11,7 @@ Key features include:
 - **Letter Helper**: Document scanning and plain-language translation
 - **Mirror World**: Safe practice environment for learning digital tasks
 - **WhatsApp Guides**: Step-by-step tutorials for common WhatsApp tasks (reading messages, sending texts/photos, video calls, privacy settings, group safety)
+- **Gmail Guides**: Step-by-step tutorials for common Gmail tasks (reading emails, sending emails, attaching photos, searching, deleting, replying) with contextual images
 - **Global Mic Button**: Voice-first interaction available throughout the app
 
 ## User Preferences

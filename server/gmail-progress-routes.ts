@@ -45,7 +45,7 @@ router.get("/", requireAuth, async (req: Request, res: Response) => {
 router.get("/:journeyId", requireAuth, async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
-    const journeyId = toGmailJourneyId(req.params.journeyId);
+    const journeyId = toGmailJourneyId(req.params.journeyId as string);
     
     const progress = await storage.getJourneyProgress(user.id, journeyId);
     const stepCompletions = await storage.getStepCompletions(user.id, journeyId);
@@ -66,7 +66,7 @@ router.get("/:journeyId", requireAuth, async (req: Request, res: Response) => {
 router.put("/:journeyId", requireAuth, async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
-    const journeyId = toGmailJourneyId(req.params.journeyId);
+    const journeyId = toGmailJourneyId(req.params.journeyId as string);
     const { currentStep, completed } = journeyProgressSchema.parse({
       journeyId,
       ...req.body,
@@ -120,7 +120,7 @@ router.put("/:journeyId", requireAuth, async (req: Request, res: Response) => {
 router.post("/:journeyId/steps/:stepIndex", requireAuth, async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
-    const journeyId = toGmailJourneyId(req.params.journeyId);
+    const journeyId = toGmailJourneyId(req.params.journeyId as string);
     const stepIndex = req.params.stepIndex as string;
     const { timeSpentSeconds } = req.body;
     
