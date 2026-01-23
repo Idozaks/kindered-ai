@@ -85,18 +85,36 @@ export default function LetterHelperScreen() {
   const handlePickPDF = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: "application/pdf",
+        type: ["application/pdf", "image/*"],
         copyToCacheDirectory: true,
       });
 
       if (!result.canceled && result.assets[0]) {
-        setSelectedFile(result.assets[0].uri);
-        setFileType("pdf");
-        setFileName(result.assets[0].name);
+        const asset = result.assets[0];
+        const isPDF = asset.mimeType === "application/pdf" || asset.name?.toLowerCase().endsWith(".pdf");
+        
+        if (isPDF) {
+          // PDFs need to be photographed for best results
+          setResult({
+            type: "PDF Document",
+            urgency: "low",
+            summary: "I can't read PDF files directly. For best results, please take a photo of the printed document or screenshot the PDF and upload that image instead.",
+            actions: [
+              "Print the PDF and take a photo",
+              "Or take a screenshot of the PDF",
+              "Then upload the image using Gallery"
+            ],
+          });
+          return;
+        }
+        
+        setSelectedFile(asset.uri);
+        setFileType("image");
+        setFileName(asset.name || null);
         setResult(null);
       }
     } catch (error) {
-      console.error("PDF picker error:", error);
+      console.error("Document picker error:", error);
     }
   };
 
@@ -271,9 +289,9 @@ export default function LetterHelperScreen() {
                 onPress={handlePickPDF}
                 icon={<Feather name="file" size={20} color={theme.primary} />}
                 style={styles.thirdButton}
-                testID="pick-pdf-button"
+                testID="pick-file-button"
               >
-                PDF
+                Files
               </GlassButton>
             </View>
 

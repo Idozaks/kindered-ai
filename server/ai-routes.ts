@@ -294,11 +294,13 @@ IMPORTANT: Read the ACTUAL content of the document carefully. Do not make assump
         actions: ["Review the document carefully"],
       });
     }
-  } catch (error) {
-    console.error("Letter analyze error:", error);
+  } catch (error: any) {
+    console.error("Letter analyze error:", error?.message || error);
+    console.error("Full error:", JSON.stringify(error, null, 2));
     res.status(500).json({ 
       error: "Unable to analyze document",
-      response: "I'm having trouble reading this document. Try taking another photo with good lighting." 
+      response: "I'm having trouble reading this document. Try taking another photo with good lighting.",
+      debug: error?.message 
     });
   }
 });
