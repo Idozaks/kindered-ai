@@ -5,6 +5,8 @@
 Kindred AI is an ultra-accessible digital companion mobile application designed for seniors (70+). The app bridges the gap between traditional life and modern technology by providing a "patient, technically brilliant grandchild" experience. Built with Expo/React Native for cross-platform mobile support and an Express backend, the application emphasizes voice-first interaction, large touch targets, and simplified workflows for complex digital tasks.
 
 Key features include:
+- **Guest Mode**: Users can explore the app without signing up first - no barriers to entry
+- **Simplified Onboarding**: Single welcome screen with clear, large text in Hebrew
 - **Grandchild Mode**: Live screen sharing with AI guidance
 - **Letter Helper**: Document scanning and plain-language translation
 - **Mirror World**: Safe practice environment for learning digital tasks
