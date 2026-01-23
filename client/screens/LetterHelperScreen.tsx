@@ -1,5 +1,18 @@
 import React, { useState } from "react";
 import { StyleSheet, View, Pressable, Image, Platform } from "react-native";
+
+// Helper to convert blob to base64 (for web)
+const blobToBase64 = (blob: Blob): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result as string;
+      resolve(result.split(",")[1]);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+};
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useTranslation } from "react-i18next";
@@ -114,10 +127,15 @@ export default function LetterHelperScreen() {
       let fileBase64: string;
       
       if (selectedFile.startsWith("data:")) {
-        // Already base64 (web)
+        // Already base64 (web data URL)
         fileBase64 = selectedFile.split(",")[1];
+      } else if (Platform.OS === "web") {
+        // Web platform with blob URL - fetch and convert
+        const response = await fetch(selectedFile);
+        const blob = await response.blob();
+        fileBase64 = await blobToBase64(blob);
       } else {
-        // File URI (native) - read as base64
+        // Native platform - use FileSystem
         const base64 = await FileSystem.readAsStringAsync(selectedFile, {
           encoding: "base64",
         });
