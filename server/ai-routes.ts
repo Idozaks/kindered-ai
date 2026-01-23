@@ -1,7 +1,20 @@
 import { Router } from "express";
 import { GoogleGenAI } from "@google/genai";
+import * as pdfParse from "pdf-parse";
 
 const router = Router();
+
+// Helper to extract text from PDF buffer
+async function extractPdfText(base64Data: string): Promise<string> {
+  try {
+    const buffer = Buffer.from(base64Data, "base64");
+    const data = await (pdfParse as any).default(buffer);
+    return data.text || "";
+  } catch (error) {
+    console.error("PDF extraction error:", error);
+    throw new Error("Could not read PDF content");
+  }
+}
 
 // This is using Replit's AI Integrations service for Gemini access
 const ai = new GoogleGenAI({
@@ -223,6 +236,31 @@ router.post("/letter-analyze", async (req, res) => {
       return res.status(400).json({ error: "Document text or image is required" });
     }
 
+    // Check if this is a PDF and extract text
+    let extractedText = documentText;
+    const isPdf = mimeType === "application/pdf";
+    
+    if (isPdf && imageBase64) {
+      try {
+        console.log("Extracting text from PDF...");
+        extractedText = await extractPdfText(imageBase64);
+        console.log("PDF text extracted, length:", extractedText?.length || 0);
+        
+        if (!extractedText || extractedText.trim().length < 10) {
+          return res.status(400).json({ 
+            error: "Could not read PDF content",
+            response: "This PDF appears to be a scanned image or has no readable text. Please take a photo of the document instead."
+          });
+        }
+      } catch (pdfError: any) {
+        console.error("PDF extraction failed:", pdfError);
+        return res.status(400).json({ 
+          error: "Could not read PDF content",
+          response: "I had trouble reading this PDF. Please try taking a photo of the document instead."
+        });
+      }
+    }
+
     const systemPrompt = `You are a helpful assistant that explains documents and letters to seniors in plain, simple language.
 
 You MUST respond with valid JSON in this exact format:
@@ -241,7 +279,8 @@ Guidelines for urgency:
 Keep your summary warm, clear, and not overwhelming. Reassure them if the document is routine.
 IMPORTANT: Read the ACTUAL content of the document carefully. Do not make assumptions.`;
 
-    const contents = imageBase64 
+    // For PDFs, use extracted text. For images, use vision capabilities.
+    const contents = (imageBase64 && !isPdf)
       ? [
           {
             role: "user" as const,
@@ -254,7 +293,7 @@ IMPORTANT: Read the ACTUAL content of the document carefully. Do not make assump
       : [
           {
             role: "user" as const,
-            parts: [{ text: `Please analyze this document and explain it in simple terms:\n\n${documentText}` }],
+            parts: [{ text: `Please analyze this document and explain it in simple terms:\n\n${extractedText}` }],
           },
         ];
 

@@ -93,23 +93,8 @@ export default function LetterHelperScreen() {
         const asset = result.assets[0];
         const isPDF = asset.mimeType === "application/pdf" || asset.name?.toLowerCase().endsWith(".pdf");
         
-        if (isPDF) {
-          // PDFs need to be photographed for best results
-          setResult({
-            type: "PDF Document",
-            urgency: "low",
-            summary: "I can't read PDF files directly. For best results, please take a photo of the printed document or screenshot the PDF and upload that image instead.",
-            actions: [
-              "Print the PDF and take a photo",
-              "Or take a screenshot of the PDF",
-              "Then upload the image using Gallery"
-            ],
-          });
-          return;
-        }
-        
         setSelectedFile(asset.uri);
-        setFileType("image");
+        setFileType(isPDF ? "pdf" : "image");
         setFileName(asset.name || null);
         setResult(null);
       }
@@ -151,11 +136,23 @@ export default function LetterHelperScreen() {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to analyze document");
-      }
-
       const data = await response.json();
+      
+      if (!response.ok) {
+        // Server returned an error - show the helpful message
+        setResult({
+          type: "PDF Document",
+          urgency: "low",
+          summary: data.response || "I had trouble reading this document. Please try taking a photo instead.",
+          actions: [
+            "Print the document and take a photo",
+            "Or take a screenshot of the PDF",
+            "Then upload the image using Gallery"
+          ],
+        });
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        return;
+      }
       
       setResult({
         type: data.type || "Document",
