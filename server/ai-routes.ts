@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { GoogleGenAI } from "@google/genai";
-import * as pdfParse from "pdf-parse";
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { PDFParse } = require("pdf-parse");
 
 const router = Router();
 
@@ -8,8 +9,11 @@ const router = Router();
 async function extractPdfText(base64Data: string): Promise<string> {
   try {
     const buffer = Buffer.from(base64Data, "base64");
-    const data = await (pdfParse as any).default(buffer);
-    return data.text || "";
+    const pdfParser = new PDFParse(buffer);
+    await pdfParser.load();
+    const text = await pdfParser.getText();
+    pdfParser.destroy();
+    return text || "";
   } catch (error) {
     console.error("PDF extraction error:", error);
     throw new Error("Could not read PDF content");
