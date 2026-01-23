@@ -162,13 +162,20 @@ export default function LetterHelperScreen() {
       });
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch (error) {
-      console.error("Document analysis error:", error);
+    } catch (error: any) {
+      console.error("Document analysis error:", error?.message || error);
+      const errorMessage = error?.message || "Unknown error";
+      const isNetworkError = errorMessage.includes("network") || errorMessage.includes("fetch") || errorMessage.includes("Network") || errorMessage === "Unknown error";
+      
       setResult({
-        type: "Error",
+        type: t("letterHelper.errorType"),
         urgency: "low",
-        summary: "I'm having trouble reading this document. Please try taking a clearer photo with good lighting.",
-        actions: ["Try taking another photo", "Make sure the document is flat and well-lit"],
+        summary: isNetworkError 
+          ? t("letterHelper.errorNetwork")
+          : t("letterHelper.errorReading"),
+        actions: isNetworkError 
+          ? [t("letterHelper.actionCheckInternet"), t("letterHelper.actionTryAgain")]
+          : [t("letterHelper.actionAnotherPhoto"), t("letterHelper.actionGoodLighting")],
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
