@@ -9,7 +9,9 @@ const router = Router();
 async function extractPdfText(base64Data: string): Promise<string> {
   try {
     const buffer = Buffer.from(base64Data, "base64");
-    const pdfParser = new PDFParse(buffer);
+    // PDFParse requires Uint8Array, not Buffer
+    const uint8Array = new Uint8Array(buffer);
+    const pdfParser = new PDFParse(uint8Array);
     await pdfParser.load();
     const text = await pdfParser.getText();
     pdfParser.destroy();
