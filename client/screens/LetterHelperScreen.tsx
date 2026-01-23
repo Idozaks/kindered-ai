@@ -7,8 +7,10 @@ import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
+import * as FileSystem from "expo-file-system";
 
 import { ThemedText } from "@/components/ThemedText";
+import { getApiUrl } from "@/lib/query-client";
 import { ThemedView } from "@/components/ThemedView";
 import { GlassCard } from "@/components/GlassCard";
 import { GlassButton } from "@/components/GlassButton";
@@ -79,22 +81,55 @@ export default function LetterHelperScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setIsAnalyzing(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      // Convert image to base64
+      let imageBase64: string;
+      
+      if (selectedImage.startsWith("data:")) {
+        // Already base64 (web)
+        imageBase64 = selectedImage.split(",")[1];
+      } else {
+        // File URI (native) - read as base64
+        const base64 = await FileSystem.readAsStringAsync(selectedImage, {
+          encoding: "base64",
+        });
+        imageBase64 = base64;
+      }
 
-    setResult({
-      type: "Bank Statement",
-      urgency: "low",
-      summary:
-        "This is your monthly bank statement showing your account balance and recent transactions. Your balance is healthy and there are no unusual charges.",
-      actions: [
-        "Review transactions for any unfamiliar charges",
-        "File for your records",
-        "No immediate action needed",
-      ],
-    });
+      // Call the AI API
+      const baseUrl = getApiUrl();
+      const response = await fetch(new URL("/api/ai/letter-analyze", baseUrl).href, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageBase64 }),
+      });
 
-    setIsAnalyzing(false);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      if (!response.ok) {
+        throw new Error("Failed to analyze document");
+      }
+
+      const data = await response.json();
+      
+      setResult({
+        type: data.type || "Document",
+        urgency: data.urgency || "low",
+        summary: data.summary || "I couldn't fully analyze this document.",
+        actions: data.actions || ["Review the document carefully"],
+      });
+
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (error) {
+      console.error("Document analysis error:", error);
+      setResult({
+        type: "Error",
+        urgency: "low",
+        summary: "I'm having trouble reading this document. Please try taking a clearer photo with good lighting.",
+        actions: ["Try taking another photo", "Make sure the document is flat and well-lit"],
+      });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const getUrgencyColor = (urgency: string) => {

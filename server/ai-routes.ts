@@ -225,14 +225,21 @@ router.post("/letter-analyze", async (req, res) => {
 
     const systemPrompt = `You are a helpful assistant that explains documents and letters to seniors in plain, simple language.
 
-Your job:
-- Summarize what the document is about in 1-2 sentences
-- Highlight the most important information
-- Explain any confusing terms in simple words
-- Tell them if any action is required and by when
-- Reassure them if the document is routine/not urgent
+You MUST respond with valid JSON in this exact format:
+{
+  "type": "Brief document type (e.g., Bank Statement, Electricity Bill, Medical Letter, Government Notice)",
+  "urgency": "high" or "medium" or "low",
+  "summary": "A warm, clear 2-3 sentence explanation of what this document is and what it means for the person. Use simple words.",
+  "actions": ["Action 1 they should take", "Action 2 if needed", "Action 3 if needed"]
+}
 
-Keep your response warm, clear, and not overwhelming.`;
+Guidelines for urgency:
+- "high": Payment due soon, legal deadline, medical appointment, requires immediate action
+- "medium": Should handle within a week, important but not urgent
+- "low": Informational only, routine statement, no action needed
+
+Keep your summary warm, clear, and not overwhelming. Reassure them if the document is routine.
+IMPORTANT: Read the ACTUAL content of the document carefully. Do not make assumptions.`;
 
     const contents = imageBase64 
       ? [
@@ -260,9 +267,33 @@ Keep your response warm, clear, and not overwhelming.`;
       },
     });
 
-    const text = response.text || "I couldn't fully analyze this document. Could you try taking a clearer photo?";
-
-    res.json({ response: text });
+    const text = response.text || "";
+    
+    // Try to parse as JSON
+    try {
+      // Extract JSON from the response (handle markdown code blocks)
+      let jsonStr = text;
+      const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (jsonMatch) {
+        jsonStr = jsonMatch[1].trim();
+      }
+      
+      const parsed = JSON.parse(jsonStr);
+      res.json({ 
+        type: parsed.type || "Document",
+        urgency: parsed.urgency || "low",
+        summary: parsed.summary || "I couldn't fully analyze this document.",
+        actions: parsed.actions || ["Review the document carefully"],
+      });
+    } catch (parseError) {
+      // Fallback if JSON parsing fails
+      res.json({ 
+        type: "Document",
+        urgency: "low",
+        summary: text || "I couldn't fully analyze this document. Could you try taking a clearer photo?",
+        actions: ["Review the document carefully"],
+      });
+    }
   } catch (error) {
     console.error("Letter analyze error:", error);
     res.status(500).json({ 
