@@ -353,7 +353,41 @@ router.post("/letter-analyze", async (req, res) => {
   }
 });
 
-// Text-to-Speech using Gemini
+// Helper function to convert PCM to WAV
+function pcmToWav(pcmBase64: string, sampleRate: number = 24000, numChannels: number = 1, bitsPerSample: number = 16): string {
+  const pcmBuffer = Buffer.from(pcmBase64, 'base64');
+  const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
+  const blockAlign = numChannels * (bitsPerSample / 8);
+  const dataSize = pcmBuffer.length;
+  const headerSize = 44;
+  const fileSize = headerSize + dataSize;
+
+  const wavBuffer = Buffer.alloc(fileSize);
+  
+  // RIFF header
+  wavBuffer.write('RIFF', 0);
+  wavBuffer.writeUInt32LE(fileSize - 8, 4);
+  wavBuffer.write('WAVE', 8);
+  
+  // fmt chunk
+  wavBuffer.write('fmt ', 12);
+  wavBuffer.writeUInt32LE(16, 16); // Subchunk1Size
+  wavBuffer.writeUInt16LE(1, 20); // AudioFormat (PCM)
+  wavBuffer.writeUInt16LE(numChannels, 22);
+  wavBuffer.writeUInt32LE(sampleRate, 24);
+  wavBuffer.writeUInt32LE(byteRate, 28);
+  wavBuffer.writeUInt16LE(blockAlign, 32);
+  wavBuffer.writeUInt16LE(bitsPerSample, 34);
+  
+  // data chunk
+  wavBuffer.write('data', 36);
+  wavBuffer.writeUInt32LE(dataSize, 40);
+  pcmBuffer.copy(wavBuffer, 44);
+  
+  return wavBuffer.toString('base64');
+}
+
+// Text-to-Speech using Gemini TTS model
 router.post("/tts", async (req, res) => {
   try {
     const { text } = req.body;
@@ -362,41 +396,58 @@ router.post("/tts", async (req, res) => {
       return res.status(400).json({ error: "Text is required" });
     }
 
-    // Use ttsAi client with user's own API key for better TTS quality
+    // Check if user has provided their own API key
+    if (!process.env.GEMINI_API_KEY) {
+      console.log("TTS: No GEMINI_API_KEY, using fallback");
+      return res.json({ fallback: true, text });
+    }
+
+    console.log("TTS: Generating audio for text:", text.substring(0, 50) + "...");
+
+    // Use the dedicated TTS model with user's API key
     const response = await ttsAi.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.5-flash-preview-tts",
       contents: [
         {
           role: "user" as const,
-          parts: [{ text: `קרא את הטקסט הבא בעברית בקול חם, ידידותי וברור. דבר לאט ובצורה נעימה, כאילו אתה מדבר עם סבא או סבתא אהובים:\n\n${text}` }],
+          parts: [{ text: text }],
         },
       ],
       config: {
-        responseModalities: ["audio"],
+        responseModalities: ["AUDIO"],
         speechConfig: {
           voiceConfig: {
             prebuiltVoiceConfig: {
-              voiceName: "Kore",
+              voiceName: "Aoede",
             },
           },
         },
       },
     });
 
+    console.log("TTS: Response received, checking for audio data...");
+
     // Get audio data from response
     const audioData = response.candidates?.[0]?.content?.parts?.[0]?.inlineData;
     
     if (audioData?.data) {
+      console.log("TTS: Audio data received, mimeType:", audioData.mimeType);
+      
+      // Convert PCM to WAV for browser compatibility
+      const wavBase64 = pcmToWav(audioData.data, 24000, 1, 16);
+      
       res.json({ 
-        audioBase64: audioData.data,
-        mimeType: audioData.mimeType || "audio/wav"
+        audioBase64: wavBase64,
+        mimeType: "audio/wav"
       });
     } else {
-      // Fallback - return text for client-side TTS
+      console.log("TTS: No audio data in response, using fallback");
+      console.log("TTS: Response structure:", JSON.stringify(response.candidates?.[0]?.content?.parts?.[0], null, 2)?.substring(0, 200));
       res.json({ fallback: true, text });
     }
   } catch (error: any) {
     console.error("TTS error:", error?.message || error);
+    console.error("TTS error details:", JSON.stringify(error, null, 2)?.substring(0, 500));
     // Return fallback flag so client can use expo-speech
     res.json({ fallback: true, text: req.body.text });
   }
