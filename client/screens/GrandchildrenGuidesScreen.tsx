@@ -352,46 +352,44 @@ export default function GrandchildrenGuidesScreen() {
                 />
               </View>
             ) : null}
-            <View style={styles.stepTextContainer}>
-              <GlassCard style={styles.stepCard}>
-                <View style={styles.stepCardContent}>
-                  <View
-                    style={[
-                      styles.stepBadge,
-                      { backgroundColor: FAMILY_PINK },
-                    ]}
-                  >
-                    <ThemedText style={styles.stepBadgeText}>
-                      {currentStep + 1}
-                    </ThemedText>
-                  </View>
-                  <ThemedText type="body" style={styles.stepText}>
-                    {step.textHe || step.text}
+            <View style={[styles.stepInstructionCard, { backgroundColor: theme.glassBg, borderColor: theme.glassBorder }]}>
+              <View style={styles.stepCardContent}>
+                <View
+                  style={[
+                    styles.stepBadge,
+                    { backgroundColor: FAMILY_PINK },
+                  ]}
+                >
+                  <ThemedText style={styles.stepBadgeText}>
+                    {currentStep + 1}
                   </ThemedText>
                 </View>
-                {showTrainerNotes && (step.trainerNoteHe || step.trainerNote) ? (
-                  <Animated.View
-                    entering={FadeIn.duration(200)}
-                    style={[
-                      styles.trainerNote,
-                      { backgroundColor: theme.backgroundSecondary },
-                    ]}
+                <ThemedText type="body" style={styles.stepText}>
+                  {step.textHe || step.text}
+                </ThemedText>
+              </View>
+              {showTrainerNotes && (step.trainerNoteHe || step.trainerNote) ? (
+                <Animated.View
+                  entering={FadeIn.duration(200)}
+                  style={[
+                    styles.trainerNote,
+                    { backgroundColor: theme.backgroundSecondary },
+                  ]}
+                >
+                  <Feather
+                    name="info"
+                    size={16}
+                    color={FAMILY_PINK}
+                    style={styles.trainerIcon}
+                  />
+                  <ThemedText
+                    type="small"
+                    style={[styles.trainerNoteText, { color: theme.textSecondary }]}
                   >
-                    <Feather
-                      name="info"
-                      size={16}
-                      color={FAMILY_PINK}
-                      style={styles.trainerIcon}
-                    />
-                    <ThemedText
-                      type="small"
-                      style={[styles.trainerNoteText, { color: theme.textSecondary }]}
-                    >
-                      {t("tools.grandchildren.trainer")}{step.trainerNoteHe || step.trainerNote}
-                    </ThemedText>
-                  </Animated.View>
-                ) : null}
-              </GlassCard>
+                    {t("tools.grandchildren.trainer")}{step.trainerNoteHe || step.trainerNote}
+                  </ThemedText>
+                </Animated.View>
+              ) : null}
             </View>
           </Animated.View>
         </ScrollView>
@@ -589,12 +587,10 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: BorderRadius.md,
   },
-  stepTextContainer: {
-    flex: 0,
-  },
-  stepCard: {
-    flex: 0,
-    padding: Spacing.md,
+  stepInstructionCard: {
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    padding: Spacing.lg,
   },
   stepCardContent: {
     flexDirection: "row",
