@@ -355,8 +355,8 @@ export default function GmailGuidesScreen() {
                 />
               </View>
             ) : null}
-            <GlassCard style={styles.stepCard}>
-              <View style={styles.stepNumberBadge}>
+            <View style={[styles.stepInstructionCard, { backgroundColor: theme.glassBg, borderColor: theme.glassBorder }]}>
+              <View style={styles.stepCardContent}>
                 <View
                   style={[
                     styles.stepBadge,
@@ -367,10 +367,10 @@ export default function GmailGuidesScreen() {
                     {currentStep + 1}
                   </ThemedText>
                 </View>
+                <ThemedText type="body" style={styles.stepText}>
+                  {step.textHe || step.text}
+                </ThemedText>
               </View>
-              <ThemedText type="body" style={styles.stepText}>
-                {step.textHe || step.text}
-              </ThemedText>
               {showTrainerNotes && (step.trainerNoteHe || step.trainerNote) ? (
                 <Animated.View
                   entering={FadeIn.duration(200)}
@@ -393,7 +393,7 @@ export default function GmailGuidesScreen() {
                   </ThemedText>
                 </Animated.View>
               ) : null}
-            </GlassCard>
+            </View>
           </Animated.View>
         </ScrollView>
 
@@ -555,7 +555,7 @@ const styles = StyleSheet.create({
     width: 44,
   },
   progressContainer: {
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.md,
   },
   progressBar: {
     height: 8,
@@ -584,18 +584,22 @@ const styles = StyleSheet.create({
   },
   stepImageContainer: {
     alignItems: "center",
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.sm,
   },
   stepImage: {
-    width: SCREEN_WIDTH - Spacing.lg * 2,
-    height: 200,
+    width: SCREEN_WIDTH - Spacing.lg * 4,
+    height: 160,
     borderRadius: BorderRadius.lg,
   },
-  stepCard: {
-    minHeight: 120,
+  stepInstructionCard: {
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    padding: Spacing.lg,
   },
-  stepNumberBadge: {
-    marginBottom: Spacing.lg,
+  stepCardContent: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: Spacing.md,
   },
   stepBadge: {
     width: 40,
@@ -610,8 +614,9 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   stepText: {
-    fontSize: 22,
-    lineHeight: 32,
+    fontSize: 18,
+    lineHeight: 26,
+    flex: 1,
   },
   trainerNote: {
     marginTop: Spacing.lg,
