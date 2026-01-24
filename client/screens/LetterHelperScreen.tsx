@@ -23,7 +23,6 @@ import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import * as FileSystem from "expo-file-system/legacy";
 import * as Speech from "expo-speech";
-import { Audio } from "expo-av";
 
 import { ThemedText } from "@/components/ThemedText";
 import { getApiUrl } from "@/lib/query-client";
@@ -79,7 +78,7 @@ export default function LetterHelperScreen() {
   const [isSendingChat, setIsSendingChat] = useState(false);
   const [speakingMessageIndex, setSpeakingMessageIndex] = useState<number | null>(null);
   const chatScrollRef = useRef<ScrollView>(null);
-  const audioPlayerRef = useRef<Audio.Sound | null>(null);
+  const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
   
   // Store image base64 for chat context
   const [documentBase64, setDocumentBase64] = useState<string | null>(null);
@@ -251,8 +250,7 @@ export default function LetterHelperScreen() {
     try {
       // Stop any existing audio
       if (audioPlayerRef.current) {
-        await audioPlayerRef.current.stopAsync();
-        await audioPlayerRef.current.unloadAsync();
+        audioPlayerRef.current.pause();
         audioPlayerRef.current = null;
       }
 
@@ -274,18 +272,24 @@ export default function LetterHelperScreen() {
           onStopped: onComplete,
           onError: onComplete,
         });
-      } else if (data.audioBase64) {
-        // Play Gemini audio using expo-av
-        const { sound } = await Audio.Sound.createAsync(
-          { uri: `data:${data.mimeType};base64,${data.audioBase64}` },
-          { shouldPlay: true }
-        );
-        audioPlayerRef.current = sound;
+      } else if (data.audioBase64 && Platform.OS === "web") {
+        // Play Gemini audio using web Audio API
+        const audioSrc = `data:${data.mimeType};base64,${data.audioBase64}`;
+        const audio = new Audio(audioSrc);
+        audioPlayerRef.current = audio;
         
-        sound.setOnPlaybackStatusUpdate((status: any) => {
-          if (status.isLoaded && status.didJustFinish && onComplete) {
-            onComplete();
-          }
+        audio.onended = () => {
+          if (onComplete) onComplete();
+        };
+        audio.play();
+      } else if (data.audioBase64) {
+        // For native, use expo-speech as fallback since audio playback from base64 is complex
+        Speech.speak(text, {
+          language: "he-IL",
+          rate: 0.85,
+          onDone: onComplete,
+          onStopped: onComplete,
+          onError: onComplete,
         });
       }
     } catch (error) {
@@ -306,8 +310,7 @@ export default function LetterHelperScreen() {
     
     if (isSpeaking) {
       if (audioPlayerRef.current) {
-        await audioPlayerRef.current.stopAsync();
-        await audioPlayerRef.current.unloadAsync();
+        audioPlayerRef.current.pause();
         audioPlayerRef.current = null;
       }
       Speech.stop();
@@ -326,8 +329,7 @@ export default function LetterHelperScreen() {
     if (speakingMessageIndex === index) {
       // Stop playing
       if (audioPlayerRef.current) {
-        await audioPlayerRef.current.stopAsync();
-        await audioPlayerRef.current.unloadAsync();
+        audioPlayerRef.current.pause();
         audioPlayerRef.current = null;
       }
       Speech.stop();

@@ -12,6 +12,11 @@ const ai = new GoogleGenAI({
   },
 });
 
+// Separate client for TTS using user's own API key for better quality
+const ttsAi = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY || process.env.AI_INTEGRATIONS_GEMINI_API_KEY,
+});
+
 router.post("/grandchild-help", async (req, res) => {
   try {
     const { question, context, language, history, imageBase64 } = req.body;
@@ -357,12 +362,13 @@ router.post("/tts", async (req, res) => {
       return res.status(400).json({ error: "Text is required" });
     }
 
-    const response = await ai.models.generateContent({
+    // Use ttsAi client with user's own API key for better TTS quality
+    const response = await ttsAi.models.generateContent({
       model: "gemini-2.5-flash",
       contents: [
         {
           role: "user" as const,
-          parts: [{ text: `Please read aloud the following Hebrew text in a warm, friendly voice suitable for elderly listeners. Speak slowly and clearly:\n\n${text}` }],
+          parts: [{ text: `קרא את הטקסט הבא בעברית בקול חם, ידידותי וברור. דבר לאט ובצורה נעימה, כאילו אתה מדבר עם סבא או סבתא אהובים:\n\n${text}` }],
         },
       ],
       config: {
