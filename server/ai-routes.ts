@@ -348,20 +348,8 @@ router.post("/letter-analyze", async (req, res) => {
       const parsed = JSON.parse(jsonStr);
       const result = buildResult(parsed);
       
-      // Generate TTS in parallel - don't wait for it
-      const textToRead = `${result.type}. ${result.summary}. מה לעשות: ${result.actions.join(". ")}`;
-      const ttsPromise = generateTTSAudio(textToRead);
-      
-      // Wait for TTS (with timeout to not delay response too much)
-      const ttsResult = await Promise.race([
-        ttsPromise,
-        new Promise<null>(resolve => setTimeout(() => resolve(null), 5000))
-      ]);
-      
-      res.json({ 
-        ...result,
-        audio: ttsResult || undefined,
-      });
+      // Return result immediately - TTS will be fetched separately by client
+      res.json(result);
     } catch (parseError: any) {
       console.error("JSON parse error:", parseError.message);
       console.error("Raw text was:", text.substring(0, 500));
@@ -372,21 +360,12 @@ router.post("/letter-analyze", async (req, res) => {
       const summaryMatch = text.match(/"summary"\s*:\s*"([^"]+)"/);
       
       if (typeMatch || summaryMatch) {
-        const result = { 
+        res.json({ 
           type: typeMatch?.[1] || "מסמך",
           urgency: urgencyMatch?.[1] || "low",
           summary: summaryMatch?.[1] || "ניתחתי את המסמך שלך. אנא עיין בו בזהירות.",
           actions: ["עיין במסמך בזהירות"],
-        };
-        
-        // Generate TTS for fallback result too
-        const textToRead = `${result.type}. ${result.summary}. מה לעשות: ${result.actions.join(". ")}`;
-        const ttsResult = await Promise.race([
-          generateTTSAudio(textToRead),
-          new Promise<null>(resolve => setTimeout(() => resolve(null), 5000))
-        ]);
-        
-        res.json({ ...result, audio: ttsResult || undefined });
+        });
       } else {
         res.json({ 
           type: "מסמך",

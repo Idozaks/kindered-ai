@@ -83,8 +83,28 @@ export default function LetterHelperScreen() {
   // Store image base64 for chat context
   const [documentBase64, setDocumentBase64] = useState<string | null>(null);
   
-  // Cached TTS audio (received with analysis response)
+  // Cached TTS audio (fetched in background after analysis)
   const [cachedAudio, setCachedAudio] = useState<{base64: string, mimeType: string} | null>(null);
+  
+  // Fetch TTS audio in background (non-blocking)
+  const fetchTTSInBackground = (analysisResult: AnalysisResult) => {
+    const textToRead = `${analysisResult.type}. ${analysisResult.summary}. מה לעשות: ${analysisResult.actions.join(". ")}`;
+    
+    const baseUrl = getApiUrl();
+    fetch(new URL("/api/ai/tts", baseUrl).href, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: textToRead }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.audioBase64 && !data.fallback) {
+          setCachedAudio({ base64: data.audioBase64, mimeType: data.mimeType });
+          console.log("TTS audio ready");
+        }
+      })
+      .catch(() => console.log("TTS fetch failed, will use fallback"));
+  };
 
   const handlePickImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -219,11 +239,8 @@ export default function LetterHelperScreen() {
       };
       setResult(analysisResult);
 
-      // Use audio from the response (generated in parallel with analysis)
-      if (data.audio?.audioBase64) {
-        setCachedAudio({ base64: data.audio.audioBase64, mimeType: data.audio.mimeType });
-        console.log("TTS audio received with analysis");
-      }
+      // Start TTS generation in background (non-blocking)
+      fetchTTSInBackground(analysisResult);
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (error: any) {
