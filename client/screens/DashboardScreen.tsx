@@ -92,6 +92,13 @@ export default function DashboardScreen() {
       image: monitorIcon,
       color: "#E91E63",
     },
+    {
+      id: "websiteHelper",
+      title: t("tools.websiteHelper.title"),
+      description: t("tools.websiteHelper.description"),
+      image: monitorIcon,
+      color: "#4285F4",
+    },
   ];
 
   const handleToolPress = useCallback(
@@ -114,6 +121,9 @@ export default function DashboardScreen() {
           break;
         case "grandchildren":
           navigation.navigate("GrandchildrenGuides");
+          break;
+        case "websiteHelper":
+          navigation.navigate("WebsiteHelper");
           break;
       }
     },

@@ -5,6 +5,7 @@ import authRoutes from "./auth-routes";
 import progressRoutes from "./progress-routes";
 import gmailProgressRoutes from "./gmail-progress-routes";
 import { registerImageRoutes } from "./replit_integrations/image";
+import { registerWebsiteHelperRoutes } from "./routes/websiteHelper";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
@@ -21,6 +22,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Image generation routes
   registerImageRoutes(app);
+
+  // Website Helper routes
+  registerWebsiteHelperRoutes(app);
 
   const httpServer = createServer(app);
 
