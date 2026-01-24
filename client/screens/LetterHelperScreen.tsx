@@ -23,6 +23,7 @@ import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import * as FileSystem from "expo-file-system/legacy";
 import * as Speech from "expo-speech";
+import { Audio } from "expo-av";
 
 import { ThemedText } from "@/components/ThemedText";
 import { getApiUrl } from "@/lib/query-client";
@@ -76,7 +77,9 @@ export default function LetterHelperScreen() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState("");
   const [isSendingChat, setIsSendingChat] = useState(false);
+  const [speakingMessageIndex, setSpeakingMessageIndex] = useState<number | null>(null);
   const chatScrollRef = useRef<ScrollView>(null);
+  const audioPlayerRef = useRef<Audio.Sound | null>(null);
   
   // Store image base64 for chat context
   const [documentBase64, setDocumentBase64] = useState<string | null>(null);
@@ -244,10 +247,69 @@ export default function LetterHelperScreen() {
     setCompletedActions(newCompleted);
   };
 
+  const playTTS = async (text: string, onComplete?: () => void) => {
+    try {
+      // Stop any existing audio
+      if (audioPlayerRef.current) {
+        await audioPlayerRef.current.stopAsync();
+        await audioPlayerRef.current.unloadAsync();
+        audioPlayerRef.current = null;
+      }
+
+      const baseUrl = getApiUrl();
+      const response = await fetch(new URL("/api/ai/tts", baseUrl).href, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+
+      const data = await response.json();
+
+      if (data.fallback) {
+        // Use expo-speech as fallback
+        Speech.speak(text, {
+          language: "he-IL",
+          rate: 0.85,
+          onDone: onComplete,
+          onStopped: onComplete,
+          onError: onComplete,
+        });
+      } else if (data.audioBase64) {
+        // Play Gemini audio using expo-av
+        const { sound } = await Audio.Sound.createAsync(
+          { uri: `data:${data.mimeType};base64,${data.audioBase64}` },
+          { shouldPlay: true }
+        );
+        audioPlayerRef.current = sound;
+        
+        sound.setOnPlaybackStatusUpdate((status: any) => {
+          if (status.isLoaded && status.didJustFinish && onComplete) {
+            onComplete();
+          }
+        });
+      }
+    } catch (error) {
+      console.error("TTS error:", error);
+      // Fallback to expo-speech
+      Speech.speak(text, {
+        language: "he-IL",
+        rate: 0.85,
+        onDone: onComplete,
+        onStopped: onComplete,
+        onError: onComplete,
+      });
+    }
+  };
+
   const handleReadAloud = async () => {
     if (!result) return;
     
     if (isSpeaking) {
+      if (audioPlayerRef.current) {
+        await audioPlayerRef.current.stopAsync();
+        await audioPlayerRef.current.unloadAsync();
+        audioPlayerRef.current = null;
+      }
       Speech.stop();
       setIsSpeaking(false);
       return;
@@ -257,14 +319,25 @@ export default function LetterHelperScreen() {
     setIsSpeaking(true);
     
     const textToRead = `${result.type}. ${result.summary}. מה לעשות: ${result.actions.join(". ")}`;
-    
-    Speech.speak(textToRead, {
-      language: "he-IL",
-      rate: 0.85,
-      onDone: () => setIsSpeaking(false),
-      onStopped: () => setIsSpeaking(false),
-      onError: () => setIsSpeaking(false),
-    });
+    await playTTS(textToRead, () => setIsSpeaking(false));
+  };
+
+  const handleReadChatMessage = async (index: number, content: string) => {
+    if (speakingMessageIndex === index) {
+      // Stop playing
+      if (audioPlayerRef.current) {
+        await audioPlayerRef.current.stopAsync();
+        await audioPlayerRef.current.unloadAsync();
+        audioPlayerRef.current = null;
+      }
+      Speech.stop();
+      setSpeakingMessageIndex(null);
+      return;
+    }
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setSpeakingMessageIndex(index);
+    await playTTS(content, () => setSpeakingMessageIndex(null));
   };
 
   const handleCallFamily = () => {
@@ -701,6 +774,18 @@ export default function LetterHelperScreen() {
                 >
                   {msg.content}
                 </ThemedText>
+                {msg.role === "assistant" ? (
+                  <Pressable
+                    onPress={() => handleReadChatMessage(index, msg.content)}
+                    style={[styles.chatSpeakButton, { backgroundColor: speakingMessageIndex === index ? theme.primary : theme.primary + "20" }]}
+                  >
+                    <Feather 
+                      name={speakingMessageIndex === index ? "volume-x" : "volume-2"} 
+                      size={16} 
+                      color={speakingMessageIndex === index ? "#FFFFFF" : theme.primary} 
+                    />
+                  </Pressable>
+                ) : null}
               </View>
             ))}
             {isSendingChat ? (
@@ -854,6 +939,15 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
+  },
+  chatSpeakButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: Spacing.sm,
+    alignSelf: "flex-start",
   },
   summaryTextLarge: {
     fontSize: 20,

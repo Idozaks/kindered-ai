@@ -348,6 +348,54 @@ router.post("/letter-analyze", async (req, res) => {
   }
 });
 
+// Text-to-Speech using Gemini
+router.post("/tts", async (req, res) => {
+  try {
+    const { text } = req.body;
+
+    if (!text) {
+      return res.status(400).json({ error: "Text is required" });
+    }
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [
+        {
+          role: "user" as const,
+          parts: [{ text: `Please read aloud the following Hebrew text in a warm, friendly voice suitable for elderly listeners. Speak slowly and clearly:\n\n${text}` }],
+        },
+      ],
+      config: {
+        responseModalities: ["audio"],
+        speechConfig: {
+          voiceConfig: {
+            prebuiltVoiceConfig: {
+              voiceName: "Kore",
+            },
+          },
+        },
+      },
+    });
+
+    // Get audio data from response
+    const audioData = response.candidates?.[0]?.content?.parts?.[0]?.inlineData;
+    
+    if (audioData?.data) {
+      res.json({ 
+        audioBase64: audioData.data,
+        mimeType: audioData.mimeType || "audio/wav"
+      });
+    } else {
+      // Fallback - return text for client-side TTS
+      res.json({ fallback: true, text });
+    }
+  } catch (error: any) {
+    console.error("TTS error:", error?.message || error);
+    // Return fallback flag so client can use expo-speech
+    res.json({ fallback: true, text: req.body.text });
+  }
+});
+
 // Letter Helper Chat - follow-up questions about document
 router.post("/letter-chat", async (req, res) => {
   try {
