@@ -17,7 +17,7 @@ const blobToBase64 = (blob: Blob): Promise<string> => {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useTranslation } from "react-i18next";
-import { Feather } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import Animated, { 
@@ -738,16 +738,16 @@ export default function LetterHelperScreen() {
     }
   };
 
-  const getUrgencyIcon = (urgency: string): "alert-triangle" | "clock" | "check-circle" => {
+  const getUrgencyIcon = (urgency: string): "warning-outline" | "time-outline" | "checkmark-circle-outline" => {
     switch (urgency) {
       case "high":
-        return "alert-triangle";
+        return "warning-outline";
       case "medium":
-        return "clock";
+        return "time-outline";
       case "low":
-        return "check-circle";
+        return "checkmark-circle-outline";
       default:
-        return "check-circle";
+        return "checkmark-circle-outline";
     }
   };
 
@@ -777,7 +777,7 @@ export default function LetterHelperScreen() {
                   />
                 ) : (
                   <View style={[styles.pdfPreview, { backgroundColor: theme.card }]}>
-                    <Feather name="file-text" size={64} color={theme.primary} />
+                    <Ionicons name="document-text-outline" size={64} color={theme.primary} />
                     <ThemedText type="body" style={styles.pdfFileName} numberOfLines={2}>
                       {fileName || "PDF Document"}
                     </ThemedText>
@@ -794,7 +794,7 @@ export default function LetterHelperScreen() {
                     setDocumentBase64(null);
                   }}
                 >
-                  <Feather name="x" size={20} color="#FFFFFF" />
+                  <Ionicons name="close" size={20} color="#FFFFFF" />
                 </Pressable>
               </View>
             ) : (
@@ -805,7 +805,7 @@ export default function LetterHelperScreen() {
                     { backgroundColor: theme.primary + "20" },
                   ]}
                 >
-                  <Feather name="file-text" size={48} color={theme.primary} />
+                  <Ionicons name="document-text-outline" size={48} color={theme.primary} />
                 </View>
                 <ThemedText type="body" style={styles.uploadText}>
                   {t("letterHelper.upload")}
@@ -817,7 +817,7 @@ export default function LetterHelperScreen() {
               <GlassButton
                 variant="secondary"
                 onPress={handlePickImage}
-                icon={<Feather name="image" size={20} color={theme.primary} />}
+                icon={<Ionicons name="image-outline" size={20} color={theme.primary} />}
                 style={styles.thirdButton}
                 testID="pick-image-button"
               >
@@ -827,7 +827,7 @@ export default function LetterHelperScreen() {
                 <GlassButton
                   variant="secondary"
                   onPress={handleTakePhoto}
-                  icon={<Feather name="camera" size={20} color={theme.primary} />}
+                  icon={<Ionicons name="camera-outline" size={20} color={theme.primary} />}
                   style={styles.thirdButton}
                   testID="take-photo-button"
                 >
@@ -837,7 +837,7 @@ export default function LetterHelperScreen() {
               <GlassButton
                 variant="secondary"
                 onPress={handlePickPDF}
-                icon={<Feather name="file" size={20} color={theme.primary} />}
+                icon={<Ionicons name="document-outline" size={20} color={theme.primary} />}
                 style={styles.thirdButton}
                 testID="pick-file-button"
               >
@@ -849,7 +849,7 @@ export default function LetterHelperScreen() {
               <GlassButton
                 onPress={handleAnalyze}
                 disabled={isAnalyzing}
-                icon={<Feather name="search" size={20} color="#FFFFFF" />}
+                icon={<Ionicons name="search" size={20} color="#FFFFFF" />}
                 testID="analyze-button"
               >
                 נתח מסמך
@@ -877,7 +877,7 @@ export default function LetterHelperScreen() {
                     { backgroundColor: theme.primary + "20" },
                   ]}
                 >
-                  <Feather name="file-text" size={24} color={theme.primary} />
+                  <Ionicons name="document-text-outline" size={24} color={theme.primary} />
                 </View>
                 <View style={styles.resultContent}>
                   <ThemedText
@@ -900,7 +900,7 @@ export default function LetterHelperScreen() {
                     { backgroundColor: getUrgencyColor(result.urgency) },
                   ]}
                 >
-                  <Feather
+                  <Ionicons
                     name={getUrgencyIcon(result.urgency)}
                     size={28}
                     color="#FFFFFF"
@@ -936,7 +936,7 @@ export default function LetterHelperScreen() {
                   onPress={handleReadAloud}
                   style={[styles.speakButton, { backgroundColor: isSpeaking ? theme.primary : theme.primary + "20" }]}
                 >
-                  <Feather name={isSpeaking ? "volume-x" : "volume-2"} size={20} color={isSpeaking ? "#FFFFFF" : theme.primary} />
+                  <Ionicons name={isSpeaking ? "volume-mute-outline" : "volume-high-outline"} size={20} color={isSpeaking ? "#FFFFFF" : theme.primary} />
                 </Pressable>
               </View>
               <ThemedText type="body" style={styles.summaryTextLarge}>
@@ -963,7 +963,7 @@ export default function LetterHelperScreen() {
                         setShowTooltip(showTooltip === term ? null : term);
                       }}
                     >
-                      <Feather name="help-circle" size={16} color={theme.primary} />
+                      <Ionicons name="help-circle-outline" size={16} color={theme.primary} />
                       <ThemedText type="body" style={{ color: theme.primary, marginLeft: 6 }}>
                         {term}
                       </ThemedText>
@@ -1004,7 +1004,7 @@ export default function LetterHelperScreen() {
                     ]}
                   >
                     {completedActions.has(index) ? (
-                      <Feather name="check" size={16} color="#FFFFFF" />
+                      <Ionicons name="checkmark" size={16} color="#FFFFFF" />
                     ) : null}
                   </View>
                   <ThemedText 
@@ -1025,7 +1025,7 @@ export default function LetterHelperScreen() {
               <GlassButton
                 variant="secondary"
                 onPress={handleOpenChat}
-                icon={<Feather name="message-circle" size={20} color={theme.primary} />}
+                icon={<Ionicons name="chatbubble-outline" size={20} color={theme.primary} />}
                 style={styles.actionButton}
               >
                 שאל שאלה
@@ -1033,7 +1033,7 @@ export default function LetterHelperScreen() {
               <GlassButton
                 variant="secondary"
                 onPress={handleShareWhatsApp}
-                icon={<Feather name="share" size={20} color={theme.primary} />}
+                icon={<Ionicons name="share-outline" size={20} color={theme.primary} />}
                 style={styles.actionButton}
               >
                 שתף
@@ -1043,7 +1043,7 @@ export default function LetterHelperScreen() {
             <GlassButton
               variant="secondary"
               onPress={handleCallFamily}
-              icon={<Feather name="phone" size={20} color={theme.primary} />}
+              icon={<Ionicons name="call-outline" size={20} color={theme.primary} />}
               style={styles.callButton}
             >
               התקשר למשפחה לעזרה
@@ -1063,7 +1063,7 @@ export default function LetterHelperScreen() {
           <View style={[styles.modalHeader, { borderBottomColor: theme.border }]}>
             <ThemedText type="h4">שאל על המסמך</ThemedText>
             <Pressable onPress={() => setShowChatModal(false)} style={styles.closeButton}>
-              <Feather name="x" size={24} color={theme.text} />
+              <Ionicons name="close" size={24} color={theme.text} />
             </Pressable>
           </View>
           
@@ -1092,8 +1092,8 @@ export default function LetterHelperScreen() {
                     onPress={() => handleReadChatMessage(index, msg.content)}
                     style={[styles.chatSpeakButton, { backgroundColor: speakingMessageIndex === index ? theme.primary : theme.primary + "20" }]}
                   >
-                    <Feather 
-                      name={speakingMessageIndex === index ? "volume-x" : "volume-2"} 
+                    <Ionicons 
+                      name={speakingMessageIndex === index ? "volume-mute-outline" : "volume-high-outline"} 
                       size={16} 
                       color={speakingMessageIndex === index ? "#FFFFFF" : theme.primary} 
                     />
@@ -1123,7 +1123,7 @@ export default function LetterHelperScreen() {
               style={[styles.sendButton, { backgroundColor: theme.primary }]}
               disabled={isSendingChat || !chatInput.trim()}
             >
-              <Feather name="send" size={20} color="#FFFFFF" />
+              <Ionicons name="send" size={20} color="#FFFFFF" />
             </Pressable>
           </View>
         </View>

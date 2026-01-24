@@ -15,7 +15,7 @@ import {
 import {
   VarelaRound_400Regular,
 } from "@expo-google-fonts/varela-round";
-import { Feather } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import * as SplashScreen from "expo-splash-screen";
 
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -48,7 +48,7 @@ export default function App() {
     Inter_600SemiBold,
     Inter_700Bold,
     VarelaRound_400Regular,
-    ...Feather.font,
+    ...Ionicons.font,
   });
 
   useEffect(() => {
