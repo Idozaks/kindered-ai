@@ -1,5 +1,6 @@
-import React, { useState, useRef } from "react";
-import { StyleSheet, View, Pressable, Image, Platform, Linking, Modal, TextInput, ScrollView, ActivityIndicator } from "react-native";
+import React, { useState, useRef, useEffect } from "react";
+import { StyleSheet, View, Pressable, Image, Platform, Linking, Modal, TextInput, ScrollView, ActivityIndicator, Dimensions } from "react-native";
+import Svg, { Path, Circle, Rect, G, Defs, LinearGradient, Stop } from "react-native-svg";
 
 // Helper to convert blob to base64 (for web)
 const blobToBase64 = (blob: Blob): Promise<string> => {
@@ -19,7 +20,19 @@ import { useTranslation } from "react-i18next";
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
-import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
+import Animated, { 
+  FadeInDown, 
+  FadeInUp, 
+  useSharedValue, 
+  useAnimatedStyle, 
+  withTiming, 
+  withRepeat, 
+  withSequence,
+  withDelay,
+  Easing,
+  interpolate,
+  useDerivedValue,
+} from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import * as FileSystem from "expo-file-system/legacy";
 import * as Speech from "expo-speech";
@@ -44,6 +57,214 @@ interface ChatMessage {
   role: "user" | "assistant";
   content: string;
 }
+
+// Sophisticated Document Scanning Animation
+const DocumentScanAnimation = ({ theme }: { theme: any }) => {
+  const scanLine = useSharedValue(0);
+  const pulse = useSharedValue(1);
+  const progress = useSharedValue(0);
+  const docFloat = useSharedValue(0);
+  const sparkle1 = useSharedValue(0);
+  const sparkle2 = useSharedValue(0);
+  const sparkle3 = useSharedValue(0);
+
+  useEffect(() => {
+    // Scan line animation
+    scanLine.value = withRepeat(
+      withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true
+    );
+    
+    // Pulse animation
+    pulse.value = withRepeat(
+      withSequence(
+        withTiming(1.05, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
+        withTiming(1, { duration: 1000, easing: Easing.inOut(Easing.ease) })
+      ),
+      -1
+    );
+    
+    // Progress bar - 15 seconds
+    progress.value = withTiming(1, { duration: 15000, easing: Easing.linear });
+    
+    // Document floating animation
+    docFloat.value = withRepeat(
+      withSequence(
+        withTiming(-8, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0, { duration: 1500, easing: Easing.inOut(Easing.ease) })
+      ),
+      -1
+    );
+    
+    // Sparkle animations
+    sparkle1.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 600 }),
+        withTiming(0, { duration: 600 })
+      ),
+      -1
+    );
+    sparkle2.value = withDelay(200, withRepeat(
+      withSequence(
+        withTiming(1, { duration: 600 }),
+        withTiming(0, { duration: 600 })
+      ),
+      -1
+    ));
+    sparkle3.value = withDelay(400, withRepeat(
+      withSequence(
+        withTiming(1, { duration: 600 }),
+        withTiming(0, { duration: 600 })
+      ),
+      -1
+    ));
+  }, []);
+
+  const scanLineStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: interpolate(scanLine.value, [0, 1], [0, 100]) }],
+    opacity: interpolate(scanLine.value, [0, 0.5, 1], [0.3, 1, 0.3]),
+  }));
+
+  const pulseStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pulse.value }],
+  }));
+
+  const progressStyle = useAnimatedStyle(() => ({
+    width: `${progress.value * 100}%`,
+  }));
+
+  const docStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: docFloat.value }],
+  }));
+
+  const sparkleStyle1 = useAnimatedStyle(() => ({
+    opacity: sparkle1.value,
+    transform: [{ scale: sparkle1.value }],
+  }));
+  const sparkleStyle2 = useAnimatedStyle(() => ({
+    opacity: sparkle2.value,
+    transform: [{ scale: sparkle2.value }],
+  }));
+  const sparkleStyle3 = useAnimatedStyle(() => ({
+    opacity: sparkle3.value,
+    transform: [{ scale: sparkle3.value }],
+  }));
+
+  return (
+    <View style={loadingStyles.container}>
+      <Animated.View style={[loadingStyles.docContainer, pulseStyle]}>
+        <Animated.View style={docStyle}>
+          <Svg width={120} height={150} viewBox="0 0 120 150">
+            <Defs>
+              <LinearGradient id="docGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <Stop offset="0%" stopColor={theme.primary} stopOpacity="0.2" />
+                <Stop offset="100%" stopColor={theme.primary} stopOpacity="0.05" />
+              </LinearGradient>
+              <LinearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <Stop offset="0%" stopColor={theme.primary} stopOpacity="0.3" />
+                <Stop offset="100%" stopColor={theme.primary} stopOpacity="0.1" />
+              </LinearGradient>
+            </Defs>
+            <Rect x="10" y="10" width="100" height="130" rx="8" fill="url(#docGrad)" stroke={theme.primary} strokeWidth="2" strokeOpacity="0.3" />
+            <Path d="M85 10 L85 35 L110 35" fill="none" stroke={theme.primary} strokeWidth="2" strokeOpacity="0.3" />
+            <Rect x="25" y="50" width="70" height="6" rx="3" fill="url(#lineGrad)" />
+            <Rect x="25" y="65" width="55" height="6" rx="3" fill="url(#lineGrad)" />
+            <Rect x="25" y="80" width="65" height="6" rx="3" fill="url(#lineGrad)" />
+            <Rect x="25" y="95" width="45" height="6" rx="3" fill="url(#lineGrad)" />
+            <Rect x="25" y="110" width="60" height="6" rx="3" fill="url(#lineGrad)" />
+          </Svg>
+        </Animated.View>
+        
+        <Animated.View style={[loadingStyles.scanLine, scanLineStyle]}>
+          <Svg width={120} height={4}>
+            <Defs>
+              <LinearGradient id="scanGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <Stop offset="0%" stopColor={theme.primary} stopOpacity="0" />
+                <Stop offset="50%" stopColor={theme.primary} stopOpacity="1" />
+                <Stop offset="100%" stopColor={theme.primary} stopOpacity="0" />
+              </LinearGradient>
+            </Defs>
+            <Rect x="0" y="0" width="120" height="4" fill="url(#scanGrad)" />
+          </Svg>
+        </Animated.View>
+
+        <Animated.View style={[loadingStyles.sparkle, { top: 20, right: -10 }, sparkleStyle1]}>
+          <Svg width={20} height={20} viewBox="0 0 20 20">
+            <Path d="M10 0 L12 8 L20 10 L12 12 L10 20 L8 12 L0 10 L8 8 Z" fill={theme.primary} />
+          </Svg>
+        </Animated.View>
+        <Animated.View style={[loadingStyles.sparkle, { bottom: 30, left: -15 }, sparkleStyle2]}>
+          <Svg width={16} height={16} viewBox="0 0 20 20">
+            <Path d="M10 0 L12 8 L20 10 L12 12 L10 20 L8 12 L0 10 L8 8 Z" fill={theme.primary} />
+          </Svg>
+        </Animated.View>
+        <Animated.View style={[loadingStyles.sparkle, { top: 60, right: -20 }, sparkleStyle3]}>
+          <Svg width={14} height={14} viewBox="0 0 20 20">
+            <Path d="M10 0 L12 8 L20 10 L12 12 L10 20 L8 12 L0 10 L8 8 Z" fill={theme.primary} />
+          </Svg>
+        </Animated.View>
+      </Animated.View>
+
+      <View style={loadingStyles.textContainer}>
+        <ThemedText type="h4" style={loadingStyles.loadingText}>מנתח את המסמך...</ThemedText>
+        <ThemedText type="small" style={loadingStyles.subText}>קורא ומבין את התוכן</ThemedText>
+      </View>
+
+      <View style={loadingStyles.progressContainer}>
+        <View style={[loadingStyles.progressTrack, { backgroundColor: theme.border }]}>
+          <Animated.View style={[loadingStyles.progressBar, { backgroundColor: theme.primary }, progressStyle]} />
+        </View>
+      </View>
+    </View>
+  );
+};
+
+const loadingStyles = StyleSheet.create({
+  container: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+  },
+  docContainer: {
+    position: "relative",
+    marginBottom: 24,
+  },
+  scanLine: {
+    position: "absolute",
+    top: 15,
+    left: 0,
+  },
+  sparkle: {
+    position: "absolute",
+  },
+  textContainer: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  loadingText: {
+    textAlign: "center",
+    marginBottom: 4,
+  },
+  subText: {
+    textAlign: "center",
+    opacity: 0.7,
+  },
+  progressContainer: {
+    width: "100%",
+    paddingHorizontal: 20,
+  },
+  progressTrack: {
+    height: 6,
+    borderRadius: 3,
+    overflow: "hidden",
+  },
+  progressBar: {
+    height: "100%",
+    borderRadius: 3,
+  },
+});
 
 // Hebrew term explanations
 const hebrewTerms: { [key: string]: string } = {
@@ -583,22 +804,26 @@ export default function LetterHelperScreen() {
               </GlassButton>
             </View>
 
-            {selectedFile && !result ? (
+            {selectedFile && !result && !isAnalyzing ? (
               <GlassButton
                 onPress={handleAnalyze}
                 disabled={isAnalyzing}
-                icon={
-                  isAnalyzing ? null : (
-                    <Feather name="search" size={20} color="#FFFFFF" />
-                  )
-                }
+                icon={<Feather name="search" size={20} color="#FFFFFF" />}
                 testID="analyze-button"
               >
-                {isAnalyzing ? t("letterHelper.analyzing") : "נתח מסמך"}
+                נתח מסמך
               </GlassButton>
             ) : null}
           </GlassCard>
         </Animated.View>
+
+        {isAnalyzing ? (
+          <Animated.View entering={FadeInUp.duration(400)}>
+            <GlassCard style={styles.resultCard}>
+              <DocumentScanAnimation theme={theme} />
+            </GlassCard>
+          </Animated.View>
+        ) : null}
 
         {result ? (
           <Animated.View entering={FadeInUp.delay(200).duration(500)}>
