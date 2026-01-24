@@ -583,9 +583,9 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   stepImage: {
-    width: SCREEN_WIDTH - Spacing.lg * 6,
-    height: 120,
-    borderRadius: BorderRadius.md,
+    width: SCREEN_WIDTH - Spacing.lg * 4,
+    height: 160,
+    borderRadius: BorderRadius.lg,
   },
   stepInstructionCard: {
     borderRadius: BorderRadius.lg,
