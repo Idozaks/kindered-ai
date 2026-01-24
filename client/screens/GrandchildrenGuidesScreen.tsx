@@ -331,7 +331,11 @@ export default function GrandchildrenGuidesScreen() {
           </ThemedText>
         </View>
 
-        <View style={styles.stepFixedContent}>
+        <ScrollView 
+          style={styles.stepFixedContent}
+          contentContainerStyle={styles.stepScrollContent}
+          showsVerticalScrollIndicator={false}
+        >
           <Animated.View
             key={currentStep}
             entering={SlideInRight.duration(300)}
@@ -390,7 +394,7 @@ export default function GrandchildrenGuidesScreen() {
               </GlassCard>
             </View>
           </Animated.View>
-        </View>
+        </ScrollView>
 
         <View style={styles.navigationButtons}>
           <GlassButton
@@ -569,8 +573,11 @@ const styles = StyleSheet.create({
   stepFixedContent: {
     flex: 1,
   },
+  stepScrollContent: {
+    flexGrow: 1,
+  },
   stepContent: {
-    flex: 1,
+    flex: 0,
   },
   stepImageContainer: {
     alignItems: "center",
