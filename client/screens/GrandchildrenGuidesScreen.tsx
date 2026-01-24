@@ -554,7 +554,7 @@ const styles = StyleSheet.create({
     width: 44,
   },
   progressContainer: {
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.md,
   },
   progressBar: {
     height: 8,
@@ -582,18 +582,19 @@ const styles = StyleSheet.create({
   stepImageContainer: {
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.sm,
   },
   stepImage: {
-    width: SCREEN_WIDTH - Spacing.lg * 4,
-    height: 140,
-    borderRadius: BorderRadius.lg,
+    width: SCREEN_WIDTH - Spacing.lg * 6,
+    height: 120,
+    borderRadius: BorderRadius.md,
   },
   stepTextContainer: {
     flex: 0,
   },
   stepCard: {
     flex: 0,
+    padding: Spacing.md,
   },
   stepCardContent: {
     flexDirection: "row",
@@ -614,8 +615,8 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   stepText: {
-    fontSize: 20,
-    lineHeight: 28,
+    fontSize: 18,
+    lineHeight: 26,
     flex: 1,
   },
   trainerNote: {
