@@ -9,6 +9,23 @@ const resources = {
       dashboard: {
         greeting: "Hello, Friend",
         subtitle: "How can I help you today?",
+        subtitles: [
+          "Letter, WhatsApp, or a general question?",
+          "What shall we learn together today?",
+          "Which button is confusing you?",
+          "Got a letter? Let's understand it together",
+          "WhatsApp, Gmail, or something else?",
+          "I'm here to help - at your pace",
+          "What scares you about the phone?",
+          "Shall we practice something new today?",
+          "Have a question? I'm not rushing anywhere",
+          "Let's make technology simple",
+          "Need help with a message or letter?",
+          "What would you like to learn to do yourself?",
+          "I'm here, take your time",
+          "No question is silly here",
+          "Tech is hard? Not alone anymore",
+        ],
       },
       tools: {
         grandchild: {
@@ -238,6 +255,23 @@ const resources = {
       dashboard: {
         greeting: "שלום, חבר",
         subtitle: "במה אוכל לעזור לך היום?",
+        subtitles: [
+          "מכתב, וואטסאפ או שאלה כללית?",
+          "מה נלמד היום יחד?",
+          "איזה כפתור מבלבל אותך?",
+          "קיבלת מכתב? בוא נבין אותו יחד",
+          "וואטסאפ, ג'ימייל, או משהו אחר?",
+          "אני כאן לעזור - בקצב שלך",
+          "מה מפחיד אותך בטלפון?",
+          "נתרגל משהו חדש היום?",
+          "יש לך שאלה? אני לא ממהר לשום מקום",
+          "בוא נהפוך את הטכנולוגיה לפשוטה",
+          "צריך עזרה עם הודעה או מכתב?",
+          "מה תרצה ללמוד לעשות לבד?",
+          "אני כאן, קח את הזמן",
+          "שום שאלה לא טיפשית כאן",
+          "הטכנולוגיה קשה? לא לבד יותר",
+        ],
       },
       tools: {
         grandchild: {

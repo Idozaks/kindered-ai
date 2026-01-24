@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { StyleSheet, View, ScrollView, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
@@ -38,6 +38,16 @@ export default function DashboardScreen() {
   const { theme } = useTheme();
   const { t } = useTranslation();
   const [isListening, setIsListening] = useState(false);
+
+  // Get random subtitle from the corpus
+  const randomSubtitle = useMemo(() => {
+    const subtitles = t("dashboard.subtitles", { returnObjects: true }) as string[];
+    if (Array.isArray(subtitles) && subtitles.length > 0) {
+      const randomIndex = Math.floor(Math.random() * subtitles.length);
+      return subtitles[randomIndex];
+    }
+    return t("dashboard.subtitle");
+  }, [t]);
 
   const tools = [
     {
@@ -135,7 +145,7 @@ export default function DashboardScreen() {
                 type="body"
                 style={[styles.subtitle, { color: theme.textSecondary }]}
               >
-                {t("dashboard.subtitle")}
+                {randomSubtitle}
               </ThemedText>
             </View>
           </View>
