@@ -348,4 +348,57 @@ router.post("/letter-analyze", async (req, res) => {
   }
 });
 
+// Letter Helper Chat - follow-up questions about document
+router.post("/letter-chat", async (req, res) => {
+  try {
+    const { message, documentContext, imageBase64 } = req.body;
+
+    if (!message) {
+      return res.status(400).json({ error: "Message is required" });
+    }
+
+    const systemPrompt = `אתה עוזר ישראלי חביב שעוזר לקשישים להבין מסמכים. דבר בעברית פשוטה וברורה.
+    
+הקשר המסמך: ${documentContext || "לא ידוע"}
+
+ענה בעברית פשוטה ובהירה. השתמש במילים יומיומיות. אל תשתמש במונחים מקצועיים.
+אם המשתמש שואל על משהו שלא קשור למסמך, עזור לו בכל זאת בצורה חמה ואדיבה.`;
+
+    const contents = imageBase64
+      ? [
+          {
+            role: "user" as const,
+            parts: [
+              { text: message },
+              { inlineData: { mimeType: "image/jpeg", data: imageBase64 } },
+            ],
+          },
+        ]
+      : [
+          {
+            role: "user" as const,
+            parts: [{ text: message }],
+          },
+        ];
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents,
+      config: {
+        systemInstruction: systemPrompt,
+        maxOutputTokens: 1000,
+      },
+    });
+
+    const text = response.text || "סליחה, לא הצלחתי להבין. נסה לשאול שוב.";
+    res.json({ response: text });
+  } catch (error: any) {
+    console.error("Letter chat error:", error?.message || error);
+    res.status(500).json({ 
+      error: "Chat failed",
+      response: "סליחה, יש בעיה. נסה שוב.",
+    });
+  }
+});
+
 export default router;
