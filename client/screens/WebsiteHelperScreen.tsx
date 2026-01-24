@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Dimensions,
 } from "react-native";
+import * as Clipboard from "expo-clipboard";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { Feather } from "@expo/vector-icons";
@@ -45,6 +46,8 @@ export default function WebsiteHelperScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
 
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [urlInput, setUrlInput] = useState("");
+  const [analyzedUrl, setAnalyzedUrl] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<string | null>(null);
   const [safetyWarning, setSafetyWarning] = useState<string | null>(null);
   const [safetyLevel, setSafetyLevel] = useState<"safe" | "caution" | "danger">("safe");
@@ -53,6 +56,53 @@ export default function WebsiteHelperScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [isAnnotating, setIsAnnotating] = useState(false);
   const [showScreenshotTip, setShowScreenshotTip] = useState(true);
+
+  const handlePasteUrl = useCallback(async () => {
+    try {
+      const clipboardContent = await Clipboard.getStringAsync();
+      if (clipboardContent) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        setUrlInput(clipboardContent);
+      }
+    } catch (error) {
+      console.error("Error pasting from clipboard:", error);
+    }
+  }, []);
+
+  const handleAnalyzeUrl = useCallback(async () => {
+    if (!urlInput.trim()) return;
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setIsLoading(true);
+    setAnalysis(null);
+    setSafetyWarning(null);
+    setMessages([]);
+    setUploadedImage(null);
+    setAnalyzedUrl(urlInput.trim());
+
+    try {
+      const apiUrl = new URL("/api/website-helper/analyze", getApiUrl());
+      const response = await fetch(apiUrl.toString(), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: urlInput.trim() }),
+      });
+
+      if (!response.ok) throw new Error("Analysis failed");
+
+      const data = await response.json();
+      setAnalysis(data.analysis);
+      if (data.safetyWarning) {
+        setSafetyWarning(data.safetyWarning);
+        setSafetyLevel(data.safetyLevel || "caution");
+      }
+    } catch (error) {
+      console.error("Error analyzing URL:", error);
+      setAnalysis(t("tools.websiteHelper.analysisFailed"));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [urlInput, t]);
 
   const handlePickImage = useCallback(async () => {
     try {
@@ -68,6 +118,7 @@ export default function WebsiteHelperScreen() {
         const asset = result.assets[0];
         const base64 = `data:image/jpeg;base64,${asset.base64}`;
         setUploadedImage(base64);
+        setAnalyzedUrl(null);
         setMessages([]);
         setAnalysis(null);
         setSafetyWarning(null);
@@ -227,6 +278,8 @@ export default function WebsiteHelperScreen() {
   const handleReset = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setUploadedImage(null);
+    setAnalyzedUrl(null);
+    setUrlInput("");
     setAnalysis(null);
     setSafetyWarning(null);
     setSafetyLevel("safe");
@@ -302,17 +355,81 @@ export default function WebsiteHelperScreen() {
           </View>
         </GlassButton>
       </View>
+
+      <View style={styles.dividerContainer}>
+        <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
+        <ThemedText type="small" style={[styles.dividerText, { color: theme.textSecondary }]}>
+          {t("tools.websiteHelper.orPasteLink")}
+        </ThemedText>
+        <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
+      </View>
+
+      <View style={styles.urlInputContainer}>
+        <View style={[styles.urlInputWrapper, { backgroundColor: theme.backgroundSecondary, borderColor: theme.border }]}>
+          <Feather name="link" size={20} color={theme.textSecondary} style={styles.urlIcon} />
+          <TextInput
+            style={[styles.urlInput, { color: theme.text }]}
+            placeholder={t("tools.websiteHelper.urlPlaceholder")}
+            placeholderTextColor={theme.textSecondary}
+            value={urlInput}
+            onChangeText={setUrlInput}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="url"
+            testID="input-url"
+          />
+          <Pressable
+            onPress={handlePasteUrl}
+            style={[styles.pasteButton, { backgroundColor: BROWSER_BLUE + "20" }]}
+            hitSlop={8}
+            testID="button-paste-url"
+          >
+            <Feather name="clipboard" size={18} color={BROWSER_BLUE} />
+            <ThemedText style={[styles.pasteButtonText, { color: BROWSER_BLUE }]}>
+              {t("tools.websiteHelper.paste")}
+            </ThemedText>
+          </Pressable>
+        </View>
+        <GlassButton
+          onPress={handleAnalyzeUrl}
+          disabled={!urlInput.trim() || isLoading}
+          style={[styles.analyzeUrlButton, { backgroundColor: urlInput.trim() ? BROWSER_BLUE : theme.backgroundSecondary }]}
+          testID="button-analyze-url"
+        >
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <View style={styles.buttonContent}>
+              <Feather name="search" size={20} color={urlInput.trim() ? "#FFFFFF" : theme.textSecondary} />
+              <ThemedText style={[styles.buttonText, { color: urlInput.trim() ? "#FFFFFF" : theme.textSecondary }]}>
+                {t("tools.websiteHelper.analyzeLink")}
+              </ThemedText>
+            </View>
+          )}
+        </GlassButton>
+      </View>
     </Animated.View>
   );
 
   const renderAnalysisView = () => (
     <View style={styles.analysisContainer}>
       <View style={styles.imageHeader}>
-        <ThemedText type="h4">{t("tools.websiteHelper.yourScreenshot")}</ThemedText>
+        <ThemedText type="h4">
+          {uploadedImage ? t("tools.websiteHelper.yourScreenshot") : t("tools.websiteHelper.websiteAnalyzed")}
+        </ThemedText>
         <Pressable onPress={handleReset} hitSlop={12} testID="button-reset">
           <Feather name="x" size={24} color={theme.text} />
         </Pressable>
       </View>
+
+      {analyzedUrl && !uploadedImage ? (
+        <Animated.View entering={FadeIn} style={[styles.urlHeader, { backgroundColor: BROWSER_BLUE + "15" }]}>
+          <Feather name="globe" size={20} color={BROWSER_BLUE} />
+          <ThemedText style={[styles.urlText, { color: theme.text }]} numberOfLines={2}>
+            {analyzedUrl}
+          </ThemedText>
+        </Animated.View>
+      ) : null}
 
       {uploadedImage ? (
         <Animated.View entering={FadeIn} style={styles.imagePreview}>
@@ -427,13 +544,13 @@ export default function WebsiteHelperScreen() {
             styles.scrollContent,
             {
               paddingTop: headerHeight + Spacing.xl,
-              paddingBottom: uploadedImage ? 100 : insets.bottom + Spacing["3xl"],
+              paddingBottom: (uploadedImage || analyzedUrl) ? 100 : insets.bottom + Spacing["3xl"],
             },
           ]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {uploadedImage ? renderAnalysisView() : renderUploadSection()}
+          {(uploadedImage || analyzedUrl) ? renderAnalysisView() : renderUploadSection()}
         </ScrollView>
 
         {uploadedImage ? (
@@ -687,6 +804,68 @@ const styles = StyleSheet.create({
   inputHint: {
     textAlign: "center",
     marginTop: Spacing.xs,
+    fontSize: 14,
+  },
+  dividerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    marginVertical: Spacing.xl,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+  },
+  dividerText: {
+    paddingHorizontal: Spacing.md,
+  },
+  urlInputContainer: {
+    width: "100%",
+    gap: Spacing.md,
+  },
+  urlInputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderRadius: BorderRadius.lg,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+  },
+  urlIcon: {
+    marginRight: Spacing.sm,
+  },
+  urlInput: {
+    flex: 1,
+    fontSize: 18,
+    minHeight: 44,
+    textAlign: "right",
+  },
+  pasteButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    marginLeft: Spacing.sm,
+    gap: Spacing.xs,
+  },
+  pasteButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  analyzeUrlButton: {
+    width: "100%",
+  },
+  urlHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+  },
+  urlText: {
+    flex: 1,
     fontSize: 14,
   },
 });
