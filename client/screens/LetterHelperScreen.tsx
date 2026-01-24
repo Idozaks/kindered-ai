@@ -82,6 +82,36 @@ export default function LetterHelperScreen() {
   
   // Store image base64 for chat context
   const [documentBase64, setDocumentBase64] = useState<string | null>(null);
+  
+  // Pre-cached TTS audio
+  const [cachedAudio, setCachedAudio] = useState<{base64: string, mimeType: string} | null>(null);
+  const [isPreloadingAudio, setIsPreloadingAudio] = useState(false);
+  
+  // Pre-generate TTS audio in background
+  const preloadTTS = async (analysisResult: AnalysisResult) => {
+    try {
+      setIsPreloadingAudio(true);
+      const textToRead = `${analysisResult.type}. ${analysisResult.summary}. מה לעשות: ${analysisResult.actions.join(". ")}`;
+      
+      const baseUrl = getApiUrl();
+      const response = await fetch(new URL("/api/ai/tts", baseUrl).href, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: textToRead }),
+      });
+
+      const data = await response.json();
+      
+      if (data.audioBase64 && !data.fallback) {
+        setCachedAudio({ base64: data.audioBase64, mimeType: data.mimeType });
+        console.log("TTS audio pre-loaded successfully");
+      }
+    } catch (error) {
+      console.log("TTS preload failed, will generate on demand");
+    } finally {
+      setIsPreloadingAudio(false);
+    }
+  };
 
   const handlePickImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -102,6 +132,7 @@ export default function LetterHelperScreen() {
       setFileName(null);
       setResult(null);
       setCompletedActions(new Set());
+      setCachedAudio(null);
     }
   };
 
@@ -127,6 +158,7 @@ export default function LetterHelperScreen() {
       setFileName(null);
       setResult(null);
       setCompletedActions(new Set());
+      setCachedAudio(null);
     }
   };
 
@@ -206,12 +238,16 @@ export default function LetterHelperScreen() {
         return;
       }
       
-      setResult({
+      const analysisResult = {
         type: data.type || "מסמך",
         urgency: data.urgency || "low",
         summary: data.summary || "לא הצלחתי לנתח את המסמך במלואו.",
         actions: data.actions || ["עיין במסמך בזהירות"],
-      });
+      };
+      setResult(analysisResult);
+
+      // Pre-generate TTS audio in background (don't await)
+      preloadTTS(analysisResult);
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (error: any) {
@@ -321,6 +357,22 @@ export default function LetterHelperScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setIsSpeaking(true);
     
+    // Use pre-cached audio if available (instant playback)
+    if (cachedAudio && Platform.OS === "web") {
+      try {
+        const audioSrc = `data:${cachedAudio.mimeType};base64,${cachedAudio.base64}`;
+        const audio = new Audio(audioSrc);
+        audioPlayerRef.current = audio;
+        
+        audio.onended = () => setIsSpeaking(false);
+        audio.play();
+        return;
+      } catch (error) {
+        console.log("Cached audio playback failed, generating fresh");
+      }
+    }
+    
+    // Fallback to on-demand generation
     const textToRead = `${result.type}. ${result.summary}. מה לעשות: ${result.actions.join(". ")}`;
     await playTTS(textToRead, () => setIsSpeaking(false));
   };
