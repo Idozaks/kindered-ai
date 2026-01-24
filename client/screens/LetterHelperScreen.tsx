@@ -794,7 +794,8 @@ export default function LetterHelperScreen() {
                     setDocumentBase64(null);
                   }}
                 >
-                  <Ionicons name="close" size={20} color="#FFFFFF" />
+                  <Ionicons name="close" size={18} color="#FFFFFF" />
+                  <ThemedText type="small" style={{ color: "#FFFFFF", marginLeft: 4 }}>הסר</ThemedText>
                 </Pressable>
               </View>
             ) : (
@@ -936,7 +937,10 @@ export default function LetterHelperScreen() {
                   onPress={handleReadAloud}
                   style={[styles.speakButton, { backgroundColor: isSpeaking ? theme.primary : theme.primary + "20" }]}
                 >
-                  <Ionicons name={isSpeaking ? "volume-mute-outline" : "volume-high-outline"} size={20} color={isSpeaking ? "#FFFFFF" : theme.primary} />
+                  <Ionicons name={isSpeaking ? "volume-mute-outline" : "volume-high-outline"} size={18} color={isSpeaking ? "#FFFFFF" : theme.primary} />
+                  <ThemedText type="small" style={{ color: isSpeaking ? "#FFFFFF" : theme.primary, marginLeft: 6 }}>
+                    {isSpeaking ? "עצור" : "הקרא"}
+                  </ThemedText>
                 </Pressable>
               </View>
               <ThemedText type="body" style={styles.summaryTextLarge}>
@@ -1063,7 +1067,8 @@ export default function LetterHelperScreen() {
           <View style={[styles.modalHeader, { borderBottomColor: theme.border }]}>
             <ThemedText type="h4">שאל על המסמך</ThemedText>
             <Pressable onPress={() => setShowChatModal(false)} style={styles.closeButton}>
-              <Ionicons name="close" size={24} color={theme.text} />
+              <Ionicons name="close" size={20} color={theme.text} />
+              <ThemedText type="small" style={{ color: theme.text, marginLeft: 4 }}>סגור</ThemedText>
             </Pressable>
           </View>
           
@@ -1094,9 +1099,12 @@ export default function LetterHelperScreen() {
                   >
                     <Ionicons 
                       name={speakingMessageIndex === index ? "volume-mute-outline" : "volume-high-outline"} 
-                      size={16} 
+                      size={14} 
                       color={speakingMessageIndex === index ? "#FFFFFF" : theme.primary} 
                     />
+                    <ThemedText type="small" style={{ color: speakingMessageIndex === index ? "#FFFFFF" : theme.primary, marginLeft: 4, fontSize: 12 }}>
+                      {speakingMessageIndex === index ? "עצור" : "הקרא"}
+                    </ThemedText>
                   </Pressable>
                 ) : null}
               </View>
@@ -1123,7 +1131,8 @@ export default function LetterHelperScreen() {
               style={[styles.sendButton, { backgroundColor: theme.primary }]}
               disabled={isSendingChat || !chatInput.trim()}
             >
-              <Ionicons name="send" size={20} color="#FFFFFF" />
+              <Ionicons name="send" size={16} color="#FFFFFF" />
+              <ThemedText type="small" style={{ color: "#FFFFFF", marginLeft: 4 }}>שלח</ThemedText>
             </Pressable>
           </View>
         </View>
@@ -1176,9 +1185,10 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: Spacing.sm,
     right: Spacing.sm,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    flexDirection: "row",
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.full,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -1247,16 +1257,18 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   speakButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    flexDirection: "row",
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.full,
     alignItems: "center",
     justifyContent: "center",
   },
   chatSpeakButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    flexDirection: "row",
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.full,
     alignItems: "center",
     justifyContent: "center",
     marginTop: Spacing.sm,
@@ -1335,6 +1347,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   closeButton: {
+    flexDirection: "row",
+    alignItems: "center",
     padding: Spacing.sm,
   },
   chatMessages: {
@@ -1370,9 +1384,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   sendButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    flexDirection: "row",
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.full,
     alignItems: "center",
     justifyContent: "center",
   },
