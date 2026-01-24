@@ -12,6 +12,7 @@ Key features include:
 - **Mirror World**: Safe practice environment for learning digital tasks
 - **WhatsApp Guides**: Step-by-step tutorials for common WhatsApp tasks (reading messages, sending texts/photos, video calls, privacy settings, group safety)
 - **Gmail Guides**: Step-by-step tutorials for common Gmail tasks (reading emails, sending emails, attaching photos, searching, deleting, replying) with contextual images
+- **Grandchildren Guides**: 5 tips for staying connected with grandchildren (voice messages, emoji reactions, photo sharing, video calls, family group participation) with pink/family theme
 - **Global Mic Button**: Voice-first interaction available throughout the app
 
 ## User Preferences
