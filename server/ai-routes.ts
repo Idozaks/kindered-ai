@@ -220,6 +220,34 @@ Create 3 short, specific steps. Return JSON only:
   }
 });
 
+// Helper to generate TTS audio (non-blocking)
+async function generateTTSAudio(text: string): Promise<{audioBase64: string, mimeType: string} | null> {
+  if (!process.env.GEMINI_API_KEY) return null;
+  
+  try {
+    const response = await ttsAi.models.generateContent({
+      model: "gemini-2.5-flash-preview-tts",
+      contents: [{ role: "user" as const, parts: [{ text }] }],
+      config: {
+        responseModalities: ["AUDIO"],
+        speechConfig: {
+          voiceConfig: {
+            prebuiltVoiceConfig: { voiceName: "Aoede" },
+          },
+        },
+      },
+    });
+
+    const audioData = response.candidates?.[0]?.content?.parts?.[0]?.inlineData;
+    if (audioData?.data) {
+      return { audioBase64: pcmToWav(audioData.data, 24000, 1, 16), mimeType: "audio/wav" };
+    }
+  } catch (error) {
+    console.log("TTS generation failed:", error);
+  }
+  return null;
+}
+
 router.post("/letter-analyze", async (req, res) => {
   try {
     const { documentText, imageBase64, mimeType = "image/jpeg" } = req.body;
@@ -294,6 +322,14 @@ router.post("/letter-analyze", async (req, res) => {
     const text = response.text || "";
     console.log("AI response text:", text.substring(0, 500));
     
+    // Helper to build result and generate TTS in parallel
+    const buildResult = (parsed: any) => ({
+      type: parsed.type || "מסמך",
+      urgency: parsed.urgency || "low",
+      summary: parsed.summary || "לא הצלחתי לנתח את המסמך במלואו.",
+      actions: Array.isArray(parsed.actions) ? parsed.actions : ["עיין במסמך בזהירות"],
+    });
+
     // Try to parse as JSON
     try {
       // Extract JSON from the response (handle markdown code blocks)
@@ -310,12 +346,21 @@ router.post("/letter-analyze", async (req, res) => {
       
       console.log("Extracted JSON:", jsonStr.substring(0, 300));
       const parsed = JSON.parse(jsonStr);
+      const result = buildResult(parsed);
+      
+      // Generate TTS in parallel - don't wait for it
+      const textToRead = `${result.type}. ${result.summary}. מה לעשות: ${result.actions.join(". ")}`;
+      const ttsPromise = generateTTSAudio(textToRead);
+      
+      // Wait for TTS (with timeout to not delay response too much)
+      const ttsResult = await Promise.race([
+        ttsPromise,
+        new Promise<null>(resolve => setTimeout(() => resolve(null), 5000))
+      ]);
       
       res.json({ 
-        type: parsed.type || "מסמך",
-        urgency: parsed.urgency || "low",
-        summary: parsed.summary || "לא הצלחתי לנתח את המסמך במלואו.",
-        actions: Array.isArray(parsed.actions) ? parsed.actions : ["עיין במסמך בזהירות"],
+        ...result,
+        audio: ttsResult || undefined,
       });
     } catch (parseError: any) {
       console.error("JSON parse error:", parseError.message);
@@ -327,12 +372,21 @@ router.post("/letter-analyze", async (req, res) => {
       const summaryMatch = text.match(/"summary"\s*:\s*"([^"]+)"/);
       
       if (typeMatch || summaryMatch) {
-        res.json({ 
+        const result = { 
           type: typeMatch?.[1] || "מסמך",
           urgency: urgencyMatch?.[1] || "low",
           summary: summaryMatch?.[1] || "ניתחתי את המסמך שלך. אנא עיין בו בזהירות.",
           actions: ["עיין במסמך בזהירות"],
-        });
+        };
+        
+        // Generate TTS for fallback result too
+        const textToRead = `${result.type}. ${result.summary}. מה לעשות: ${result.actions.join(". ")}`;
+        const ttsResult = await Promise.race([
+          generateTTSAudio(textToRead),
+          new Promise<null>(resolve => setTimeout(() => resolve(null), 5000))
+        ]);
+        
+        res.json({ ...result, audio: ttsResult || undefined });
       } else {
         res.json({ 
           type: "מסמך",

@@ -83,35 +83,8 @@ export default function LetterHelperScreen() {
   // Store image base64 for chat context
   const [documentBase64, setDocumentBase64] = useState<string | null>(null);
   
-  // Pre-cached TTS audio
+  // Cached TTS audio (received with analysis response)
   const [cachedAudio, setCachedAudio] = useState<{base64: string, mimeType: string} | null>(null);
-  const [isPreloadingAudio, setIsPreloadingAudio] = useState(false);
-  
-  // Pre-generate TTS audio in background
-  const preloadTTS = async (analysisResult: AnalysisResult) => {
-    try {
-      setIsPreloadingAudio(true);
-      const textToRead = `${analysisResult.type}. ${analysisResult.summary}. מה לעשות: ${analysisResult.actions.join(". ")}`;
-      
-      const baseUrl = getApiUrl();
-      const response = await fetch(new URL("/api/ai/tts", baseUrl).href, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: textToRead }),
-      });
-
-      const data = await response.json();
-      
-      if (data.audioBase64 && !data.fallback) {
-        setCachedAudio({ base64: data.audioBase64, mimeType: data.mimeType });
-        console.log("TTS audio pre-loaded successfully");
-      }
-    } catch (error) {
-      console.log("TTS preload failed, will generate on demand");
-    } finally {
-      setIsPreloadingAudio(false);
-    }
-  };
 
   const handlePickImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -246,8 +219,11 @@ export default function LetterHelperScreen() {
       };
       setResult(analysisResult);
 
-      // Pre-generate TTS audio in background (don't await)
-      preloadTTS(analysisResult);
+      // Use audio from the response (generated in parallel with analysis)
+      if (data.audio?.audioBase64) {
+        setCachedAudio({ base64: data.audio.audioBase64, mimeType: data.audio.mimeType });
+        console.log("TTS audio received with analysis");
+      }
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (error: any) {
