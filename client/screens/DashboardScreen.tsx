@@ -85,6 +85,13 @@ export default function DashboardScreen() {
       image: gmailIcon,
       color: "#EA4335",
     },
+    {
+      id: "grandchildren",
+      title: t("tools.grandchildren.title"),
+      description: t("tools.grandchildren.description"),
+      image: monitorIcon,
+      color: "#E91E63",
+    },
   ];
 
   const handleToolPress = useCallback(
@@ -104,6 +111,9 @@ export default function DashboardScreen() {
           break;
         case "gmail":
           navigation.navigate("GmailGuides");
+          break;
+        case "grandchildren":
+          navigation.navigate("GrandchildrenGuides");
           break;
       }
     },

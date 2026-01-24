@@ -11,6 +11,7 @@ import LetterHelperScreen from "@/screens/LetterHelperScreen";
 import MirrorWorldScreen from "@/screens/MirrorWorldScreen";
 import WhatsAppGuidesScreen from "@/screens/WhatsAppGuidesScreen";
 import GmailGuidesScreen from "@/screens/GmailGuidesScreen";
+import GrandchildrenGuidesScreen from "@/screens/GrandchildrenGuidesScreen";
 import LoginScreen from "@/screens/LoginScreen";
 import RegisterScreen from "@/screens/RegisterScreen";
 import OnboardingScreen from "@/screens/OnboardingScreen";
@@ -35,6 +36,7 @@ export type MainStackParamList = {
   MirrorWorld: undefined;
   WhatsAppGuides: undefined;
   GmailGuides: undefined;
+  GrandchildrenGuides: undefined;
 };
 
 export type RootStackParamList = AuthStackParamList & OnboardingStackParamList & MainStackParamList;
@@ -124,6 +126,13 @@ function MainStack() {
         component={GmailGuidesScreen}
         options={{
           headerTitle: "Gmail Guides",
+        }}
+      />
+      <Stack.Screen
+        name="GrandchildrenGuides"
+        component={GrandchildrenGuidesScreen}
+        options={{
+          headerTitle: "Grandchildren Guides",
         }}
       />
     </Stack.Navigator>
