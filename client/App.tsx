@@ -24,6 +24,7 @@ import { queryClient } from "@/lib/query-client";
 import RootStackNavigator from "@/navigation/RootStackNavigator";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 import "@/lib/i18n";
 
@@ -85,12 +86,14 @@ export default function App() {
         <SafeAreaProvider>
           <GestureHandlerRootView style={styles.root}>
             <KeyboardProvider>
-              <AuthProvider>
-                <NavigationContainer>
-                  <RootStackNavigator />
-                </NavigationContainer>
-              </AuthProvider>
-              <StatusBar style="dark" />
+              <ThemeProvider>
+                <AuthProvider>
+                  <NavigationContainer>
+                    <RootStackNavigator />
+                  </NavigationContainer>
+                </AuthProvider>
+                <StatusBar style="dark" />
+              </ThemeProvider>
             </KeyboardProvider>
           </GestureHandlerRootView>
         </SafeAreaProvider>

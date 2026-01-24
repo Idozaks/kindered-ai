@@ -12,9 +12,10 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { GlassCard } from "@/components/GlassCard";
 import { GlassButton } from "@/components/GlassButton";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/contexts/AuthContext";
-import { Spacing, BorderRadius, Colors } from "@/constants/theme";
+import { Spacing, BorderRadius } from "@/constants/theme";
 import { storage, UserSettings } from "@/lib/storage";
 import i18n from "@/lib/i18n";
 
@@ -193,7 +194,16 @@ export default function SettingsScreen() {
           </GlassCard>
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.delay(300).duration(500)}>
+        <Animated.View entering={FadeInDown.delay(250).duration(500)}>
+          <GlassCard style={styles.section}>
+            <ThemedText type="h4" style={styles.sectionTitle}>
+              {t("settings.theme") || "ערכת נושא"}
+            </ThemedText>
+            <ThemeSwitcher />
+          </GlassCard>
+        </Animated.View>
+
+        <Animated.View entering={FadeInDown.delay(350).duration(500)}>
           <GlassCard style={styles.section}>
             <SettingRow
               icon="eye"
@@ -219,7 +229,7 @@ export default function SettingsScreen() {
           </GlassCard>
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.delay(400).duration(500)}>
+        <Animated.View entering={FadeInDown.delay(450).duration(500)}>
           <GlassCard style={styles.section}>
             <ThemedText type="h4" style={styles.sectionTitle}>
               {t("settings.account")}

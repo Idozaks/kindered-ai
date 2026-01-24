@@ -1,6 +1,8 @@
 import { Platform } from "react-native";
 
-export const Colors = {
+export type ThemeMode = "classic" | "dori";
+
+const ClassicColors = {
   light: {
     text: "#1A1A1A",
     textSecondary: "#666666",
@@ -46,6 +48,65 @@ export const Colors = {
     card: "#2D2D4A",
   },
 };
+
+const DoriColors = {
+  light: {
+    text: "#2D1B4E",
+    textSecondary: "#5C4A7A",
+    buttonText: "#FFFFFF",
+    tabIconDefault: "#8B7BA8",
+    tabIconSelected: "#6B2D8B",
+    link: "#7B3FA0",
+    primary: "#6B2D8B",
+    secondary: "#E040FB",
+    success: "#52C41A",
+    warning: "#FFB74D",
+    danger: "#FF7043",
+    backgroundRoot: "#F5F0FA",
+    backgroundDefault: "#FFFFFF",
+    backgroundSecondary: "#EDE7F6",
+    backgroundTertiary: "#E1D5F0",
+    glassBg: "rgba(255, 255, 255, 0.8)",
+    glassBorder: "rgba(107, 45, 139, 0.2)",
+    glassOverlay: "rgba(107, 45, 139, 0.08)",
+    border: "#D4C4E8",
+    card: "#FFFFFF",
+  },
+  dark: {
+    text: "#F3E5F5",
+    textSecondary: "#CE93D8",
+    buttonText: "#FFFFFF",
+    tabIconDefault: "#9575CD",
+    tabIconSelected: "#BA68C8",
+    link: "#CE93D8",
+    primary: "#9C4DCC",
+    secondary: "#E040FB",
+    success: "#52C41A",
+    warning: "#FFB74D",
+    danger: "#FF7043",
+    backgroundRoot: "#1A0A2E",
+    backgroundDefault: "#2D1B4E",
+    backgroundSecondary: "#3D2B5E",
+    backgroundTertiary: "#4D3B6E",
+    glassBg: "rgba(45, 27, 78, 0.9)",
+    glassBorder: "rgba(186, 104, 200, 0.3)",
+    glassOverlay: "rgba(156, 77, 204, 0.15)",
+    border: "#5D4B7E",
+    card: "#3D2B5E",
+  },
+};
+
+export const ThemePresets = {
+  classic: ClassicColors,
+  dori: DoriColors,
+};
+
+export const ThemeNames: Record<ThemeMode, string> = {
+  classic: "קלאסי",
+  dori: "דורי סגול",
+};
+
+export const Colors = DoriColors;
 
 export const Spacing = {
   xs: 4,
@@ -115,7 +176,7 @@ export const Typography = {
   },
 };
 
-export const Shadows = {
+export const getShadows = (primary: string) => ({
   glass: {
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
@@ -131,13 +192,15 @@ export const Shadows = {
     elevation: 4,
   },
   floating: {
-    shadowColor: "#5B9BD5",
+    shadowColor: primary,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 16,
     elevation: 12,
   },
-};
+});
+
+export const Shadows = getShadows("#6B2D8B");
 
 export const Fonts = Platform.select({
   ios: {

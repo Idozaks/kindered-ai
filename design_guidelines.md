@@ -72,16 +72,29 @@
 
 ## Color Palette
 
+### Dori Theme (Default - Purple/Knowledge)
+**Primary**: #6B2D8B (Deep purple - wisdom and knowledge)
+**Secondary**: #E040FB (Magenta sparkles for accents)
+**Background Root**: #F5F0FA (Soft lavender)
+**Surface**: #FFFFFF (Cards and raised elements)
+**Text Primary**: #2D1B4E (Deep purple-black)
+**Text Secondary**: #5C4A7A (Muted purple)
+**Border**: #D4C4E8 (Soft purple border)
+**Success**: #52C41A
+**Warning**: #FFB74D (Amber - not red for seniors)
+**Danger**: #FF7043 (Soft coral - easier on eyes than red)
+**High Contrast Mode**: #FFFF00 on #000000
+
+### Classic Theme (Alternative - Blue/Calm)
 **Primary**: #5B9BD5 (Calm, trustworthy blue)
 **Secondary**: #F4B942 (Warm, friendly yellow for accents)
 **Background**: #F8F9FA (Soft off-white)
 **Surface**: #FFFFFF (Cards and raised elements)
 **Text Primary**: #1A1A1A (High contrast black)
 **Text Secondary**: #666666
-**Success**: #52C41A
-**Warning**: #F4B942
-**Danger**: #FF4D4F
-**High Contrast Mode**: #FFFF00 on #000000
+
+### Theme Switching
+Users can switch between themes in Settings > Theme section
 
 ---
 
