@@ -36,6 +36,7 @@ import Animated, {
 import * as Haptics from "expo-haptics";
 import * as FileSystem from "expo-file-system/legacy";
 import * as Speech from "expo-speech";
+import { Audio } from "expo-av";
 
 import { ThemedText } from "@/components/ThemedText";
 import { getApiUrl } from "@/lib/query-client";
@@ -300,12 +301,46 @@ export default function LetterHelperScreen() {
   const [speakingMessageIndex, setSpeakingMessageIndex] = useState<number | null>(null);
   const chatScrollRef = useRef<ScrollView>(null);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
+  const nativeSoundRef = useRef<Audio.Sound | null>(null);
   
   // Store image base64 for chat context
   const [documentBase64, setDocumentBase64] = useState<string | null>(null);
   
   // Cached TTS audio (fetched in background after analysis)
   const [cachedAudio, setCachedAudio] = useState<{base64: string, mimeType: string} | null>(null);
+  
+  // Play audio from base64 on native using expo-av
+  const playNativeAudio = async (base64: string, mimeType: string, onComplete?: () => void) => {
+    try {
+      // Unload any existing sound
+      if (nativeSoundRef.current) {
+        await nativeSoundRef.current.unloadAsync();
+        nativeSoundRef.current = null;
+      }
+      
+      // Create a data URI
+      const uri = `data:${mimeType};base64,${base64}`;
+      
+      // Load and play the sound
+      const { sound } = await Audio.Sound.createAsync(
+        { uri },
+        { shouldPlay: true }
+      );
+      nativeSoundRef.current = sound;
+      
+      // Set up completion callback
+      sound.setOnPlaybackStatusUpdate((status) => {
+        if (status.isLoaded && status.didJustFinish) {
+          if (onComplete) onComplete();
+          sound.unloadAsync();
+          nativeSoundRef.current = null;
+        }
+      });
+    } catch (error) {
+      console.error("Native audio playback error:", error);
+      if (onComplete) onComplete();
+    }
+  };
   
   // Fetch TTS audio in background (non-blocking)
   const fetchTTSInBackground = (analysisResult: AnalysisResult) => {
@@ -503,6 +538,10 @@ export default function LetterHelperScreen() {
         audioPlayerRef.current.pause();
         audioPlayerRef.current = null;
       }
+      if (nativeSoundRef.current) {
+        await nativeSoundRef.current.unloadAsync();
+        nativeSoundRef.current = null;
+      }
 
       const baseUrl = getApiUrl();
       const response = await fetch(new URL("/api/ai/tts", baseUrl).href, {
@@ -514,7 +553,6 @@ export default function LetterHelperScreen() {
       const data = await response.json();
 
       if (data.fallback) {
-        // Use expo-speech as fallback
         Speech.speak(text, {
           language: "he-IL",
           rate: 0.85,
@@ -523,9 +561,8 @@ export default function LetterHelperScreen() {
           onError: onComplete,
         });
       } else if (data.audioBase64 && Platform.OS === "web") {
-        // Play Gemini audio using web Audio API
         const audioSrc = `data:${data.mimeType};base64,${data.audioBase64}`;
-        const audio = new Audio(audioSrc);
+        const audio = new window.Audio(audioSrc);
         audioPlayerRef.current = audio;
         
         audio.onended = () => {
@@ -533,18 +570,10 @@ export default function LetterHelperScreen() {
         };
         audio.play();
       } else if (data.audioBase64) {
-        // For native, use expo-speech as fallback since audio playback from base64 is complex
-        Speech.speak(text, {
-          language: "he-IL",
-          rate: 0.85,
-          onDone: onComplete,
-          onStopped: onComplete,
-          onError: onComplete,
-        });
+        await playNativeAudio(data.audioBase64, data.mimeType, onComplete);
       }
     } catch (error) {
       console.error("TTS error:", error);
-      // Fallback to expo-speech
       Speech.speak(text, {
         language: "he-IL",
         rate: 0.85,
@@ -563,6 +592,10 @@ export default function LetterHelperScreen() {
         audioPlayerRef.current.pause();
         audioPlayerRef.current = null;
       }
+      if (nativeSoundRef.current) {
+        nativeSoundRef.current.unloadAsync();
+        nativeSoundRef.current = null;
+      }
       Speech.stop();
       setIsSpeaking(false);
       return;
@@ -572,14 +605,18 @@ export default function LetterHelperScreen() {
     setIsSpeaking(true);
     
     // Use pre-cached audio if available (instant playback)
-    if (cachedAudio && Platform.OS === "web") {
+    if (cachedAudio) {
       try {
-        const audioSrc = `data:${cachedAudio.mimeType};base64,${cachedAudio.base64}`;
-        const audio = new Audio(audioSrc);
-        audioPlayerRef.current = audio;
-        
-        audio.onended = () => setIsSpeaking(false);
-        audio.play();
+        if (Platform.OS === "web") {
+          const audioSrc = `data:${cachedAudio.mimeType};base64,${cachedAudio.base64}`;
+          const audio = new window.Audio(audioSrc);
+          audioPlayerRef.current = audio;
+          
+          audio.onended = () => setIsSpeaking(false);
+          audio.play();
+        } else {
+          await playNativeAudio(cachedAudio.base64, cachedAudio.mimeType, () => setIsSpeaking(false));
+        }
         return;
       } catch (error) {
         console.log("Cached audio playback failed, generating fresh");
@@ -597,6 +634,10 @@ export default function LetterHelperScreen() {
       if (audioPlayerRef.current) {
         audioPlayerRef.current.pause();
         audioPlayerRef.current = null;
+      }
+      if (nativeSoundRef.current) {
+        await nativeSoundRef.current.unloadAsync();
+        nativeSoundRef.current = null;
       }
       Speech.stop();
       setSpeakingMessageIndex(null);
