@@ -51,11 +51,11 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     paddingHorizontal: Spacing.lg,
     gap: Spacing.md,
+    justifyContent: "space-between",
   },
   gridItem: {
     width: "48%",
-    flexGrow: 1,
-    minWidth: 150,
+    height: 140,
   },
   iconBg: {
     width: 48,

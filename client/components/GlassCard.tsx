@@ -98,6 +98,7 @@ export function GlassCard({
             <ThemedText
               type="small"
               style={[styles.cardDescription, { color: theme.textSecondary }]}
+              numberOfLines={2}
             >
               {description}
             </ThemedText>
@@ -115,6 +116,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     overflow: "hidden",
     minHeight: 100,
+    flex: 1,
   },
   cardLarge: {
     minHeight: 160,
