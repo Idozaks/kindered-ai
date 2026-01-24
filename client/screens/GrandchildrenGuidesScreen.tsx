@@ -574,20 +574,16 @@ const styles = StyleSheet.create({
   },
   stepImageContainer: {
     alignItems: "center",
-    flex: 1,
     justifyContent: "center",
-    maxHeight: "45%",
+    marginBottom: Spacing.md,
   },
   stepImage: {
-    width: SCREEN_WIDTH - Spacing.lg * 2,
-    height: "100%",
-    maxHeight: 180,
+    width: SCREEN_WIDTH - Spacing.lg * 4,
+    height: 140,
     borderRadius: BorderRadius.lg,
   },
   stepTextContainer: {
-    flex: 1,
-    justifyContent: "flex-start",
-    paddingTop: Spacing.md,
+    flex: 0,
   },
   stepCard: {
     flex: 0,
