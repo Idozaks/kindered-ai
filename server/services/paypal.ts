@@ -55,6 +55,8 @@ export async function createOrder(
   const baseUrl = domain 
     ? `https://${domain.replace(':5000', '')}` 
     : "http://localhost:5000";
+  
+  console.log("PayPal baseUrl:", baseUrl, "domain:", domain);
 
   const response = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders`, {
     method: "POST",
