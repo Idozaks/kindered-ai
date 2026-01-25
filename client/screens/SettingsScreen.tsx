@@ -8,7 +8,8 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/query-client";
 
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 import { ThemedText } from "@/components/ThemedText";
@@ -32,6 +33,7 @@ export default function SettingsScreen() {
   const { theme } = useTheme();
   const { t } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
+  const queryClient = useQueryClient();
   const { user, logout, isLoading: authLoading } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [settings, setSettings] = useState<UserSettings>({
@@ -41,6 +43,25 @@ export default function SettingsScreen() {
     narratorMode: false,
     privacyShield: true,
   });
+
+  const { data: devModeData } = useQuery<{ devMode: boolean }>({
+    queryKey: ["/api/payments/dev-mode"],
+  });
+
+  const devModeMutation = useMutation({
+    mutationFn: async (enabled: boolean) => {
+      const response = await apiRequest("POST", "/api/payments/dev-mode", { enabled });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/payments/dev-mode"] });
+    },
+  });
+
+  const handleDevModeToggle = (value: boolean) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    devModeMutation.mutate(value);
+  };
 
   useEffect(() => {
     loadSettings();
@@ -292,6 +313,21 @@ export default function SettingsScreen() {
             </GlassButton>
           </GlassCard>
         </Animated.View>
+
+        <Animated.View entering={FadeInDown.delay(500).duration(500)}>
+          <GlassCard style={StyleSheet.flatten([styles.section, styles.devSection])}>
+            <ThemedText type="h4" style={styles.sectionTitle}>
+              {t("settings.developer", "מפתחים")}
+            </ThemedText>
+            <SettingRow
+              icon="code"
+              title={t("settings.devMode", "מצב פיתוח")}
+              description={t("settings.devModeDesc", "פתיחת כל הפיצ'רים לבדיקה")}
+              value={devModeData?.devMode ?? false}
+              onToggle={handleDevModeToggle}
+            />
+          </GlassCard>
+        </Animated.View>
       </KeyboardAwareScrollViewCompat>
     </ThemedView>
   );
@@ -449,5 +485,10 @@ const styles = StyleSheet.create({
   },
   premiumText: {
     flex: 1,
+  },
+  devSection: {
+    borderWidth: 1,
+    borderColor: "#6B7280",
+    opacity: 0.8,
   },
 });

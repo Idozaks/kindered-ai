@@ -6,17 +6,23 @@ import { eq, sql } from "drizzle-orm";
 
 const router = Router();
 
-const DEV_MODE = process.env.DEV_MODE === "true";
+let devModeEnabled = process.env.DEV_MODE === "true";
 
 router.get("/status", async (req: Request, res: Response) => {
   res.json({
     paypalConfigured: isPayPalConfigured(),
-    devMode: DEV_MODE,
+    devMode: devModeEnabled,
   });
 });
 
 router.get("/dev-mode", (req: Request, res: Response) => {
-  res.json({ devMode: DEV_MODE });
+  res.json({ devMode: devModeEnabled });
+});
+
+router.post("/dev-mode", (req: Request, res: Response) => {
+  const { enabled } = req.body;
+  devModeEnabled = !!enabled;
+  res.json({ devMode: devModeEnabled });
 });
 
 router.post("/create-order", async (req: Request, res: Response) => {
