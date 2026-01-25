@@ -111,7 +111,7 @@ router.get("/subscription/:userId", async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
 
-    if (DEV_MODE) {
+    if (devModeEnabled) {
       return res.json({
         isPremium: true,
         plan: "premium",
@@ -153,7 +153,65 @@ router.get("/subscription/:userId", async (req: Request, res: Response) => {
   }
 });
 
-router.get("/success", (req: Request, res: Response) => {
+router.get("/success", async (req: Request, res: Response) => {
+  const { token, PayerID } = req.query;
+  
+  console.log("Payment success callback:", { token, PayerID });
+  
+  let captureSuccess = false;
+  let errorMessage = "";
+  
+  if (token && typeof token === "string") {
+    try {
+      const result = await captureOrder(token);
+      console.log("Capture result:", result);
+      
+      if (result.status === "COMPLETED") {
+        captureSuccess = true;
+        
+        const now = new Date();
+        const oneYearLater = new Date(now);
+        oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
+        
+        const existingSub = await db
+          .select()
+          .from(subscriptions)
+          .where(eq(subscriptions.paypalPayerId, result.payerId))
+          .limit(1);
+        
+        if (existingSub.length > 0) {
+          await db
+            .update(subscriptions)
+            .set({
+              paypalOrderId: result.orderId,
+              plan: "premium",
+              status: "active",
+              currentPeriodStart: now,
+              currentPeriodEnd: oneYearLater,
+              updatedAt: now,
+            })
+            .where(eq(subscriptions.paypalPayerId, result.payerId));
+        } else {
+          await db.insert(subscriptions).values({
+            id: crypto.randomUUID(),
+            userId: result.payerId,
+            paypalOrderId: result.orderId,
+            paypalPayerId: result.payerId,
+            plan: "premium",
+            status: "active",
+            currentPeriodStart: now,
+            currentPeriodEnd: oneYearLater,
+          });
+        }
+        
+        console.log("Subscription saved for payer:", result.payerId);
+      }
+    } catch (error: any) {
+      console.error("Capture error:", error);
+      errorMessage = error.message;
+    }
+  }
+  
   res.send(`
     <!DOCTYPE html>
     <html dir="rtl" lang="he">
@@ -178,18 +236,26 @@ router.get("/success", (req: Request, res: Response) => {
           background: rgba(255,255,255,0.1);
           border-radius: 20px;
           backdrop-filter: blur(10px);
+          max-width: 90%;
         }
         h1 { font-size: 2.5rem; margin-bottom: 20px; }
         p { font-size: 1.2rem; opacity: 0.9; }
         .check { font-size: 4rem; margin-bottom: 20px; }
+        .error { color: #ffcccc; }
       </style>
     </head>
     <body>
       <div class="container">
-        <div class="check">✓</div>
-        <h1>התשלום הצליח!</h1>
-        <p>תודה שהצטרפת ל-Dori AI Premium</p>
-        <p>אתה יכול לחזור לאפליקציה עכשיו</p>
+        ${captureSuccess ? `
+          <div class="check">✓</div>
+          <h1>התשלום הצליח!</h1>
+          <p>תודה שהצטרפת ל-Dori AI Premium</p>
+          <p>אתה יכול לסגור את החלון ולחזור לאפליקציה</p>
+        ` : `
+          <div class="check">⚠</div>
+          <h1>בעיה בעיבוד התשלום</h1>
+          <p class="error">${errorMessage || "נסה שוב או צור קשר לתמיכה"}</p>
+        `}
       </div>
     </body>
     </html>
