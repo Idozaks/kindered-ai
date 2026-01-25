@@ -7,9 +7,12 @@ import {
   ActivityIndicator,
   Linking,
   Platform,
+  Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
@@ -25,6 +28,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { getApiUrl, apiRequest } from "@/lib/query-client";
+import { RootStackParamList } from "@/navigation/RootStackNavigator";
 
 const PREMIUM_GOLD = "#FFD700";
 const PREMIUM_PURPLE = "#8B5CF6";
@@ -34,6 +38,7 @@ export default function PremiumScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const { theme } = useTheme();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -49,6 +54,8 @@ export default function PremiumScreen() {
 
   const { data: devModeData } = useQuery<{ devMode?: boolean }>({
     queryKey: ["/api/payments/dev-mode"],
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 
   const isPremium = subscriptionData?.isPremium || devModeData?.devMode;
@@ -56,6 +63,7 @@ export default function PremiumScreen() {
 
   const handleUpgrade = useCallback(async () => {
     if (!user?.id) {
+      navigation.navigate("Login");
       return;
     }
 
@@ -82,7 +90,7 @@ export default function PremiumScreen() {
     } finally {
       setIsProcessing(false);
     }
-  }, [user?.id]);
+  }, [user?.id, navigation]);
 
   const features = [
     {

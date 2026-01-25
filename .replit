@@ -77,7 +77,7 @@ ensurePreviewReachable = "/status"
 [userenv]
 
 [userenv.development]
-DEV_MODE = "true"
+DEV_MODE = "false"
 
 [userenv.production]
 DEV_MODE = "false"

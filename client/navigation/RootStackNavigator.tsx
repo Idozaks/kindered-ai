@@ -41,6 +41,8 @@ export type MainStackParamList = {
   GrandchildrenGuides: undefined;
   WebsiteHelper: undefined;
   Premium: undefined;
+  Login: undefined;
+  Register: undefined;
 };
 
 export type RootStackParamList = AuthStackParamList & OnboardingStackParamList & MainStackParamList;
@@ -151,6 +153,20 @@ function MainStack() {
         component={PremiumScreen}
         options={{
           headerTitle: "Premium",
+        }}
+      />
+      <Stack.Screen
+        name="Login"
+        component={LoginScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="Register"
+        component={RegisterScreen}
+        options={{
+          headerShown: false,
         }}
       />
     </Stack.Navigator>
