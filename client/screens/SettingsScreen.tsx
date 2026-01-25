@@ -245,7 +245,7 @@ export default function SettingsScreen() {
             }}
             testID="premium-button"
           >
-            <GlassCard style={[styles.section, styles.premiumSection]}>
+            <GlassCard style={StyleSheet.flatten([styles.section, styles.premiumSection])}>
               <View style={styles.premiumContent}>
                 <View style={[styles.premiumIcon, { backgroundColor: PREMIUM_GOLD + "20" }]}>
                   <Feather name="award" size={28} color={PREMIUM_GOLD} />
