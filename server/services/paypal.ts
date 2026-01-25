@@ -50,8 +50,10 @@ export async function createOrder(
 ): Promise<CreateOrderResult> {
   const accessToken = await getAccessToken();
 
-  const baseUrl = process.env.EXPO_PUBLIC_DOMAIN 
-    ? `https://${process.env.EXPO_PUBLIC_DOMAIN}` 
+  // Use REPLIT_DEV_DOMAIN for development, or construct from available env vars
+  const domain = process.env.REPLIT_DEV_DOMAIN || process.env.EXPO_PUBLIC_DOMAIN;
+  const baseUrl = domain 
+    ? `https://${domain.replace(':5000', '')}` 
     : "http://localhost:5000";
 
   const response = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders`, {
