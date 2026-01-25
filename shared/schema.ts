@@ -87,8 +87,9 @@ export const subscriptions = pgTable("subscriptions", {
   userId: varchar("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  stripeCustomerId: text("stripe_customer_id"),
-  stripeSubscriptionId: text("stripe_subscription_id"),
+  paypalOrderId: text("paypal_order_id"),
+  paypalSubscriptionId: text("paypal_subscription_id"),
+  paypalPayerId: text("paypal_payer_id"),
   plan: text("plan").default("free"),
   status: text("status").default("active"),
   currentPeriodStart: timestamp("current_period_start"),

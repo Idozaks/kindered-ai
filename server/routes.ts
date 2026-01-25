@@ -4,6 +4,7 @@ import aiRoutes from "./ai-routes";
 import authRoutes from "./auth-routes";
 import progressRoutes from "./progress-routes";
 import gmailProgressRoutes from "./gmail-progress-routes";
+import paymentRoutes from "./routes/payment-routes";
 import { registerImageRoutes } from "./replit_integrations/image";
 import { registerWebsiteHelperRoutes } from "./routes/websiteHelper";
 
@@ -16,6 +17,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Gmail progress tracking routes
   app.use("/api/gmail-progress", gmailProgressRoutes);
+
+  // Payment routes for PayPal integration
+  app.use("/api/payments", paymentRoutes);
 
   // AI routes for Dori AI features
   app.use("/api/ai", aiRoutes);
