@@ -238,30 +238,26 @@ export default function SettingsScreen() {
         </Animated.View>
 
         <Animated.View entering={FadeInDown.delay(425).duration(500)}>
-          <Pressable
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              navigation.navigate("Premium");
-            }}
+          <GlassCard 
+            style={StyleSheet.flatten([styles.section, styles.premiumSection])}
+            onPress={() => navigation.navigate("Premium")}
             testID="premium-button"
           >
-            <GlassCard style={StyleSheet.flatten([styles.section, styles.premiumSection])}>
-              <View style={styles.premiumContent}>
-                <View style={[styles.premiumIcon, { backgroundColor: PREMIUM_GOLD + "20" }]}>
-                  <Feather name="award" size={28} color={PREMIUM_GOLD} />
-                </View>
-                <View style={styles.premiumText}>
-                  <ThemedText type="h4" style={{ color: PREMIUM_PURPLE }}>
-                    {t("settings.premium", "דורי פרימיום")}
-                  </ThemedText>
-                  <ThemedText type="small" style={{ color: theme.textSecondary }}>
-                    {t("settings.premiumDesc", "שדרג לגישה לכל הפיצ'רים")}
-                  </ThemedText>
-                </View>
-                <Feather name="chevron-left" size={24} color={PREMIUM_PURPLE} />
+            <View style={styles.premiumContent}>
+              <View style={[styles.premiumIcon, { backgroundColor: PREMIUM_GOLD + "20" }]}>
+                <Feather name="award" size={28} color={PREMIUM_GOLD} />
               </View>
-            </GlassCard>
-          </Pressable>
+              <View style={styles.premiumText}>
+                <ThemedText type="h4" style={{ color: PREMIUM_PURPLE }}>
+                  {t("settings.premium", "דורי פרימיום")}
+                </ThemedText>
+                <ThemedText type="small" style={{ color: theme.textSecondary }}>
+                  {t("settings.premiumDesc", "שדרג לגישה לכל הפיצ'רים")}
+                </ThemedText>
+              </View>
+              <Feather name="chevron-left" size={24} color={PREMIUM_PURPLE} />
+            </View>
+          </GlassCard>
         </Animated.View>
 
         <Animated.View entering={FadeInDown.delay(450).duration(500)}>
