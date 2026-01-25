@@ -13,6 +13,7 @@ import WhatsAppGuidesScreen from "@/screens/WhatsAppGuidesScreen";
 import GmailGuidesScreen from "@/screens/GmailGuidesScreen";
 import GrandchildrenGuidesScreen from "@/screens/GrandchildrenGuidesScreen";
 import WebsiteHelperScreen from "@/screens/WebsiteHelperScreen";
+import PremiumScreen from "@/screens/PremiumScreen";
 import LoginScreen from "@/screens/LoginScreen";
 import RegisterScreen from "@/screens/RegisterScreen";
 import OnboardingScreen from "@/screens/OnboardingScreen";
@@ -39,6 +40,7 @@ export type MainStackParamList = {
   GmailGuides: undefined;
   GrandchildrenGuides: undefined;
   WebsiteHelper: undefined;
+  Premium: undefined;
 };
 
 export type RootStackParamList = AuthStackParamList & OnboardingStackParamList & MainStackParamList;
@@ -142,6 +144,13 @@ function MainStack() {
         component={WebsiteHelperScreen}
         options={{
           headerTitle: "Website Helper",
+        }}
+      />
+      <Stack.Screen
+        name="Premium"
+        component={PremiumScreen}
+        options={{
+          headerTitle: "Premium",
         }}
       />
     </Stack.Navigator>

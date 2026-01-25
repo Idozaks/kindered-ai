@@ -3,9 +3,12 @@ import { StyleSheet, View, Switch, Pressable, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useTranslation } from "react-i18next";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown } from "react-native-reanimated";
+import { useQuery } from "@tanstack/react-query";
 
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 import { ThemedText } from "@/components/ThemedText";
@@ -18,12 +21,17 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { storage, UserSettings } from "@/lib/storage";
 import i18n from "@/lib/i18n";
+import { MainStackParamList } from "@/navigation/RootStackNavigator";
+
+const PREMIUM_GOLD = "#FFD700";
+const PREMIUM_PURPLE = "#8B5CF6";
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
   const { user, logout, isLoading: authLoading } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [settings, setSettings] = useState<UserSettings>({
@@ -229,6 +237,33 @@ export default function SettingsScreen() {
           </GlassCard>
         </Animated.View>
 
+        <Animated.View entering={FadeInDown.delay(425).duration(500)}>
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              navigation.navigate("Premium");
+            }}
+            testID="premium-button"
+          >
+            <GlassCard style={[styles.section, styles.premiumSection]}>
+              <View style={styles.premiumContent}>
+                <View style={[styles.premiumIcon, { backgroundColor: PREMIUM_GOLD + "20" }]}>
+                  <Feather name="award" size={28} color={PREMIUM_GOLD} />
+                </View>
+                <View style={styles.premiumText}>
+                  <ThemedText type="h4" style={{ color: PREMIUM_PURPLE }}>
+                    {t("settings.premium", "דורי פרימיום")}
+                  </ThemedText>
+                  <ThemedText type="small" style={{ color: theme.textSecondary }}>
+                    {t("settings.premiumDesc", "שדרג לגישה לכל הפיצ'רים")}
+                  </ThemedText>
+                </View>
+                <Feather name="chevron-left" size={24} color={PREMIUM_PURPLE} />
+              </View>
+            </GlassCard>
+          </Pressable>
+        </Animated.View>
+
         <Animated.View entering={FadeInDown.delay(450).duration(500)}>
           <GlassCard style={styles.section}>
             <ThemedText type="h4" style={styles.sectionTitle}>
@@ -399,5 +434,24 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     marginTop: Spacing.sm,
+  },
+  premiumSection: {
+    borderWidth: 2,
+    borderColor: "#8B5CF6",
+  },
+  premiumContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.md,
+  },
+  premiumIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  premiumText: {
+    flex: 1,
   },
 });
