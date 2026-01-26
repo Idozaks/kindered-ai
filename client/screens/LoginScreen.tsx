@@ -165,9 +165,14 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
           </BlurView>
 
           <Pressable
-            style={[styles.guestButton, { backgroundColor: Colors.light.success }]}
+            style={({ pressed }) => [
+              styles.guestButton, 
+              { backgroundColor: pressed ? '#3DA015' : Colors.light.success }
+            ]}
             onPress={continueAsGuest}
             testID="button-guest"
+            accessibilityRole="button"
+            accessibilityLabel="Continue as guest"
           >
             <Feather name="arrow-left" size={24} color="#FFFFFF" />
             <Text style={styles.guestButtonText}>המשך ללא הרשמה</Text>
