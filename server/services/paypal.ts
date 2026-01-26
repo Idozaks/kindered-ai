@@ -1,10 +1,15 @@
 const clientId = process.env.PAYPAL_CLIENT_ID;
 const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
+const paypalMode = process.env.PAYPAL_MODE || "sandbox";
 
-const PAYPAL_API_BASE = "https://api-m.sandbox.paypal.com";
+const PAYPAL_API_BASE = paypalMode === "live" 
+  ? "https://api-m.paypal.com" 
+  : "https://api-m.sandbox.paypal.com";
 
 if (!clientId || !clientSecret) {
   console.warn("PayPal credentials not configured. Payment features will be disabled.");
+} else {
+  console.log(`PayPal configured in ${paypalMode.toUpperCase()} mode`);
 }
 
 async function getAccessToken(): Promise<string> {

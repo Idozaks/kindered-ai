@@ -81,3 +81,6 @@ DEV_MODE = "false"
 
 [userenv.production]
 DEV_MODE = "false"
+
+[userenv.shared]
+PAYPAL_MODE = "sandbox"
