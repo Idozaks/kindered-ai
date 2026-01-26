@@ -13,6 +13,7 @@ import WhatsAppGuidesScreen from "@/screens/WhatsAppGuidesScreen";
 import GmailGuidesScreen from "@/screens/GmailGuidesScreen";
 import GrandchildrenGuidesScreen from "@/screens/GrandchildrenGuidesScreen";
 import LibraryScreen from "@/screens/LibraryScreen";
+import AIGuidesScreen from "@/screens/AIGuidesScreen";
 import WebsiteHelperScreen from "@/screens/WebsiteHelperScreen";
 import PremiumScreen from "@/screens/PremiumScreen";
 import LoginScreen from "@/screens/LoginScreen";
@@ -38,6 +39,7 @@ export type MainStackParamList = {
   LetterHelper: undefined;
   MirrorWorld: undefined;
   Library: undefined;
+  AIGuides: undefined;
   WhatsAppGuides: undefined;
   GmailGuides: undefined;
   GrandchildrenGuides: undefined;
@@ -127,6 +129,13 @@ function MainStack() {
         component={LibraryScreen}
         options={{
           headerTitle: "ספריה",
+        }}
+      />
+      <Stack.Screen
+        name="AIGuides"
+        component={AIGuidesScreen}
+        options={{
+          headerTitle: "למידת AI",
         }}
       />
       <Stack.Screen

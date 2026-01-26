@@ -29,6 +29,14 @@ interface LibraryItem {
 
 const libraryItems: LibraryItem[] = [
   {
+    id: "ai",
+    titleKey: "tools.ai.title",
+    descriptionKey: "tools.ai.description",
+    icon: "cpu",
+    color: "#6C63FF",
+    screen: "AIGuides",
+  },
+  {
     id: "whatsapp",
     titleKey: "tools.whatsapp.title",
     descriptionKey: "tools.whatsapp.description",
