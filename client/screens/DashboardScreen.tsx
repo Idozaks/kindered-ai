@@ -142,10 +142,13 @@ export default function DashboardScreen() {
           styles.scrollContent,
           {
             paddingTop: headerHeight + Spacing.xl,
-            paddingBottom: insets.bottom + Spacing.xl,
+            paddingBottom: insets.bottom + 100,
           },
         ]}
-        showsVerticalScrollIndicator={false}
+        showsVerticalScrollIndicator={true}
+        bounces={true}
+        alwaysBounceVertical={true}
+        scrollEventThrottle={16}
       >
         <Animated.View
           entering={FadeInDown.delay(100).duration(600)}
@@ -193,7 +196,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    flexGrow: 1,
+    paddingHorizontal: Spacing.sm,
   },
   header: {
     paddingHorizontal: Spacing.lg,
