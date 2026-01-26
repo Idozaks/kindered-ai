@@ -72,25 +72,11 @@ export default function DashboardScreen() {
       color: "#9B59B6",
     },
     {
-      id: "whatsapp",
-      title: t("tools.whatsapp.title"),
-      description: t("tools.whatsapp.description"),
-      image: whatsappIcon,
-      color: "#25D366",
-    },
-    {
-      id: "gmail",
-      title: t("tools.gmail.title"),
-      description: t("tools.gmail.description"),
-      image: gmailIcon,
-      color: "#EA4335",
-    },
-    {
-      id: "grandchildren",
-      title: t("tools.grandchildren.title"),
-      description: t("tools.grandchildren.description"),
+      id: "library",
+      title: t("tools.library.title"),
+      description: t("tools.library.description"),
       image: monitorIcon,
-      color: "#E91E63",
+      color: "#6C63FF",
     },
     {
       id: "websiteHelper",
@@ -113,14 +99,8 @@ export default function DashboardScreen() {
         case "mirror":
           navigation.navigate("MirrorWorld");
           break;
-        case "whatsapp":
-          navigation.navigate("WhatsAppGuides");
-          break;
-        case "gmail":
-          navigation.navigate("GmailGuides");
-          break;
-        case "grandchildren":
-          navigation.navigate("GrandchildrenGuides");
+        case "library":
+          navigation.navigate("Library");
           break;
         case "websiteHelper":
           navigation.navigate("WebsiteHelper");

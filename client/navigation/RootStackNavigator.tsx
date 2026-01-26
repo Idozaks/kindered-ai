@@ -12,6 +12,7 @@ import MirrorWorldScreen from "@/screens/MirrorWorldScreen";
 import WhatsAppGuidesScreen from "@/screens/WhatsAppGuidesScreen";
 import GmailGuidesScreen from "@/screens/GmailGuidesScreen";
 import GrandchildrenGuidesScreen from "@/screens/GrandchildrenGuidesScreen";
+import LibraryScreen from "@/screens/LibraryScreen";
 import WebsiteHelperScreen from "@/screens/WebsiteHelperScreen";
 import PremiumScreen from "@/screens/PremiumScreen";
 import LoginScreen from "@/screens/LoginScreen";
@@ -36,6 +37,7 @@ export type MainStackParamList = {
   GrandchildMode: undefined;
   LetterHelper: undefined;
   MirrorWorld: undefined;
+  Library: undefined;
   WhatsAppGuides: undefined;
   GmailGuides: undefined;
   GrandchildrenGuides: undefined;
@@ -118,6 +120,13 @@ function MainStack() {
         component={MirrorWorldScreen}
         options={{
           headerTitle: "Practice Zone",
+        }}
+      />
+      <Stack.Screen
+        name="Library"
+        component={LibraryScreen}
+        options={{
+          headerTitle: "ספריה",
         }}
       />
       <Stack.Screen

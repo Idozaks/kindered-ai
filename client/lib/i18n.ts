@@ -80,6 +80,10 @@ const resources = {
           trainer: "Trainer: ",
           done: "Done",
         },
+        library: {
+          title: "Library",
+          description: "Guides & tutorials",
+        },
         websiteHelper: {
           title: "Website Helper",
           description: "Understand any screen",
@@ -132,6 +136,11 @@ const resources = {
         loading: "Loading...",
         tapToSpeak: "Tap to speak",
         listening: "Listening...",
+      },
+      library: {
+        title: "Library",
+        subtitle: "Choose a guide to learn step by step",
+        comingSoon: "More guides coming soon!",
       },
       grandchildMode: {
         title: "Ask Dori",
@@ -368,6 +377,10 @@ const resources = {
           trainer: "מדריך: ",
           done: "הושלם",
         },
+        library: {
+          title: "ספריה",
+          description: "מדריכים והדרכות",
+        },
         websiteHelper: {
           title: "עוזר אתרים",
           description: "הבנת כל מסך",
@@ -420,6 +433,11 @@ const resources = {
         loading: "טוען...",
         tapToSpeak: "הקש לדיבור",
         listening: "מאזין...",
+      },
+      library: {
+        title: "ספריה",
+        subtitle: "בחר מדריך ללמוד צעד אחר צעד",
+        comingSoon: "עוד מדריכים בקרוב!",
       },
       grandchildMode: {
         title: "שאל את דורי",
