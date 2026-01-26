@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import {
   StyleSheet,
   View,
@@ -8,6 +8,8 @@ import {
   Linking,
   Platform,
   Alert,
+  AppState,
+  AppStateStatus,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
@@ -20,6 +22,7 @@ import * as WebBrowser from "expo-web-browser";
 import * as ExpoLinking from "expo-linking";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -30,6 +33,8 @@ import { Spacing, BorderRadius } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { getApiUrl, apiRequest } from "@/lib/query-client";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
+
+const PENDING_ORDER_KEY = "dori_pending_paypal_order";
 
 const PREMIUM_GOLD = "#FFD700";
 const PREMIUM_PURPLE = "#8B5CF6";
@@ -64,11 +69,106 @@ export default function PremiumScreen() {
 
   const isPremium = subscriptionData?.isPremium || devModeData?.devMode;
   const isDevMode = devModeData?.devMode;
+  const appState = useRef(AppState.currentState);
+  const hasCheckedOnFocus = useRef(false);
+
+  const loadPendingOrder = useCallback(async () => {
+    try {
+      const stored = await AsyncStorage.getItem(PENDING_ORDER_KEY);
+      if (stored) {
+        const data = JSON.parse(stored);
+        if (data.orderId && data.userId === user?.id) {
+          setLastOrderId(data.orderId);
+          return data.orderId;
+        }
+      }
+    } catch (e) {
+      console.error("Failed to load pending order:", e);
+    }
+    return null;
+  }, [user?.id]);
+
+  const savePendingOrder = useCallback(async (orderId: string) => {
+    try {
+      await AsyncStorage.setItem(PENDING_ORDER_KEY, JSON.stringify({
+        orderId,
+        userId: user?.id,
+        timestamp: Date.now(),
+      }));
+    } catch (e) {
+      console.error("Failed to save pending order:", e);
+    }
+  }, [user?.id]);
+
+  const clearPendingOrder = useCallback(async () => {
+    try {
+      await AsyncStorage.removeItem(PENDING_ORDER_KEY);
+      setLastOrderId(null);
+    } catch (e) {
+      console.error("Failed to clear pending order:", e);
+    }
+  }, []);
+
+  const autoCheckPayment = useCallback(async (orderId: string) => {
+    if (!orderId || !user?.id || isChecking) return;
+    
+    setIsChecking(true);
+    try {
+      const response = await apiRequest("POST", "/api/payments/check-and-capture", {
+        orderId,
+        userId: user.id,
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.status === "COMPLETED") {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert(
+          "מזל טוב!",
+          data.alreadyPremium 
+            ? "יש לך כבר מנוי פרימיום פעיל!"
+            : "התשלום הושלם בהצלחה. נהנה מכל פיצ'רי הפרימיום!",
+          [{ text: "מעולה" }]
+        );
+        await clearPendingOrder();
+        refetchSubscription();
+      }
+    } catch (error) {
+      console.error("Auto check payment error:", error);
+    } finally {
+      setIsChecking(false);
+    }
+  }, [user?.id, isChecking, clearPendingOrder, refetchSubscription]);
+
+  useEffect(() => {
+    loadPendingOrder();
+  }, [loadPendingOrder]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", async (nextAppState: AppStateStatus) => {
+      if (appState.current.match(/inactive|background/) && nextAppState === "active") {
+        const orderId = await loadPendingOrder();
+        if (orderId) {
+          autoCheckPayment(orderId);
+        }
+        refetchSubscription();
+      }
+      appState.current = nextAppState;
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [loadPendingOrder, autoCheckPayment, refetchSubscription]);
 
   useFocusEffect(
     useCallback(() => {
       refetchSubscription();
-    }, [refetchSubscription])
+      if (!hasCheckedOnFocus.current && lastOrderId) {
+        hasCheckedOnFocus.current = true;
+        autoCheckPayment(lastOrderId);
+      }
+    }, [refetchSubscription, lastOrderId, autoCheckPayment])
   );
 
   useEffect(() => {
@@ -85,7 +185,7 @@ export default function PremiumScreen() {
             "התשלום הושלם בהצלחה. נהנה מכל פיצ'רי הפרימיום!",
             [{ text: "מעולה" }]
           );
-          setLastOrderId(null);
+          clearPendingOrder();
           refetchSubscription();
         }
       }
@@ -102,7 +202,7 @@ export default function PremiumScreen() {
     return () => {
       subscription.remove();
     };
-  }, [refetchSubscription]);
+  }, [refetchSubscription, clearPendingOrder]);
 
   const handleCheckPaymentStatus = useCallback(async () => {
     if (!lastOrderId || !user?.id) return;
@@ -127,7 +227,7 @@ export default function PremiumScreen() {
             : "התשלום הושלם בהצלחה. נהנה מכל פיצ'רי הפרימיום!",
           [{ text: "מעולה", onPress: () => refetchSubscription() }]
         );
-        setLastOrderId(null);
+        await clearPendingOrder();
       } else if (data.status === "APPROVED") {
         Alert.alert(
           "ממתינים לאישור",
@@ -145,7 +245,7 @@ export default function PremiumScreen() {
     } finally {
       setIsChecking(false);
     }
-  }, [lastOrderId, user?.id, refetchSubscription]);
+  }, [lastOrderId, user?.id, refetchSubscription, clearPendingOrder]);
 
   const handleUpgrade = useCallback(async () => {
     if (!user?.id) {
@@ -167,11 +267,17 @@ export default function PremiumScreen() {
 
       if (data.orderId) {
         setLastOrderId(data.orderId);
+        await savePendingOrder(data.orderId);
       }
 
       if (data.approvalUrl) {
         if (Platform.OS === "web") {
           window.open(data.approvalUrl, "_blank");
+          Alert.alert(
+            "תשלום ב-PayPal",
+            "לאחר השלמת התשלום ב-PayPal, חזור לכאן ולחץ על 'שילמתי, בדוק סטטוס'",
+            [{ text: "הבנתי" }]
+          );
         } else {
           const result = await WebBrowser.openAuthSessionAsync(
             data.approvalUrl,
@@ -192,7 +298,7 @@ export default function PremiumScreen() {
                     "מזל טוב!",
                     "התשלום הושלם בהצלחה. נהנה מכל פיצ'רי הפרימיום!",
                     [{ text: "מעולה", onPress: () => {
-                      setLastOrderId(null);
+                      clearPendingOrder();
                       refetchSubscription();
                     }}]
                   );
@@ -212,7 +318,7 @@ export default function PremiumScreen() {
     } finally {
       setIsProcessing(false);
     }
-  }, [user?.id, navigation, refetchSubscription]);
+  }, [user?.id, navigation, refetchSubscription, savePendingOrder, clearPendingOrder]);
 
   const features = [
     {
