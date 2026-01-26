@@ -71,6 +71,39 @@ export default function PremiumScreen() {
     }, [refetchSubscription])
   );
 
+  useEffect(() => {
+    const handleDeepLink = (event: { url: string }) => {
+      const url = event.url;
+      console.log("Deep link received:", url);
+      
+      if (url.includes("payment-success")) {
+        const parsed = ExpoLinking.parse(url);
+        if (parsed.queryParams?.status === "completed") {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          Alert.alert(
+            "מזל טוב!",
+            "התשלום הושלם בהצלחה. נהנה מכל פיצ'רי הפרימיום!",
+            [{ text: "מעולה" }]
+          );
+          setLastOrderId(null);
+          refetchSubscription();
+        }
+      }
+    };
+
+    const subscription = ExpoLinking.addEventListener("url", handleDeepLink);
+
+    ExpoLinking.getInitialURL().then((url) => {
+      if (url) {
+        handleDeepLink({ url });
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [refetchSubscription]);
+
   const handleCheckPaymentStatus = useCallback(async () => {
     if (!lastOrderId || !user?.id) return;
     

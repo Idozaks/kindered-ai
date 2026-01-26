@@ -237,6 +237,10 @@ router.get("/success", async (req: Request, res: Response) => {
     }
   }
   
+  const appDeepLink = captureSuccess 
+    ? `doriai://payment-success?status=completed&token=${token}`
+    : `doriai://payment-success?status=failed`;
+  
   res.send(`
     <!DOCTYPE html>
     <html dir="rtl" lang="he">
@@ -244,6 +248,7 @@ router.get("/success", async (req: Request, res: Response) => {
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>תשלום הצליח - Dori AI</title>
+      ${captureSuccess ? `<meta http-equiv="refresh" content="2;url=${appDeepLink}">` : ''}
       <style>
         body {
           font-family: 'Varela Round', Arial, sans-serif;
@@ -303,6 +308,11 @@ router.get("/success", async (req: Request, res: Response) => {
           font-weight: bold;
           font-size: 1.1rem;
         }
+        .redirect-msg {
+          margin-top: 16px;
+          font-size: 0.9rem;
+          opacity: 0.8;
+        }
       </style>
     </head>
     <body>
@@ -320,11 +330,18 @@ router.get("/success", async (req: Request, res: Response) => {
               <li>תמיכה בעברית מלאה</li>
             </ul>
           </div>
-          <p>סגור חלון זה וחזור לאפליקציה</p>
+          <a href="${appDeepLink}" class="back-btn">חזור לאפליקציה</a>
+          <p class="redirect-msg">מחזיר אותך לאפליקציה אוטומטית...</p>
+          <script>
+            setTimeout(function() {
+              window.location.href = "${appDeepLink}";
+            }, 1500);
+          </script>
         ` : `
           <div class="check">&#9888;</div>
           <h1>בעיה בעיבוד התשלום</h1>
           <p class="error">${errorMessage || "נסה שוב או צור קשר לתמיכה"}</p>
+          <a href="${appDeepLink}" class="back-btn">חזור לאפליקציה</a>
         `}
       </div>
     </body>
