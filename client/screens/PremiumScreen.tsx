@@ -258,7 +258,7 @@ export default function PremiumScreen() {
 
     try {
       const response = await apiRequest("POST", "/api/payments/create-order", {
-        amount: "49.90",
+        amount: "0.99",
         currency: "ILS",
         userId: user.id,
       });
