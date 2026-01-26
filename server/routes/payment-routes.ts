@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { createOrder, captureOrder, isPayPalConfigured } from "../services/paypal";
+import { createOrder, captureOrder, getOrderDetails, isPayPalConfigured } from "../services/paypal";
 import { db } from "../db";
 import { subscriptions } from "@shared/schema";
 import { eq, sql } from "drizzle-orm";
@@ -123,9 +123,111 @@ router.post("/capture-order", async (req: Request, res: Response) => {
   }
 });
 
+router.post("/check-and-capture", async (req: Request, res: Response) => {
+  try {
+    const { orderId, userId } = req.body;
+
+    if (!orderId) {
+      return res.status(400).json({ error: "Order ID required" });
+    }
+
+    if (!userId) {
+      return res.status(400).json({ error: "User ID required" });
+    }
+
+    if (!isPayPalConfigured()) {
+      return res.status(503).json({ error: "PayPal not configured" });
+    }
+
+    console.log("Checking order status:", orderId, "for user:", userId);
+
+    const orderDetails = await getOrderDetails(orderId);
+    console.log("Order details:", JSON.stringify(orderDetails, null, 2));
+
+    if (orderDetails.status === "COMPLETED") {
+      const existingSub = await db
+        .select()
+        .from(subscriptions)
+        .where(eq(subscriptions.userId, userId))
+        .limit(1);
+
+      if (existingSub.length > 0 && existingSub[0].plan === "premium") {
+        return res.json({
+          success: true,
+          status: "COMPLETED",
+          message: "Payment already processed",
+          alreadyPremium: true,
+        });
+      }
+    }
+
+    if (orderDetails.status === "APPROVED") {
+      console.log("Order is approved, capturing payment...");
+      const result = await captureOrder(orderId);
+      console.log("Capture result:", result);
+
+      if (result.status === "COMPLETED") {
+        const now = new Date();
+        const oneYearLater = new Date(now);
+        oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
+
+        const existingSub = await db
+          .select()
+          .from(subscriptions)
+          .where(eq(subscriptions.userId, userId))
+          .limit(1);
+
+        if (existingSub.length > 0) {
+          await db
+            .update(subscriptions)
+            .set({
+              paypalOrderId: result.orderId,
+              paypalPayerId: result.payerId,
+              plan: "premium",
+              status: "active",
+              currentPeriodStart: now,
+              currentPeriodEnd: oneYearLater,
+              updatedAt: now,
+            })
+            .where(eq(subscriptions.userId, userId));
+        } else {
+          await db.insert(subscriptions).values({
+            id: crypto.randomUUID(),
+            userId: userId,
+            paypalOrderId: result.orderId,
+            paypalPayerId: result.payerId,
+            plan: "premium",
+            status: "active",
+            currentPeriodStart: now,
+            currentPeriodEnd: oneYearLater,
+          });
+        }
+
+        console.log("Subscription updated to premium for user:", userId);
+        pendingOrders.delete(orderId);
+
+        return res.json({
+          success: true,
+          status: "COMPLETED",
+          message: "Payment captured successfully",
+        });
+      }
+    }
+
+    return res.json({
+      success: false,
+      status: orderDetails.status,
+      message: `Order status is ${orderDetails.status}, not ready for capture`,
+    });
+  } catch (error: any) {
+    console.error("Check and capture error:", error);
+    res.status(500).json({ error: error.message || "Failed to check order" });
+  }
+});
+
 router.get("/subscription/:userId", async (req: Request, res: Response) => {
   try {
-    const { userId } = req.params;
+    const userId = req.params.userId as string;
 
     if (devModeEnabled) {
       return res.json({
