@@ -332,6 +332,154 @@ router.get("/success", async (req: Request, res: Response) => {
   `);
 });
 
+router.post("/capture-mobile", async (req: Request, res: Response) => {
+  try {
+    const { token, payerId, userId } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ error: "Token required" });
+    }
+
+    if (!isPayPalConfigured()) {
+      return res.status(503).json({ error: "PayPal not configured" });
+    }
+
+    console.log("Mobile capture request:", { token, payerId, userId });
+
+    const result = await captureOrder(token);
+    console.log("Mobile capture result:", result);
+
+    if (result.status === "COMPLETED") {
+      const actualUserId = userId || pendingOrders.get(token)?.userId || result.payerId;
+      
+      pendingOrders.delete(token);
+      
+      const now = new Date();
+      const oneYearLater = new Date(now);
+      oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
+
+      const existingSub = await db
+        .select()
+        .from(subscriptions)
+        .where(eq(subscriptions.userId, actualUserId))
+        .limit(1);
+
+      if (existingSub.length > 0) {
+        await db
+          .update(subscriptions)
+          .set({
+            paypalOrderId: result.orderId,
+            paypalPayerId: result.payerId,
+            plan: "premium",
+            status: "active",
+            currentPeriodStart: now,
+            currentPeriodEnd: oneYearLater,
+            updatedAt: now,
+          })
+          .where(eq(subscriptions.userId, actualUserId));
+      } else {
+        await db.insert(subscriptions).values({
+          id: crypto.randomUUID(),
+          userId: actualUserId,
+          paypalOrderId: result.orderId,
+          paypalPayerId: result.payerId,
+          plan: "premium",
+          status: "active",
+          currentPeriodStart: now,
+          currentPeriodEnd: oneYearLater,
+        });
+      }
+
+      console.log("Mobile subscription saved for user:", actualUserId);
+
+      res.json({ success: true, status: "COMPLETED" });
+    } else {
+      res.json({ success: false, status: result.status });
+    }
+  } catch (error: any) {
+    console.error("Mobile capture error:", error);
+    res.status(500).json({ error: error.message || "Failed to capture order" });
+  }
+});
+
+router.post("/verify-order", async (req: Request, res: Response) => {
+  try {
+    const { orderId, userId } = req.body;
+
+    if (!orderId) {
+      return res.status(400).json({ error: "Order ID required" });
+    }
+
+    if (!isPayPalConfigured()) {
+      return res.status(503).json({ error: "PayPal not configured" });
+    }
+
+    console.log("Verify order request:", { orderId, userId });
+
+    try {
+      const result = await captureOrder(orderId);
+      console.log("Verify capture result:", result);
+
+      if (result.status === "COMPLETED") {
+        const actualUserId = userId || pendingOrders.get(orderId)?.userId || result.payerId;
+        
+        pendingOrders.delete(orderId);
+        
+        const now = new Date();
+        const oneYearLater = new Date(now);
+        oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
+
+        const existingSub = await db
+          .select()
+          .from(subscriptions)
+          .where(eq(subscriptions.userId, actualUserId))
+          .limit(1);
+
+        if (existingSub.length > 0) {
+          await db
+            .update(subscriptions)
+            .set({
+              paypalOrderId: result.orderId,
+              paypalPayerId: result.payerId,
+              plan: "premium",
+              status: "active",
+              currentPeriodStart: now,
+              currentPeriodEnd: oneYearLater,
+              updatedAt: now,
+            })
+            .where(eq(subscriptions.userId, actualUserId));
+        } else {
+          await db.insert(subscriptions).values({
+            id: crypto.randomUUID(),
+            userId: actualUserId,
+            paypalOrderId: result.orderId,
+            paypalPayerId: result.payerId,
+            plan: "premium",
+            status: "active",
+            currentPeriodStart: now,
+            currentPeriodEnd: oneYearLater,
+          });
+        }
+
+        console.log("Verified subscription saved for user:", actualUserId);
+
+        res.json({ success: true, status: "COMPLETED" });
+      } else {
+        res.json({ success: false, status: result.status });
+      }
+    } catch (captureError: any) {
+      if (captureError.message?.includes("INSTRUMENT_DECLINED") || 
+          captureError.message?.includes("ORDER_NOT_APPROVED")) {
+        return res.json({ success: false, status: "NOT_APPROVED", message: "Payment not yet approved" });
+      }
+      throw captureError;
+    }
+  } catch (error: any) {
+    console.error("Verify order error:", error);
+    res.status(500).json({ error: error.message || "Failed to verify order" });
+  }
+});
+
 router.get("/cancel", (req: Request, res: Response) => {
   res.send(`
     <!DOCTYPE html>

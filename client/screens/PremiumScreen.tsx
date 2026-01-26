@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -11,14 +11,15 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import * as WebBrowser from "expo-web-browser";
+import * as ExpoLinking from "expo-linking";
 import { useTranslation } from "react-i18next";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -40,9 +41,12 @@ export default function PremiumScreen() {
   const { theme } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
+  const [lastOrderId, setLastOrderId] = useState<string | null>(null);
 
-  const { data: subscriptionData, isLoading: subLoading } = useQuery<{
+  const { data: subscriptionData, isLoading: subLoading, refetch: refetchSubscription } = useQuery<{
     isPremium?: boolean;
     plan?: string;
     status?: string;
@@ -60,6 +64,48 @@ export default function PremiumScreen() {
 
   const isPremium = subscriptionData?.isPremium || devModeData?.devMode;
   const isDevMode = devModeData?.devMode;
+
+  useFocusEffect(
+    useCallback(() => {
+      refetchSubscription();
+    }, [refetchSubscription])
+  );
+
+  const handleCheckPaymentStatus = useCallback(async () => {
+    if (!lastOrderId || !user?.id) return;
+    
+    setIsChecking(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    try {
+      const response = await apiRequest("POST", "/api/payments/verify-order", {
+        orderId: lastOrderId,
+        userId: user.id,
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert(
+          "מזל טוב!",
+          "התשלום הושלם בהצלחה. נהנה מכל פיצ'רי הפרימיום!",
+          [{ text: "מעולה", onPress: () => refetchSubscription() }]
+        );
+        setLastOrderId(null);
+      } else {
+        Alert.alert(
+          "התשלום עדיין לא הושלם",
+          "נסה לחזור ל-PayPal ולאשר את התשלום, או נסה שוב מאוחר יותר"
+        );
+      }
+    } catch (error) {
+      console.error("Check payment error:", error);
+      Alert.alert("שגיאה", "לא הצלחנו לבדוק את סטטוס התשלום");
+    } finally {
+      setIsChecking(false);
+    }
+  }, [lastOrderId, user?.id, refetchSubscription]);
 
   const handleUpgrade = useCallback(async () => {
     if (!user?.id) {
@@ -79,11 +125,44 @@ export default function PremiumScreen() {
 
       const data = await response.json();
 
+      if (data.orderId) {
+        setLastOrderId(data.orderId);
+      }
+
       if (data.approvalUrl) {
         if (Platform.OS === "web") {
           window.open(data.approvalUrl, "_blank");
         } else {
-          await WebBrowser.openBrowserAsync(data.approvalUrl);
+          const result = await WebBrowser.openAuthSessionAsync(
+            data.approvalUrl,
+            ExpoLinking.createURL("payment-success")
+          );
+          
+          if (result.type === "success" && result.url) {
+            const params = ExpoLinking.parse(result.url);
+            if (params.queryParams?.token) {
+              try {
+                const captureResponse = await apiRequest("POST", "/api/payments/capture-mobile", {
+                  token: params.queryParams.token,
+                  payerId: params.queryParams.PayerID,
+                  userId: user.id,
+                });
+                const captureData = await captureResponse.json();
+                if (captureData.success) {
+                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                  Alert.alert(
+                    "מזל טוב!",
+                    "התשלום הושלם בהצלחה. נהנה מכל פיצ'רי הפרימיום!",
+                    [{ text: "מעולה", onPress: () => refetchSubscription() }]
+                  );
+                }
+              } catch (captureError) {
+                console.error("Capture error:", captureError);
+              }
+            }
+          }
+          
+          refetchSubscription();
         }
       }
     } catch (error) {
@@ -91,7 +170,7 @@ export default function PremiumScreen() {
     } finally {
       setIsProcessing(false);
     }
-  }, [user?.id, navigation]);
+  }, [user?.id, navigation, refetchSubscription]);
 
   const features = [
     {
@@ -212,6 +291,20 @@ export default function PremiumScreen() {
               </ThemedText>
             </GlassButton>
 
+            {lastOrderId ? (
+              <GlassButton
+                onPress={handleCheckPaymentStatus}
+                disabled={isChecking}
+                style={StyleSheet.flatten([styles.checkButton, { borderColor: PREMIUM_PURPLE }])}
+                testID="check-payment-button"
+              >
+                <Feather name="refresh-cw" size={18} color={PREMIUM_PURPLE} />
+                <ThemedText style={[styles.checkButtonText, { color: PREMIUM_PURPLE }]}>
+                  {isChecking ? "בודק..." : "שילמתי, בדוק סטטוס"}
+                </ThemedText>
+              </GlassButton>
+            ) : null}
+
             <ThemedText type="small" style={[styles.disclaimer, { color: theme.textSecondary }]}>
               {t("premium.disclaimer", "תשלום מאובטח דרך PayPal")}
             </ThemedText>
@@ -309,6 +402,19 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "700",
     color: "#FFFFFF",
+  },
+  checkButton: {
+    width: "100%",
+    paddingVertical: Spacing.md,
+    marginTop: Spacing.md,
+    backgroundColor: "transparent",
+    borderWidth: 2,
+    flexDirection: "row",
+    gap: Spacing.sm,
+  },
+  checkButtonText: {
+    fontSize: 18,
+    fontWeight: "600",
   },
   disclaimer: {
     marginTop: Spacing.md,
