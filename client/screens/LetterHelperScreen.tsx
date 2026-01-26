@@ -36,7 +36,7 @@ import Animated, {
 import * as Haptics from "expo-haptics";
 import * as FileSystem from "expo-file-system/legacy";
 import * as Speech from "expo-speech";
-import { Audio } from "expo-av";
+import { useAudioPlayer, AudioPlayer } from "expo-audio";
 
 import { ThemedText } from "@/components/ThemedText";
 import { getApiUrl } from "@/lib/query-client";
@@ -301,7 +301,18 @@ export default function LetterHelperScreen() {
   const [speakingMessageIndex, setSpeakingMessageIndex] = useState<number | null>(null);
   const chatScrollRef = useRef<ScrollView>(null);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
-  const nativeSoundRef = useRef<Audio.Sound | null>(null);
+  const onCompleteRef = useRef<(() => void) | null>(null);
+  
+  // Use expo-audio player for native audio playback
+  const nativePlayer = useAudioPlayer(null);
+  
+  // Listen for playback completion
+  useEffect(() => {
+    if (nativePlayer && nativePlayer.playing === false && onCompleteRef.current) {
+      onCompleteRef.current();
+      onCompleteRef.current = null;
+    }
+  }, [nativePlayer?.playing]);
   
   // Store image base64 for chat context
   const [documentBase64, setDocumentBase64] = useState<string | null>(null);
@@ -309,33 +320,18 @@ export default function LetterHelperScreen() {
   // Cached TTS audio (fetched in background after analysis)
   const [cachedAudio, setCachedAudio] = useState<{base64: string, mimeType: string} | null>(null);
   
-  // Play audio from base64 on native using expo-av
+  // Play audio from base64 on native using expo-audio
   const playNativeAudio = async (base64: string, mimeType: string, onComplete?: () => void) => {
     try {
-      // Unload any existing sound
-      if (nativeSoundRef.current) {
-        await nativeSoundRef.current.unloadAsync();
-        nativeSoundRef.current = null;
-      }
+      // Store onComplete callback
+      onCompleteRef.current = onComplete || null;
       
       // Create a data URI
       const uri = `data:${mimeType};base64,${base64}`;
       
-      // Load and play the sound
-      const { sound } = await Audio.Sound.createAsync(
-        { uri },
-        { shouldPlay: true }
-      );
-      nativeSoundRef.current = sound;
-      
-      // Set up completion callback
-      sound.setOnPlaybackStatusUpdate((status) => {
-        if (status.isLoaded && status.didJustFinish) {
-          if (onComplete) onComplete();
-          sound.unloadAsync();
-          nativeSoundRef.current = null;
-        }
-      });
+      // Replace the audio source and play
+      nativePlayer.replace({ uri });
+      nativePlayer.play();
     } catch (error) {
       console.error("Native audio playback error:", error);
       if (onComplete) onComplete();
@@ -538,9 +534,8 @@ export default function LetterHelperScreen() {
         audioPlayerRef.current.pause();
         audioPlayerRef.current = null;
       }
-      if (nativeSoundRef.current) {
-        await nativeSoundRef.current.unloadAsync();
-        nativeSoundRef.current = null;
+      if (nativePlayer) {
+        nativePlayer.pause();
       }
 
       const baseUrl = getApiUrl();
@@ -592,9 +587,8 @@ export default function LetterHelperScreen() {
         audioPlayerRef.current.pause();
         audioPlayerRef.current = null;
       }
-      if (nativeSoundRef.current) {
-        nativeSoundRef.current.unloadAsync();
-        nativeSoundRef.current = null;
+      if (nativePlayer) {
+        nativePlayer.pause();
       }
       Speech.stop();
       setIsSpeaking(false);
@@ -635,9 +629,8 @@ export default function LetterHelperScreen() {
         audioPlayerRef.current.pause();
         audioPlayerRef.current = null;
       }
-      if (nativeSoundRef.current) {
-        await nativeSoundRef.current.unloadAsync();
-        nativeSoundRef.current = null;
+      if (nativePlayer) {
+        nativePlayer.pause();
       }
       Speech.stop();
       setSpeakingMessageIndex(null);
