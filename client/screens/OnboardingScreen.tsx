@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   Pressable,
+  ScrollView,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
@@ -38,70 +39,80 @@ export default function OnboardingScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.backgroundRoot }]}>
-      <View style={[styles.content, { paddingTop: insets.top + Spacing["3xl"] }]}>
-        <View style={[styles.iconContainer, { backgroundColor: Colors.light.primary }]}>
-          <Feather name="heart" size={80} color="#FFFFFF" />
-        </View>
-        
-        <Text style={[styles.greeting, { color: theme.text }]}>
-          {user?.displayName ? `שלום, ${user.displayName}!` : "שלום!"}
-        </Text>
-        
-        <Text style={[styles.title, { color: theme.text }]}>
-          ברוכים הבאים
-        </Text>
-        
-        <Text style={[styles.description, { color: theme.textSecondary }]}>
-          אנחנו כאן לעזור לך להשתמש בטלפון בקלות ובביטחון
-        </Text>
-
-        <View style={styles.features}>
-          <View style={styles.featureRow}>
-            <View style={[styles.featureIcon, { backgroundColor: "#25D366" }]}>
-              <Feather name="message-circle" size={24} color="#FFFFFF" />
-            </View>
-            <Text style={[styles.featureText, { color: theme.text }]}>
-              מדריכי וואטסאפ פשוטים
-            </Text>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingTop: insets.top + Spacing["3xl"] }
+        ]}
+        showsVerticalScrollIndicator={true}
+        bounces={true}
+      >
+        <View style={styles.content}>
+          <View style={[styles.iconContainer, { backgroundColor: Colors.light.primary }]}>
+            <Feather name="heart" size={80} color="#FFFFFF" />
           </View>
           
-          <View style={styles.featureRow}>
-            <View style={[styles.featureIcon, { backgroundColor: Colors.light.secondary }]}>
-              <Feather name="play-circle" size={24} color="#FFFFFF" />
-            </View>
-            <Text style={[styles.featureText, { color: theme.text }]}>
-              תרגול בטוח ללא דאגות
-            </Text>
-          </View>
-          
-          <View style={styles.featureRow}>
-            <View style={[styles.featureIcon, { backgroundColor: Colors.light.success }]}>
-              <Feather name="mic" size={24} color="#FFFFFF" />
-            </View>
-            <Text style={[styles.featureText, { color: theme.text }]}>
-              עזרה קולית בכל רגע
-            </Text>
-          </View>
-        </View>
-      </View>
-
-      <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.xl }]}>
-        <Pressable
-          style={[
-            styles.button,
-            { backgroundColor: Colors.light.success },
-            isCompleting && styles.buttonDisabled,
-          ]}
-          onPress={handleComplete}
-          disabled={isCompleting}
-          testID="button-start"
-        >
-          <Text style={styles.buttonText}>
-            בואו נתחיל!
+          <Text style={[styles.greeting, { color: theme.text }]}>
+            {user?.displayName ? `שלום, ${user.displayName}!` : "שלום!"}
           </Text>
-          <Feather name="arrow-left" size={28} color="#FFFFFF" />
-        </Pressable>
-      </View>
+          
+          <Text style={[styles.title, { color: theme.text }]}>
+            ברוכים הבאים
+          </Text>
+          
+          <Text style={[styles.description, { color: theme.textSecondary }]}>
+            אנחנו כאן לעזור לך להשתמש בטלפון בקלות ובביטחון
+          </Text>
+
+          <View style={styles.features}>
+            <View style={styles.featureRow}>
+              <View style={[styles.featureIcon, { backgroundColor: "#25D366" }]}>
+                <Feather name="message-circle" size={24} color="#FFFFFF" />
+              </View>
+              <Text style={[styles.featureText, { color: theme.text }]}>
+                מדריכי וואטסאפ פשוטים
+              </Text>
+            </View>
+            
+            <View style={styles.featureRow}>
+              <View style={[styles.featureIcon, { backgroundColor: Colors.light.secondary }]}>
+                <Feather name="play-circle" size={24} color="#FFFFFF" />
+              </View>
+              <Text style={[styles.featureText, { color: theme.text }]}>
+                תרגול בטוח ללא דאגות
+              </Text>
+            </View>
+            
+            <View style={styles.featureRow}>
+              <View style={[styles.featureIcon, { backgroundColor: Colors.light.success }]}>
+                <Feather name="mic" size={24} color="#FFFFFF" />
+              </View>
+              <Text style={[styles.featureText, { color: theme.text }]}>
+                עזרה קולית בכל רגע
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.xl }]}>
+          <Pressable
+            style={[
+              styles.button,
+              { backgroundColor: Colors.light.success },
+              isCompleting && styles.buttonDisabled,
+            ]}
+            onPress={handleComplete}
+            disabled={isCompleting}
+            testID="button-start"
+          >
+            <Text style={styles.buttonText}>
+              בואו נתחיל!
+            </Text>
+            <Feather name="arrow-left" size={28} color="#FFFFFF" />
+          </Pressable>
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -109,6 +120,12 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   content: {
     flex: 1,
