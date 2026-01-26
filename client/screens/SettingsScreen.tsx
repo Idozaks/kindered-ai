@@ -48,6 +48,20 @@ export default function SettingsScreen() {
     queryKey: ["/api/payments/dev-mode"],
   });
 
+  const { data: subscriptionData, refetch: refetchSubscription } = useQuery<{
+    isPremium?: boolean;
+    plan?: string;
+    status?: string;
+    currentPeriodEnd?: string;
+  }>({
+    queryKey: ["/api/payments/subscription", user?.id],
+    enabled: !!user?.id,
+    refetchOnMount: "always",
+    staleTime: 0,
+  });
+
+  const isPremium = subscriptionData?.isPremium || devModeData?.devMode;
+
   const devModeMutation = useMutation({
     mutationFn: async (enabled: boolean) => {
       const response = await apiRequest("POST", "/api/payments/dev-mode", { enabled });
@@ -260,20 +274,37 @@ export default function SettingsScreen() {
 
         <Animated.View entering={FadeInDown.delay(425).duration(500)}>
           <GlassCard 
-            style={StyleSheet.flatten([styles.section, styles.premiumSection])}
+            style={StyleSheet.flatten([
+              styles.section, 
+              styles.premiumSection,
+              isPremium ? styles.premiumActive : null
+            ])}
             onPress={() => navigation.navigate("Premium")}
             testID="premium-button"
           >
             <View style={styles.premiumContent}>
-              <View style={[styles.premiumIcon, { backgroundColor: PREMIUM_GOLD + "20" }]}>
-                <Feather name="award" size={28} color={PREMIUM_GOLD} />
+              <View style={[
+                styles.premiumIcon, 
+                { backgroundColor: isPremium ? PREMIUM_GOLD + "40" : PREMIUM_GOLD + "20" }
+              ]}>
+                <Feather name={isPremium ? "star" : "award"} size={28} color={PREMIUM_GOLD} />
               </View>
               <View style={styles.premiumText}>
-                <ThemedText type="h4" style={{ color: PREMIUM_PURPLE }}>
-                  {t("settings.premium", "דורי פרימיום")}
-                </ThemedText>
+                <View style={styles.premiumTitleRow}>
+                  <ThemedText type="h4" style={{ color: PREMIUM_PURPLE }}>
+                    {t("settings.premium", "דורי פרימיום")}
+                  </ThemedText>
+                  {isPremium ? (
+                    <View style={styles.activeBadge}>
+                      <ThemedText style={styles.activeBadgeText}>פעיל</ThemedText>
+                    </View>
+                  ) : null}
+                </View>
                 <ThemedText type="small" style={{ color: theme.textSecondary }}>
-                  {t("settings.premiumDesc", "שדרג לגישה לכל הפיצ'רים")}
+                  {isPremium 
+                    ? t("settings.premiumActive", "נהנה מכל הפיצ'רים")
+                    : t("settings.premiumDesc", "שדרג לגישה לכל הפיצ'רים")
+                  }
                 </ThemedText>
               </View>
               <Feather name="chevron-left" size={24} color={PREMIUM_PURPLE} />
@@ -471,6 +502,10 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#8B5CF6",
   },
+  premiumActive: {
+    borderColor: "#FFD700",
+    backgroundColor: "rgba(255, 215, 0, 0.1)",
+  },
   premiumContent: {
     flexDirection: "row",
     alignItems: "center",
@@ -485,6 +520,22 @@ const styles = StyleSheet.create({
   },
   premiumText: {
     flex: 1,
+  },
+  premiumTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
+  },
+  activeBadge: {
+    backgroundColor: "#22C55E",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  activeBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "600",
   },
   devSection: {
     borderWidth: 1,

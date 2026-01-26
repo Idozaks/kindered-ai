@@ -8,6 +8,17 @@ const router = Router();
 
 let devModeEnabled = process.env.DEV_MODE === "true";
 
+const pendingOrders = new Map<string, { userId: string; createdAt: Date }>();
+
+setInterval(() => {
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+  for (const [orderId, data] of pendingOrders.entries()) {
+    if (data.createdAt < oneHourAgo) {
+      pendingOrders.delete(orderId);
+    }
+  }
+}, 15 * 60 * 1000);
+
 router.get("/status", async (req: Request, res: Response) => {
   res.json({
     paypalConfigured: isPayPalConfigured(),
@@ -27,13 +38,18 @@ router.post("/dev-mode", (req: Request, res: Response) => {
 
 router.post("/create-order", async (req: Request, res: Response) => {
   try {
-    const { amount = "49.90", currency = "ILS" } = req.body;
+    const { amount = "49.90", currency = "ILS", userId } = req.body;
 
     if (!isPayPalConfigured()) {
       return res.status(503).json({ error: "PayPal not configured" });
     }
 
     const result = await createOrder(amount, currency, "Dori AI Premium - מנוי פרימיום");
+
+    if (userId && result.orderId) {
+      pendingOrders.set(result.orderId, { userId, createdAt: new Date() });
+      console.log("Stored pending order:", result.orderId, "for user:", userId);
+    }
 
     res.json({
       orderId: result.orderId,
@@ -160,6 +176,7 @@ router.get("/success", async (req: Request, res: Response) => {
   
   let captureSuccess = false;
   let errorMessage = "";
+  let userName = "";
   
   if (token && typeof token === "string") {
     try {
@@ -169,6 +186,13 @@ router.get("/success", async (req: Request, res: Response) => {
       if (result.status === "COMPLETED") {
         captureSuccess = true;
         
+        const pendingOrder = pendingOrders.get(token);
+        const actualUserId = pendingOrder?.userId || result.payerId;
+        
+        console.log("Using userId:", actualUserId, "from pending order:", !!pendingOrder);
+        
+        pendingOrders.delete(token);
+        
         const now = new Date();
         const oneYearLater = new Date(now);
         oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
@@ -176,7 +200,7 @@ router.get("/success", async (req: Request, res: Response) => {
         const existingSub = await db
           .select()
           .from(subscriptions)
-          .where(eq(subscriptions.paypalPayerId, result.payerId))
+          .where(eq(subscriptions.userId, actualUserId))
           .limit(1);
         
         if (existingSub.length > 0) {
@@ -184,17 +208,18 @@ router.get("/success", async (req: Request, res: Response) => {
             .update(subscriptions)
             .set({
               paypalOrderId: result.orderId,
+              paypalPayerId: result.payerId,
               plan: "premium",
               status: "active",
               currentPeriodStart: now,
               currentPeriodEnd: oneYearLater,
               updatedAt: now,
             })
-            .where(eq(subscriptions.paypalPayerId, result.payerId));
+            .where(eq(subscriptions.userId, actualUserId));
         } else {
           await db.insert(subscriptions).values({
             id: crypto.randomUUID(),
-            userId: result.payerId,
+            userId: actualUserId,
             paypalOrderId: result.orderId,
             paypalPayerId: result.payerId,
             plan: "premium",
@@ -204,7 +229,7 @@ router.get("/success", async (req: Request, res: Response) => {
           });
         }
         
-        console.log("Subscription saved for payer:", result.payerId);
+        console.log("Subscription saved for user:", actualUserId);
       }
     } catch (error: any) {
       console.error("Capture error:", error);
@@ -239,20 +264,65 @@ router.get("/success", async (req: Request, res: Response) => {
           max-width: 90%;
         }
         h1 { font-size: 2.5rem; margin-bottom: 20px; }
-        p { font-size: 1.2rem; opacity: 0.9; }
-        .check { font-size: 4rem; margin-bottom: 20px; }
+        p { font-size: 1.2rem; opacity: 0.9; margin: 10px 0; }
+        .check { font-size: 5rem; margin-bottom: 20px; }
+        .premium-badge {
+          display: inline-block;
+          background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+          color: #333;
+          padding: 8px 24px;
+          border-radius: 20px;
+          font-weight: bold;
+          font-size: 1.1rem;
+          margin: 20px 0;
+        }
+        .features {
+          text-align: right;
+          margin: 24px 0;
+          padding: 20px;
+          background: rgba(255,255,255,0.1);
+          border-radius: 12px;
+        }
+        .features li {
+          margin: 8px 0;
+          list-style: none;
+        }
+        .features li:before {
+          content: "✓ ";
+          color: #90EE90;
+        }
         .error { color: #ffcccc; }
+        .back-btn {
+          display: inline-block;
+          margin-top: 20px;
+          padding: 12px 32px;
+          background: white;
+          color: #667eea;
+          border-radius: 12px;
+          text-decoration: none;
+          font-weight: bold;
+          font-size: 1.1rem;
+        }
       </style>
     </head>
     <body>
       <div class="container">
         ${captureSuccess ? `
-          <div class="check">✓</div>
-          <h1>התשלום הצליח!</h1>
-          <p>תודה שהצטרפת ל-Dori AI Premium</p>
-          <p>אתה יכול לסגור את החלון ולחזור לאפליקציה</p>
+          <div class="check">&#10003;</div>
+          <h1>ברוכים הבאים לפרימיום!</h1>
+          <div class="premium-badge">&#11088; Dori Premium &#11088;</div>
+          <p><strong>השדרוג הושלם בהצלחה</strong></p>
+          <div class="features">
+            <ul>
+              <li>שיחות ללא הגבלה עם דורי</li>
+              <li>עזרה בפענוח מכתבים</li>
+              <li>עזרה בהבנת אתרים</li>
+              <li>תמיכה בעברית מלאה</li>
+            </ul>
+          </div>
+          <p>סגור חלון זה וחזור לאפליקציה</p>
         ` : `
-          <div class="check">⚠</div>
+          <div class="check">&#9888;</div>
           <h1>בעיה בעיבוד התשלום</h1>
           <p class="error">${errorMessage || "נסה שוב או צור קשר לתמיכה"}</p>
         `}

@@ -74,6 +74,7 @@ export default function PremiumScreen() {
       const response = await apiRequest("POST", "/api/payments/create-order", {
         amount: "49.90",
         currency: "ILS",
+        userId: user.id,
       });
 
       const data = await response.json();
