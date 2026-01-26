@@ -111,25 +111,32 @@ export default function PremiumScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     try {
-      const response = await apiRequest("POST", "/api/payments/verify-order", {
+      const response = await apiRequest("POST", "/api/payments/check-and-capture", {
         orderId: lastOrderId,
         userId: user.id,
       });
 
       const data = await response.json();
 
-      if (data.success) {
+      if (data.success && data.status === "COMPLETED") {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         Alert.alert(
           "מזל טוב!",
-          "התשלום הושלם בהצלחה. נהנה מכל פיצ'רי הפרימיום!",
+          data.alreadyPremium 
+            ? "יש לך כבר מנוי פרימיום פעיל!"
+            : "התשלום הושלם בהצלחה. נהנה מכל פיצ'רי הפרימיום!",
           [{ text: "מעולה", onPress: () => refetchSubscription() }]
         );
         setLastOrderId(null);
+      } else if (data.status === "APPROVED") {
+        Alert.alert(
+          "ממתינים לאישור",
+          "התשלום אושר אבל עדיין לא הושלם. נסה שוב בעוד רגע"
+        );
       } else {
         Alert.alert(
           "התשלום עדיין לא הושלם",
-          "נסה לחזור ל-PayPal ולאשר את התשלום, או נסה שוב מאוחר יותר"
+          `סטטוס נוכחי: ${data.status || "לא ידוע"}. נסה לחזור ל-PayPal ולאשר את התשלום, או נסה שוב מאוחר יותר`
         );
       }
     } catch (error) {
@@ -171,31 +178,33 @@ export default function PremiumScreen() {
             ExpoLinking.createURL("payment-success")
           );
           
-          if (result.type === "success" && result.url) {
-            const params = ExpoLinking.parse(result.url);
-            if (params.queryParams?.token) {
+          if (result.type === "success" || result.type === "cancel" || result.type === "dismiss") {
+            setTimeout(async () => {
               try {
-                const captureResponse = await apiRequest("POST", "/api/payments/capture-mobile", {
-                  token: params.queryParams.token,
-                  payerId: params.queryParams.PayerID,
+                const captureResponse = await apiRequest("POST", "/api/payments/check-and-capture", {
+                  orderId: data.orderId,
                   userId: user.id,
                 });
                 const captureData = await captureResponse.json();
-                if (captureData.success) {
+                if (captureData.success && captureData.status === "COMPLETED") {
                   Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
                   Alert.alert(
                     "מזל טוב!",
                     "התשלום הושלם בהצלחה. נהנה מכל פיצ'רי הפרימיום!",
-                    [{ text: "מעולה", onPress: () => refetchSubscription() }]
+                    [{ text: "מעולה", onPress: () => {
+                      setLastOrderId(null);
+                      refetchSubscription();
+                    }}]
                   );
+                } else {
+                  console.log("Payment not yet completed, status:", captureData.status);
                 }
               } catch (captureError) {
                 console.error("Capture error:", captureError);
               }
-            }
+              refetchSubscription();
+            }, 1000);
           }
-          
-          refetchSubscription();
         }
       }
     } catch (error) {
