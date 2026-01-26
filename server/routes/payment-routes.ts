@@ -38,7 +38,7 @@ router.post("/dev-mode", (req: Request, res: Response) => {
 
 router.post("/create-order", async (req: Request, res: Response) => {
   try {
-    const { amount = "49.90", currency = "ILS", userId } = req.body;
+    const { amount = "5.00", currency = "ILS", userId } = req.body;
 
     if (!isPayPalConfigured()) {
       return res.status(503).json({ error: "PayPal not configured" });
