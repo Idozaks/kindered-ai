@@ -160,13 +160,15 @@ export default function DashboardScreen() {
               style={styles.logo}
               resizeMode="contain"
             />
-            <View>
+            <View style={styles.greetingTextContainer}>
               <ThemedText type="h2" style={styles.greeting}>
                 {t("dashboard.greeting")}
               </ThemedText>
               <ThemedText
                 type="body"
                 style={[styles.subtitle, { color: theme.textSecondary }]}
+                numberOfLines={2}
+                ellipsizeMode="tail"
               >
                 {randomSubtitle}
               </ThemedText>
@@ -210,6 +212,9 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     marginRight: Spacing.md,
+  },
+  greetingTextContainer: {
+    flex: 1,
   },
   greeting: {
     marginBottom: Spacing.xs,
