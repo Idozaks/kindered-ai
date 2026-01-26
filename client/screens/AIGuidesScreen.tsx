@@ -166,14 +166,11 @@ export default function AIGuidesScreen() {
               key={journey.id}
               entering={FadeInDown.delay(200 + index * 100).duration(500)}
             >
-              <Pressable
+              <GlassCard 
+                style={styles.journeyCard}
                 onPress={() => handleSelectJourney(journey)}
-                style={({ pressed }) => [
-                  styles.journeyPressable,
-                  pressed && styles.journeyPressed,
-                ]}
+                testID={`ai-journey-${journey.id}`}
               >
-                <GlassCard style={styles.journeyCard}>
                   <View style={[styles.journeyIcon, { backgroundColor: AI_PURPLE + "20" }]}>
                     <Feather name={journey.icon as any} size={28} color={AI_PURPLE} />
                   </View>
@@ -205,8 +202,7 @@ export default function AIGuidesScreen() {
                     </View>
                   </View>
                   <Feather name="chevron-left" size={24} color={theme.textSecondary} />
-                </GlassCard>
-              </Pressable>
+              </GlassCard>
             </Animated.View>
           );
         })}

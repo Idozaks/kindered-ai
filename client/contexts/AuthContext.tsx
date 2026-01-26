@@ -37,7 +37,7 @@ interface AuthContextType extends AuthState {
   logout: () => Promise<void>;
   updateUser: (updates: Partial<User>) => Promise<void>;
   completeOnboarding: () => Promise<void>;
-  continueAsGuest: () => void;
+  continueAsGuest: () => Promise<void>;
 }
 
 interface RegisterData {

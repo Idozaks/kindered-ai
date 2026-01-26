@@ -10,6 +10,7 @@ Key features include:
 - **Ask Kindred**: AI chat assistant that acts as a patient, helpful digital companion for answering questions and guiding users
 - **Letter Helper**: Document scanning and plain-language translation
 - **Mirror World**: Safe practice environment for learning digital tasks
+- **AI Learning Guides**: Educational modules teaching seniors about artificial intelligence (what AI is, how to ask questions, image generation, document reading, staying safe) with step-by-step lessons and trainer notes for caregivers
 - **WhatsApp Guides**: Step-by-step tutorials for common WhatsApp tasks (reading messages, sending texts/photos, video calls, privacy settings, group safety)
 - **Gmail Guides**: Step-by-step tutorials for common Gmail tasks (reading emails, sending emails, attaching photos, searching, deleting, replying) with contextual images
 - **Grandchildren Guides**: 5 tips for staying connected with grandchildren (voice messages, emoji reactions, photo sharing, video calls, family group participation) with pink/family theme

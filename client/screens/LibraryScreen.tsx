@@ -108,14 +108,11 @@ export default function LibraryScreen() {
               key={item.id}
               entering={FadeInDown.delay(200 + index * 100).duration(500)}
             >
-              <Pressable
+              <GlassCard 
+                style={styles.itemCard}
                 onPress={() => handleItemPress(item.screen)}
-                style={({ pressed }) => [
-                  styles.itemPressable,
-                  pressed && styles.itemPressed,
-                ]}
+                testID={`library-item-${item.id}`}
               >
-                <GlassCard style={styles.itemCard}>
                   <View style={[styles.itemIcon, { backgroundColor: item.color + "20" }]}>
                     <Feather name={item.icon} size={28} color={item.color} />
                   </View>
@@ -128,8 +125,7 @@ export default function LibraryScreen() {
                     </Text>
                   </View>
                   <Feather name="chevron-left" size={24} color={theme.textSecondary} />
-                </GlassCard>
-              </Pressable>
+              </GlassCard>
             </Animated.View>
           ))}
         </View>

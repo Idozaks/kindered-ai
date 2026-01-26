@@ -27,6 +27,18 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 
 import "@/lib/i18n";
+import { useAuth } from "@/contexts/AuthContext";
+
+function NavigationRoot() {
+  const { isGuest, isAuthenticated } = useAuth();
+  const navKey = isGuest ? 'guest' : isAuthenticated ? 'auth' : 'unauth';
+  
+  return (
+    <NavigationContainer key={navKey}>
+      <RootStackNavigator />
+    </NavigationContainer>
+  );
+}
 
 // Simulation Images
 const simulationImages = [
@@ -88,9 +100,7 @@ export default function App() {
             <KeyboardProvider>
               <ThemeProvider>
                 <AuthProvider>
-                  <NavigationContainer>
-                    <RootStackNavigator />
-                  </NavigationContainer>
+                  <NavigationRoot />
                 </AuthProvider>
                 <StatusBar style="dark" />
               </ThemeProvider>

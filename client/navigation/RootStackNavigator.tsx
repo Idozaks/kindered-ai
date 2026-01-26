@@ -203,19 +203,21 @@ export default function RootStackNavigator() {
     );
   }
 
+  const navigationKey = isGuest ? 'guest' : isAuthenticated ? 'authenticated' : 'unauthenticated';
+  
   if (!isAuthenticated) {
-    return <AuthStack />;
+    return <AuthStack key={navigationKey} />;
   }
 
   if (isGuest) {
-    return <MainStack />;
+    return <MainStack key={navigationKey} />;
   }
 
   if (!user?.onboardingCompleted) {
-    return <OnboardingStack />;
+    return <OnboardingStack key={navigationKey} />;
   }
 
-  return <MainStack />;
+  return <MainStack key={navigationKey} />;
 }
 
 const styles = StyleSheet.create({
