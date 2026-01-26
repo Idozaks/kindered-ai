@@ -39,7 +39,22 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGuestLoading, setIsGuestLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const handleGuestLogin = async () => {
+    setIsGuestLoading(true);
+    try {
+      await continueAsGuest();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (err: any) {
+      console.error("Guest login error:", err);
+      setError("Failed to continue as guest. Please try again.");
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    } finally {
+      setIsGuestLoading(false);
+    }
+  };
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
@@ -167,15 +182,23 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
           <Pressable
             style={({ pressed }) => [
               styles.guestButton, 
-              { backgroundColor: pressed ? '#3DA015' : Colors.light.success }
+              { backgroundColor: pressed ? '#3DA015' : Colors.light.success },
+              isGuestLoading && styles.buttonDisabled,
             ]}
-            onPress={continueAsGuest}
+            onPress={handleGuestLogin}
+            disabled={isGuestLoading}
             testID="button-guest"
             accessibilityRole="button"
             accessibilityLabel="Continue as guest"
           >
-            <Feather name="arrow-left" size={24} color="#FFFFFF" />
-            <Text style={styles.guestButtonText}>המשך ללא הרשמה</Text>
+            {isGuestLoading ? (
+              <ActivityIndicator color="#FFFFFF" size="small" />
+            ) : (
+              <>
+                <Feather name="arrow-left" size={24} color="#FFFFFF" />
+                <Text style={styles.guestButtonText}>המשך ללא הרשמה</Text>
+              </>
+            )}
           </Pressable>
 
           <View style={styles.footer}>
