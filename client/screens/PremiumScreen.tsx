@@ -419,7 +419,7 @@ export default function PremiumScreen() {
           <Animated.View entering={FadeInDown.duration(400).delay(400)} style={styles.priceSection}>
             <View style={styles.priceContainer}>
               <ThemedText type="h1" style={[styles.price, { color: PREMIUM_PURPLE }]}>
-                5
+                0.99
               </ThemedText>
               <ThemedText type="body" style={{ color: theme.textSecondary }}>
                 {t("premium.perYear", "שקלים לשנה")}
