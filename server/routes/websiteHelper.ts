@@ -9,6 +9,51 @@ const ai = new GoogleGenAI({
   },
 });
 
+async function fetchWebsiteContent(url: string): Promise<{ title: string; text: string; error?: string }> {
+  try {
+    let cleanUrl = url.trim();
+    if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+      cleanUrl = 'https://' + cleanUrl;
+    }
+    
+    const response = await fetch(cleanUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; DoriAI/1.0)',
+        'Accept': 'text/html,application/xhtml+xml',
+      },
+      signal: AbortSignal.timeout(10000),
+    });
+    
+    if (!response.ok) {
+      return { title: '', text: '', error: `לא הצלחתי לגשת לאתר (שגיאה ${response.status})` };
+    }
+    
+    const html = await response.text();
+    
+    const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);
+    const title = titleMatch ? titleMatch[1].trim() : '';
+    
+    let text = html
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/\s+/g, ' ')
+      .trim();
+    
+    text = text.substring(0, 5000);
+    
+    return { title, text };
+  } catch (error: any) {
+    console.error('Error fetching website:', error);
+    return { title: '', text: '', error: 'לא הצלחתי לגשת לאתר. יכול להיות שהאתר לא זמין או שהכתובת לא נכונה.' };
+  }
+}
+
 interface AnalyzeRequest {
   imageBase64?: string;
   url?: string;
@@ -30,6 +75,54 @@ export function registerWebsiteHelperRoutes(app: Express): void {
       }
 
       let contentParts: any[] = [];
+      let analysisText = "";
+      
+      if (url && !imageBase64) {
+        const websiteContent = await fetchWebsiteContent(url);
+        
+        if (websiteContent.error) {
+          return res.json({
+            analysis: websiteContent.error,
+            safetyWarning: null,
+            safetyLevel: "safe",
+          });
+        }
+        
+        const urlPrompt = `אתה עוזר דיגיטלי סבלני שעוזר לאנשים מבוגרים להבין אתרי אינטרנט.
+
+המשתמש רוצה לדעת על האתר הזה: ${url}
+
+שם האתר: ${websiteContent.title || 'לא ידוע'}
+
+תוכן האתר:
+${websiteContent.text}
+
+בבקשה:
+1. הסבר בקצרה מה זה האתר הזה ולמה הוא משמש
+2. האם זה אתר מוכר ובטוח? (בנק, חנות, רשת חברתית וכו')
+3. אם יש פרטים חשובים שכדאי לדעת - ציין אותם
+4. אם יש סימנים מחשידים - הזהר את המשתמש
+
+ענה בעברית פשוטה וברורה.`;
+
+        contentParts.push({ text: urlPrompt });
+        
+        const response = await ai.models.generateContent({
+          model: "gemini-2.5-flash",
+          contents: [{ role: "user", parts: contentParts }],
+        });
+
+        const textContent = response.candidates?.[0]?.content?.parts?.[0];
+        analysisText = textContent && 'text' in textContent ? textContent.text || '' : "לא הצלחתי לנתח את האתר";
+        
+        const safetyCheck = await performUrlSafetyCheck(url, websiteContent.title, websiteContent.text);
+        
+        return res.json({
+          analysis: analysisText,
+          safetyWarning: safetyCheck.warning,
+          safetyLevel: safetyCheck.level,
+        });
+      }
       
       const systemPrompt = `אתה עוזר דיגיטלי סבלני ומסביר פנים שעוזר לאנשים מבוגרים להבין אתרי אינטרנט וממשקים דיגיטליים.
       
@@ -64,7 +157,7 @@ export function registerWebsiteHelperRoutes(app: Express): void {
       });
 
       const textContent = response.candidates?.[0]?.content?.parts?.[0];
-      const analysisText = textContent && 'text' in textContent ? textContent.text : "לא הצלחתי לנתח את התמונה";
+      analysisText = textContent && 'text' in textContent ? textContent.text || '' : "לא הצלחתי לנתח את התמונה";
 
       const safetyCheck = await performSafetyCheck(imageBase64, url);
 
@@ -258,6 +351,56 @@ Be protective - if in doubt, warn the user.`;
     return { level: 'safe', warning: null };
   } catch (error) {
     console.error("Safety check error:", error);
+    return { level: 'safe', warning: null };
+  }
+}
+
+async function performUrlSafetyCheck(url: string, title: string, content: string): Promise<{ warning: string | null; level: 'safe' | 'caution' | 'danger' }> {
+  try {
+    const safetyPrompt = `נתח את האתר הזה לסיכוני אבטחה אפשריים.
+
+כתובת: ${url}
+כותרת: ${title}
+תוכן (קטע): ${content.substring(0, 2000)}
+
+בדוק:
+- האם זה אתר מוכר ולגיטימי?
+- האם יש סימנים לאתר פישינג או הונאה?
+- האם יש בקשות חשודות למידע אישי?
+- האם הכתובת נראית חשודה?
+
+ענה בפורמט JSON:
+{
+  "level": "safe" | "caution" | "danger",
+  "warning_he": "הודעת אזהרה בעברית אם צריך, null אם בטוח"
+}
+
+היה מגן - אם יש ספק, הזהר את המשתמש.`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [{ role: "user", parts: [{ text: safetyPrompt }] }],
+    });
+
+    const textContent = response.candidates?.[0]?.content?.parts?.[0];
+    const responseText = textContent && 'text' in textContent ? (textContent.text || '') : '';
+    
+    try {
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        return {
+          level: parsed.level || 'safe',
+          warning: parsed.warning_he || null,
+        };
+      }
+    } catch {
+      // Parsing failed
+    }
+
+    return { level: 'safe', warning: null };
+  } catch (error) {
+    console.error("URL safety check error:", error);
     return { level: 'safe', warning: null };
   }
 }
