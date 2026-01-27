@@ -144,7 +144,7 @@ export default function DashboardScreen() {
           styles.scrollContent,
           {
             paddingTop: headerHeight + Spacing.xl,
-            paddingBottom: insets.bottom + 100,
+            paddingBottom: insets.bottom + 150,
           },
         ]}
         showsVerticalScrollIndicator={true}
