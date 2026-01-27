@@ -79,6 +79,42 @@ export const achievements = pgTable("achievements", {
   metadata: jsonb("metadata"),
 });
 
+// User evaluations - stores quiz results and category scores
+export const userEvaluations = pgTable("user_evaluations", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .references(() => users.id, { onDelete: "cascade" }),
+  sessionId: text("session_id"),
+  smartphoneScore: integer("smartphone_score").default(0),
+  whatsappScore: integer("whatsapp_score").default(0),
+  digitalSafetyScore: integer("digital_safety_score").default(0),
+  overallScore: integer("overall_score").default(0),
+  answers: jsonb("answers"),
+  recommendedPath: text("recommended_path"),
+  completedAt: timestamp("completed_at").defaultNow(),
+});
+
+// Learning paths - recommended courses based on evaluation
+export const learningPaths = pgTable("learning_paths", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  pathId: text("path_id").notNull().unique(),
+  titleHe: text("title_he").notNull(),
+  titleEn: text("title_en").notNull(),
+  descriptionHe: text("description_he"),
+  descriptionEn: text("description_en"),
+  icon: text("icon"),
+  color: text("color"),
+  journeyIds: jsonb("journey_ids"),
+  minScore: integer("min_score").default(0),
+  maxScore: integer("max_score").default(100),
+  category: text("category"),
+  order: integer("order").default(0),
+});
+
 // Subscriptions for premium features
 export const subscriptions = pgTable("subscriptions", {
   id: varchar("id")
@@ -142,6 +178,13 @@ export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
   }),
 }));
 
+export const userEvaluationsRelations = relations(userEvaluations, ({ one }) => ({
+  user: one(users, {
+    fields: [userEvaluations.userId],
+    references: [users.id],
+  }),
+}));
+
 // Zod schemas for validation
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
@@ -189,3 +232,5 @@ export type JourneyProgress = typeof journeyProgress.$inferSelect;
 export type StepCompletion = typeof stepCompletions.$inferSelect;
 export type Achievement = typeof achievements.$inferSelect;
 export type Subscription = typeof subscriptions.$inferSelect;
+export type UserEvaluation = typeof userEvaluations.$inferSelect;
+export type LearningPath = typeof learningPaths.$inferSelect;
