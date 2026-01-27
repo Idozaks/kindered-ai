@@ -161,7 +161,7 @@ export default function DashboardScreen() {
             type="h4"
             style={[styles.sectionTitle, { paddingHorizontal: Spacing.lg }]}
           >
-            Your Tools
+            נושאים לתרגול
           </ThemedText>
           <ToolGrid tools={tools} onToolPress={handleToolPress} />
         </Animated.View>
