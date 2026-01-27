@@ -255,6 +255,19 @@ export const ThemeNames: Record<ThemeMode, string> = {
 
 export const Colors = DoriColors;
 
+export const AuraColors = {
+  listening: "#00CED1",
+  thinking: "#FFD700",
+  speaking: "#FFBF00",
+  idle: "rgba(255, 255, 255, 0.4)",
+  emergency: "#DC143C",
+  circle: {
+    daughter: "#FF69B4",
+    son: "#4169E1",
+    doctor: "#32CD32",
+  },
+};
+
 export const Spacing = {
   xs: 4,
   sm: 8,
