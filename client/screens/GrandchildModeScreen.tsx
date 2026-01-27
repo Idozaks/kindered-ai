@@ -406,6 +406,14 @@ export default function GrandchildModeScreen() {
             </View>
             
             <View style={[styles.inputRow, { backgroundColor: theme.card, borderColor: theme.border }]}>
+              <Pressable
+                style={[styles.sendButton, { backgroundColor: (inputText.trim() || attachedImage) ? theme.primary : theme.backgroundSecondary }]}
+                onPress={() => handleSendMessage(inputText, attachedImage || undefined)}
+                disabled={!inputText.trim() && !attachedImage}
+                testID="send-button"
+              >
+                <Feather name="send" size={20} color={(inputText.trim() || attachedImage) ? "#FFFFFF" : theme.textSecondary} style={{ transform: [{ scaleX: -1 }] }} />
+              </Pressable>
               <TextInput
                 style={[styles.textInput, { color: theme.text, textAlign: t("common.loading") === "טוען..." ? "right" : "left" }]}
                 placeholder={t("grandchildMode.inputPlaceholder")}
@@ -415,14 +423,6 @@ export default function GrandchildModeScreen() {
                 onSubmitEditing={() => handleSendMessage(inputText, attachedImage || undefined)}
                 multiline
               />
-              <Pressable
-                style={[styles.sendButton, { backgroundColor: (inputText.trim() || attachedImage) ? theme.primary : theme.backgroundSecondary }]}
-                onPress={() => handleSendMessage(inputText, attachedImage || undefined)}
-                disabled={!inputText.trim() && !attachedImage}
-                testID="send-button"
-              >
-                <Feather name="send" size={20} color={(inputText.trim() || attachedImage) ? "#FFFFFF" : theme.textSecondary} />
-              </Pressable>
             </View>
             
             <Pressable

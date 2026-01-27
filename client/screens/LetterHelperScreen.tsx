@@ -1110,6 +1110,14 @@ export default function LetterHelperScreen() {
           </ScrollView>
           
           <View style={[styles.chatInputContainer, { backgroundColor: theme.card, paddingBottom: insets.bottom + Spacing.md }]}>
+            <Pressable 
+              onPress={handleSendChatMessage}
+              style={[styles.sendButton, { backgroundColor: theme.primary }]}
+              disabled={isSendingChat || !chatInput.trim()}
+            >
+              <Ionicons name="send" size={16} color="#FFFFFF" style={{ transform: [{ scaleX: -1 }] }} />
+              <ThemedText type="small" style={{ color: "#FFFFFF", marginRight: 4 }}>שלח</ThemedText>
+            </Pressable>
             <TextInput
               style={[styles.chatInput, { backgroundColor: theme.backgroundDefault, color: theme.text, borderColor: theme.border }]}
               value={chatInput}
@@ -1119,14 +1127,6 @@ export default function LetterHelperScreen() {
               multiline
               textAlign="right"
             />
-            <Pressable 
-              onPress={handleSendChatMessage}
-              style={[styles.sendButton, { backgroundColor: theme.primary }]}
-              disabled={isSendingChat || !chatInput.trim()}
-            >
-              <Ionicons name="send" size={16} color="#FFFFFF" />
-              <ThemedText type="small" style={{ color: "#FFFFFF", marginLeft: 4 }}>שלח</ThemedText>
-            </Pressable>
           </View>
         </View>
       </Modal>

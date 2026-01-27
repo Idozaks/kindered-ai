@@ -565,22 +565,6 @@ export default function WebsiteHelperScreen() {
             ]}
           >
             <View style={styles.inputRow}>
-              <TextInput
-                style={[
-                  styles.textInput,
-                  {
-                    backgroundColor: theme.backgroundSecondary,
-                    color: theme.text,
-                  },
-                ]}
-                placeholder={t("tools.websiteHelper.askPlaceholder")}
-                placeholderTextColor={theme.textSecondary}
-                value={inputText}
-                onChangeText={setInputText}
-                multiline
-                maxLength={500}
-                testID="input-question"
-              />
               <Pressable
                 onPress={handleSendMessage}
                 disabled={!inputText.trim() || isLoading}
@@ -600,9 +584,26 @@ export default function WebsiteHelperScreen() {
                     name="send"
                     size={20}
                     color={inputText.trim() ? "#FFFFFF" : theme.textSecondary}
+                    style={{ transform: [{ scaleX: -1 }] }}
                   />
                 )}
               </Pressable>
+              <TextInput
+                style={[
+                  styles.textInput,
+                  {
+                    backgroundColor: theme.backgroundSecondary,
+                    color: theme.text,
+                  },
+                ]}
+                placeholder={t("tools.websiteHelper.askPlaceholder")}
+                placeholderTextColor={theme.textSecondary}
+                value={inputText}
+                onChangeText={setInputText}
+                multiline
+                maxLength={500}
+                testID="input-question"
+              />
             </View>
             <ThemedText
               type="small"
