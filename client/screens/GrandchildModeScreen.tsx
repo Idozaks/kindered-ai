@@ -23,6 +23,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { GlassCard } from "@/components/GlassCard";
 import { GlassButton } from "@/components/GlassButton";
+import { MarkdownText } from "@/components/MarkdownText";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { apiRequest } from "@/lib/query-client";
@@ -316,15 +317,14 @@ export default function GrandchildModeScreen() {
                     resizeMode="cover"
                   />
                 ) : null}
-                <ThemedText
-                  type="body"
+                <MarkdownText
                   style={[
                     styles.messageText,
-                    message.role === "user" ? { color: "#FFFFFF" } : {},
+                    message.role === "user" ? { color: "#FFFFFF" } : { color: theme.text },
                   ]}
                 >
                   {message.content}
-                </ThemedText>
+                </MarkdownText>
               </Animated.View>
             ))}
             
@@ -368,7 +368,7 @@ export default function GrandchildModeScreen() {
             ) : null}
           </ScrollView>
 
-          <View style={[styles.inputArea, { paddingBottom: insets.bottom + Spacing.md, backgroundColor: theme.background }]}>
+          <View style={[styles.inputArea, { paddingBottom: insets.bottom + Spacing.md, backgroundColor: theme.backgroundRoot }]}>
             {attachedImage ? (
               <View style={styles.attachedImageContainer}>
                 <Image source={{ uri: attachedImage }} style={styles.attachedImage} resizeMode="cover" />
