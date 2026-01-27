@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -7,8 +7,8 @@ import {
   Pressable,
   Platform,
   KeyboardAvoidingView,
-  ActivityIndicator,
   Dimensions,
+  ActivityIndicator,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -16,9 +16,22 @@ import { useHeaderHeight } from "@react-navigation/elements";
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as Haptics from "expo-haptics";
-import Animated, { FadeIn, FadeInDown, SlideInUp } from "react-native-reanimated";
+import Animated, { 
+  FadeIn, 
+  FadeInDown, 
+  SlideInUp,
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withSequence,
+  withTiming,
+  withDelay,
+  interpolate,
+  Easing,
+} from "react-native-reanimated";
 import { useTranslation } from "react-i18next";
 import { Image } from "expo-image";
+import Svg, { Circle, Path, Defs, LinearGradient, Stop, G, Rect } from "react-native-svg";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -30,6 +43,308 @@ import { getApiUrl } from "@/lib/query-client";
 
 const BROWSER_BLUE = "#4285F4";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+// Website Analysis Animation Component
+const WebsiteAnalysisAnimation = ({ theme }: { theme: any }) => {
+  const rotation = useSharedValue(0);
+  const pulse = useSharedValue(1);
+  const progress = useSharedValue(0);
+  const orbit1 = useSharedValue(0);
+  const orbit2 = useSharedValue(0);
+  const orbit3 = useSharedValue(0);
+  const scanLine = useSharedValue(0);
+  const dataFlow = useSharedValue(0);
+  const sparkle1 = useSharedValue(0);
+  const sparkle2 = useSharedValue(0);
+  const sparkle3 = useSharedValue(0);
+
+  useEffect(() => {
+    // Main globe rotation
+    rotation.value = withRepeat(
+      withTiming(360, { duration: 8000, easing: Easing.linear }),
+      -1
+    );
+
+    // Pulse animation
+    pulse.value = withRepeat(
+      withSequence(
+        withTiming(1.08, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
+        withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.ease) })
+      ),
+      -1
+    );
+
+    // Progress bar - 20 seconds
+    progress.value = withTiming(1, { duration: 20000, easing: Easing.linear });
+
+    // Orbiting elements
+    orbit1.value = withRepeat(
+      withTiming(360, { duration: 3000, easing: Easing.linear }),
+      -1
+    );
+    orbit2.value = withDelay(500, withRepeat(
+      withTiming(360, { duration: 4000, easing: Easing.linear }),
+      -1
+    ));
+    orbit3.value = withDelay(1000, withRepeat(
+      withTiming(360, { duration: 5000, easing: Easing.linear }),
+      -1
+    ));
+
+    // Scan line
+    scanLine.value = withRepeat(
+      withTiming(1, { duration: 2500, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true
+    );
+
+    // Data flow animation
+    dataFlow.value = withRepeat(
+      withTiming(1, { duration: 1500, easing: Easing.linear }),
+      -1
+    );
+
+    // Sparkle animations
+    sparkle1.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 700 }),
+        withTiming(0, { duration: 700 })
+      ),
+      -1
+    );
+    sparkle2.value = withDelay(300, withRepeat(
+      withSequence(
+        withTiming(1, { duration: 700 }),
+        withTiming(0, { duration: 700 })
+      ),
+      -1
+    ));
+    sparkle3.value = withDelay(600, withRepeat(
+      withSequence(
+        withTiming(1, { duration: 700 }),
+        withTiming(0, { duration: 700 })
+      ),
+      -1
+    ));
+  }, []);
+
+  const pulseStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pulse.value }],
+  }));
+
+  const rotationStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotation.value}deg` }],
+  }));
+
+  const orbit1Style = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${orbit1.value}deg` }],
+  }));
+
+  const orbit2Style = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${orbit2.value}deg` }],
+  }));
+
+  const orbit3Style = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${-orbit3.value}deg` }],
+  }));
+
+  const scanLineStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: interpolate(scanLine.value, [0, 1], [-50, 50]) }],
+    opacity: interpolate(scanLine.value, [0, 0.5, 1], [0.3, 1, 0.3]),
+  }));
+
+  const progressStyle = useAnimatedStyle(() => ({
+    width: `${progress.value * 100}%`,
+  }));
+
+  const sparkleStyle1 = useAnimatedStyle(() => ({
+    opacity: sparkle1.value,
+    transform: [{ scale: sparkle1.value }],
+  }));
+  const sparkleStyle2 = useAnimatedStyle(() => ({
+    opacity: sparkle2.value,
+    transform: [{ scale: sparkle2.value }],
+  }));
+  const sparkleStyle3 = useAnimatedStyle(() => ({
+    opacity: sparkle3.value,
+    transform: [{ scale: sparkle3.value }],
+  }));
+
+  return (
+    <View style={loadingStyles.container}>
+      <Animated.View style={[loadingStyles.globeContainer, pulseStyle]}>
+        {/* Outer orbit rings */}
+        <Animated.View style={[loadingStyles.orbitRing, loadingStyles.orbitRing1, orbit1Style]}>
+          <View style={[loadingStyles.orbitDot, { backgroundColor: BROWSER_BLUE }]} />
+        </Animated.View>
+        <Animated.View style={[loadingStyles.orbitRing, loadingStyles.orbitRing2, orbit2Style]}>
+          <View style={[loadingStyles.orbitDot, loadingStyles.orbitDotSmall, { backgroundColor: theme.primary }]} />
+        </Animated.View>
+        <Animated.View style={[loadingStyles.orbitRing, loadingStyles.orbitRing3, orbit3Style]}>
+          <View style={[loadingStyles.orbitDot, loadingStyles.orbitDotTiny, { backgroundColor: "#52C41A" }]} />
+        </Animated.View>
+
+        {/* Globe with grid lines */}
+        <Animated.View style={rotationStyle}>
+          <Svg width={100} height={100} viewBox="0 0 100 100">
+            <Defs>
+              <LinearGradient id="globeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <Stop offset="0%" stopColor={BROWSER_BLUE} stopOpacity="0.3" />
+                <Stop offset="50%" stopColor={BROWSER_BLUE} stopOpacity="0.15" />
+                <Stop offset="100%" stopColor={BROWSER_BLUE} stopOpacity="0.05" />
+              </LinearGradient>
+              <LinearGradient id="gridGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <Stop offset="0%" stopColor={BROWSER_BLUE} stopOpacity="0.1" />
+                <Stop offset="50%" stopColor={BROWSER_BLUE} stopOpacity="0.4" />
+                <Stop offset="100%" stopColor={BROWSER_BLUE} stopOpacity="0.1" />
+              </LinearGradient>
+            </Defs>
+            <Circle cx="50" cy="50" r="45" fill="url(#globeGrad)" stroke={BROWSER_BLUE} strokeWidth="2" strokeOpacity="0.4" />
+            {/* Longitude lines */}
+            <Path d="M50 5 Q65 50 50 95" fill="none" stroke="url(#gridGrad)" strokeWidth="1.5" />
+            <Path d="M50 5 Q35 50 50 95" fill="none" stroke="url(#gridGrad)" strokeWidth="1.5" />
+            <Path d="M50 5 Q80 50 50 95" fill="none" stroke="url(#gridGrad)" strokeWidth="1" />
+            <Path d="M50 5 Q20 50 50 95" fill="none" stroke="url(#gridGrad)" strokeWidth="1" />
+            {/* Latitude lines */}
+            <Path d="M10 35 Q50 25 90 35" fill="none" stroke="url(#gridGrad)" strokeWidth="1.5" />
+            <Path d="M5 50 Q50 50 95 50" fill="none" stroke="url(#gridGrad)" strokeWidth="1.5" />
+            <Path d="M10 65 Q50 75 90 65" fill="none" stroke="url(#gridGrad)" strokeWidth="1.5" />
+          </Svg>
+        </Animated.View>
+
+        {/* Scan line */}
+        <Animated.View style={[loadingStyles.scanLine, scanLineStyle]}>
+          <Svg width={100} height={4}>
+            <Defs>
+              <LinearGradient id="scanGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <Stop offset="0%" stopColor={BROWSER_BLUE} stopOpacity="0" />
+                <Stop offset="50%" stopColor={BROWSER_BLUE} stopOpacity="1" />
+                <Stop offset="100%" stopColor={BROWSER_BLUE} stopOpacity="0" />
+              </LinearGradient>
+            </Defs>
+            <Rect x="0" y="0" width="100" height="4" rx="2" fill="url(#scanGrad)" />
+          </Svg>
+        </Animated.View>
+
+        {/* Sparkles */}
+        <Animated.View style={[loadingStyles.sparkle, { top: -5, right: 5 }, sparkleStyle1]}>
+          <Svg width={18} height={18} viewBox="0 0 20 20">
+            <Path d="M10 0 L12 8 L20 10 L12 12 L10 20 L8 12 L0 10 L8 8 Z" fill={BROWSER_BLUE} />
+          </Svg>
+        </Animated.View>
+        <Animated.View style={[loadingStyles.sparkle, { bottom: 0, left: -10 }, sparkleStyle2]}>
+          <Svg width={14} height={14} viewBox="0 0 20 20">
+            <Path d="M10 0 L12 8 L20 10 L12 12 L10 20 L8 12 L0 10 L8 8 Z" fill={theme.primary} />
+          </Svg>
+        </Animated.View>
+        <Animated.View style={[loadingStyles.sparkle, { top: 30, right: -15 }, sparkleStyle3]}>
+          <Svg width={12} height={12} viewBox="0 0 20 20">
+            <Path d="M10 0 L12 8 L20 10 L12 12 L10 20 L8 12 L0 10 L8 8 Z" fill="#52C41A" />
+          </Svg>
+        </Animated.View>
+      </Animated.View>
+
+      <View style={loadingStyles.textContainer}>
+        <ThemedText type="h4" style={loadingStyles.loadingText}>מנתח את האתר...</ThemedText>
+        <ThemedText type="small" style={[loadingStyles.subText, { color: theme.textSecondary }]}>
+          קורא ומבין את התוכן
+        </ThemedText>
+      </View>
+
+      <View style={loadingStyles.progressContainer}>
+        <View style={[loadingStyles.progressTrack, { backgroundColor: theme.border }]}>
+          <Animated.View style={[loadingStyles.progressBar, { backgroundColor: BROWSER_BLUE }, progressStyle]} />
+        </View>
+      </View>
+    </View>
+  );
+};
+
+const loadingStyles = StyleSheet.create({
+  container: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+  },
+  globeContainer: {
+    width: 140,
+    height: 140,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 24,
+  },
+  orbitRing: {
+    position: "absolute",
+    borderRadius: 9999,
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderColor: "rgba(66, 133, 244, 0.3)",
+    alignItems: "center",
+    justifyContent: "flex-start",
+  },
+  orbitRing1: {
+    width: 120,
+    height: 120,
+  },
+  orbitRing2: {
+    width: 100,
+    height: 100,
+  },
+  orbitRing3: {
+    width: 80,
+    height: 80,
+  },
+  orbitDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginTop: -5,
+  },
+  orbitDotSmall: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginTop: -4,
+  },
+  orbitDotTiny: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginTop: -3,
+  },
+  scanLine: {
+    position: "absolute",
+  },
+  sparkle: {
+    position: "absolute",
+  },
+  textContainer: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  loadingText: {
+    textAlign: "center",
+    marginBottom: 4,
+  },
+  subText: {
+    textAlign: "center",
+    opacity: 0.8,
+  },
+  progressContainer: {
+    width: "100%",
+    maxWidth: 200,
+  },
+  progressTrack: {
+    height: 6,
+    borderRadius: 3,
+    overflow: "hidden",
+  },
+  progressBar: {
+    height: "100%",
+    borderRadius: 3,
+  },
+});
 
 interface ChatMessage {
   id: string;
@@ -464,12 +779,9 @@ export default function WebsiteHelperScreen() {
       ) : null}
 
       {isLoading && !analysis ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={BROWSER_BLUE} />
-          <ThemedText style={{ color: theme.textSecondary, marginTop: Spacing.md }}>
-            {t("tools.websiteHelper.analyzing")}
-          </ThemedText>
-        </View>
+        <GlassCard style={styles.analysisCard}>
+          <WebsiteAnalysisAnimation theme={theme} />
+        </GlassCard>
       ) : analysis ? (
         <GlassCard style={styles.analysisCard}>
           <View style={styles.analysisHeader}>
