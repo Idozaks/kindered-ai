@@ -5,6 +5,7 @@ import authRoutes from "./auth-routes";
 import progressRoutes from "./progress-routes";
 import gmailProgressRoutes from "./gmail-progress-routes";
 import paymentRoutes from "./routes/payment-routes";
+import evaluationRoutes from "./routes/evaluation-routes";
 import { registerImageRoutes } from "./replit_integrations/image";
 import { registerWebsiteHelperRoutes } from "./routes/websiteHelper";
 
@@ -23,6 +24,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // AI routes for Dori AI features
   app.use("/api/ai", aiRoutes);
+
+  // Learning path evaluation routes
+  app.use("/api/evaluate", evaluationRoutes);
 
   // Image generation routes
   registerImageRoutes(app);
