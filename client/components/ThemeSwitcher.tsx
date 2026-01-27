@@ -7,11 +7,11 @@ import { ThemeMode, ThemeNames, BorderRadius, Spacing, Typography } from '@/cons
 export function ThemeSwitcher() {
   const { theme, themeMode, setThemeMode, isDark, toggleDarkMode } = useTheme();
 
-  const themes: ThemeMode[] = ['dori', 'classic'];
+  const themes: ThemeMode[] = ['dori', 'classic', 'sunset', 'nature', 'ocean'];
 
   return (
     <View style={styles.container}>
-      <View style={styles.themesRow}>
+      <View style={styles.themesGrid}>
         {themes.map((mode) => (
           <Pressable
             key={mode}
@@ -62,14 +62,16 @@ const styles = StyleSheet.create({
   container: {
     gap: Spacing.md,
   },
-  themesRow: {
+  themesGrid: {
     flexDirection: 'row-reverse',
-    gap: Spacing.md,
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
   },
   themeOption: {
-    flex: 1,
-    paddingVertical: Spacing.lg,
-    paddingHorizontal: Spacing.xl,
+    minWidth: '30%',
+    flexGrow: 1,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
     borderRadius: BorderRadius.md,
     borderWidth: 2,
     alignItems: 'center',
