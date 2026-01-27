@@ -1,12 +1,19 @@
-import React, { useCallback } from "react";
-import { StyleSheet, View, ScrollView, Pressable, Text } from "react-native";
+import React, { useCallback, useEffect } from "react";
+import { StyleSheet, View, ScrollView, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
 import { Feather } from "@expo/vector-icons";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import Animated, { 
+  FadeInDown, 
+  useAnimatedStyle, 
+  useSharedValue, 
+  withRepeat, 
+  withTiming,
+  Easing,
+} from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 
 import { ThemedText } from "@/components/ThemedText";
@@ -17,6 +24,35 @@ import { Spacing, BorderRadius, Typography } from "@/constants/theme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
+function BreathingChevron({ color }: { color: string }) {
+  const opacity = useSharedValue(0.4);
+  const scale = useSharedValue(1);
+  
+  useEffect(() => {
+    opacity.value = withRepeat(
+      withTiming(0.9, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true
+    );
+    scale.value = withRepeat(
+      withTiming(1.1, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true
+    );
+  }, []);
+  
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ scale: scale.value }],
+  }));
+  
+  return (
+    <Animated.View style={[styles.chevronContainer, animatedStyle]}>
+      <Feather name="chevron-left" size={32} color={color} />
+    </Animated.View>
+  );
+}
 
 interface LibraryItem {
   id: string;
@@ -124,7 +160,7 @@ export default function LibraryScreen() {
                       {t(item.descriptionKey)}
                     </Text>
                   </View>
-                  <Feather name="chevron-left" size={24} color={theme.textSecondary} />
+                  <BreathingChevron color={item.color} />
               </GlassCard>
             </Animated.View>
           ))}
@@ -205,5 +241,11 @@ const styles = StyleSheet.create({
   comingSoon: {
     marginTop: Spacing["3xl"],
     paddingHorizontal: Spacing.xl,
+  },
+  chevronContainer: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
