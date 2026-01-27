@@ -16,6 +16,7 @@ import LibraryScreen from "@/screens/LibraryScreen";
 import AIGuidesScreen from "@/screens/AIGuidesScreen";
 import WebsiteHelperScreen from "@/screens/WebsiteHelperScreen";
 import PremiumScreen from "@/screens/PremiumScreen";
+import LearningPathQuizScreen from "@/screens/LearningPathQuizScreen";
 import LoginScreen from "@/screens/LoginScreen";
 import RegisterScreen from "@/screens/RegisterScreen";
 import OnboardingScreen from "@/screens/OnboardingScreen";
@@ -45,6 +46,7 @@ export type MainStackParamList = {
   GrandchildrenGuides: undefined;
   WebsiteHelper: undefined;
   Premium: undefined;
+  LearningPathQuiz: undefined;
   Login: undefined;
   Register: undefined;
 };
@@ -171,6 +173,13 @@ function MainStack() {
         component={PremiumScreen}
         options={{
           headerTitle: "Premium",
+        }}
+      />
+      <Stack.Screen
+        name="LearningPathQuiz"
+        component={LearningPathQuizScreen}
+        options={{
+          headerTitle: "שאלון למידה",
         }}
       />
       <Stack.Screen
