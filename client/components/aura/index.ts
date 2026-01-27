@@ -7,3 +7,4 @@ export { AuraWellnessCheck } from "./AuraWellnessCheck";
 export { AuraHydrationTracker } from "./AuraHydrationTracker";
 export { AuraAccessibilityControls } from "./AuraAccessibilityControls";
 export { AuraFloatingDashboard } from "./AuraFloatingDashboard";
+export { AuraHandshakeModal } from "./AuraHandshakeModal";

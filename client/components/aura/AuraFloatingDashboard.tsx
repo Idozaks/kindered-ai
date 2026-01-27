@@ -27,6 +27,7 @@ import { AuraMedicationReminder, Medication } from "./AuraMedicationReminder";
 import { AuraWellnessCheck } from "./AuraWellnessCheck";
 import { AuraHydrationTracker } from "./AuraHydrationTracker";
 import { AuraAccessibilityControls } from "./AuraAccessibilityControls";
+import { AuraHandshakeModal } from "./AuraHandshakeModal";
 import { ThemedText } from "@/components/ThemedText";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -43,6 +44,23 @@ export function AuraFloatingDashboard({ onMicPress }: AuraFloatingDashboardProps
   const [isExpanded, setIsExpanded] = useState(false);
   const [showWellnessCheck, setShowWellnessCheck] = useState(false);
   const [activeMedication, setActiveMedication] = useState<Medication | null>(null);
+  const [showHandshake, setShowHandshake] = useState(false);
+
+  useEffect(() => {
+    if (!aura.handshakeCompleted && aura.mode !== "handshake") {
+      const timer = setTimeout(() => {
+        setShowHandshake(true);
+        aura.startHandshake();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [aura.handshakeCompleted, aura.mode]);
+
+  useEffect(() => {
+    if (aura.handshakeStep === "complete") {
+      setShowHandshake(false);
+    }
+  }, [aura.handshakeStep]);
 
   const expandProgress = useSharedValue(0);
   const orbScale = useSharedValue(1);
@@ -295,7 +313,40 @@ export function AuraFloatingDashboard({ onMicPress }: AuraFloatingDashboardProps
             )}
           </ScrollView>
         ) : null}
+
+        {aura.pinnedAnswers.filter(p => p.repeatCount >= 3).length > 0 ? (
+          <View style={styles.pinnedSection}>
+            {aura.pinnedAnswers.filter(p => p.repeatCount >= 3).map(pinned => (
+              <Animated.View 
+                key={pinned.id}
+                entering={FadeIn.duration(300)}
+                style={[styles.pinnedCard, { backgroundColor: theme.backgroundSecondary, borderColor: theme.border }]}
+              >
+                <View style={styles.pinnedHeader}>
+                  <Feather name="pin" size={14} color={theme.textSecondary} />
+                  <ThemedText style={[styles.pinnedQuestion, { color: theme.textSecondary }]}>
+                    {pinned.question}
+                  </ThemedText>
+                  <Pressable onPress={() => aura.removePinnedAnswer(pinned.id)} hitSlop={8}>
+                    <Feather name="x" size={16} color={theme.textSecondary} />
+                  </Pressable>
+                </View>
+                <ThemedText style={[styles.pinnedAnswer, { color: theme.text }]}>
+                  {pinned.answer}
+                </ThemedText>
+              </Animated.View>
+            ))}
+          </View>
+        ) : null}
       </BlurView>
+
+      <AuraHandshakeModal 
+        visible={showHandshake && !aura.handshakeCompleted}
+        onClose={() => {
+          setShowHandshake(false);
+          aura.completeHandshake();
+        }}
+      />
     </Animated.View>
   );
 }
@@ -360,5 +411,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xl,
     borderRadius: BorderRadius.md,
     borderWidth: 1,
+  },
+  pinnedSection: {
+    marginTop: Spacing.md,
+    gap: Spacing.sm,
+  },
+  pinnedCard: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+  },
+  pinnedHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.xs,
+    marginBottom: Spacing.xs,
+  },
+  pinnedQuestion: {
+    flex: 1,
+    fontSize: 14,
+  },
+  pinnedAnswer: {
+    fontSize: 16,
+    lineHeight: 22,
   },
 });

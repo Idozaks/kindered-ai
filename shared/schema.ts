@@ -19,6 +19,8 @@ export const users = pgTable("users", {
   emergencyContactName: text("emergency_contact_name"),
   emergencyContactPhone: text("emergency_contact_phone"),
   onboardingCompleted: boolean("onboarding_completed").default(false),
+  auraHandshakeCompleted: boolean("aura_handshake_completed").default(false),
+  gender: text("gender"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -194,6 +196,55 @@ export const wellnessLogs = pgTable("wellness_logs", {
   loggedAt: timestamp("logged_at").defaultNow(),
 });
 
+// Aura - Skills database (tracks mastered tasks)
+export const userSkills = pgTable("user_skills", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  skillId: text("skill_id").notNull(),
+  skillName: text("skill_name").notNull(),
+  masteryLevel: integer("mastery_level").default(0),
+  practiceCount: integer("practice_count").default(0),
+  lastPracticedAt: timestamp("last_practiced_at"),
+  masteredAt: timestamp("mastered_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Aura - Interaction logs (full transcript/intent logging)
+export const auraInteractionLogs = pgTable("aura_interaction_logs", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .references(() => users.id, { onDelete: "cascade" }),
+  sessionId: text("session_id"),
+  transcript: text("transcript"),
+  detectedIntent: text("detected_intent"),
+  sentimentScore: integer("sentiment_score"),
+  responseGiven: text("response_given"),
+  screenContext: text("screen_context"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Aura - Pinned answers (for repeated questions)
+export const auraPinnedAnswers = pgTable("aura_pinned_answers", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  questionPattern: text("question_pattern").notNull(),
+  answer: text("answer").notNull(),
+  repeatCount: integer("repeat_count").default(1),
+  isPinned: boolean("is_pinned").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Subscriptions for premium features
 export const subscriptions = pgTable("subscriptions", {
   id: varchar("id")
@@ -304,6 +355,27 @@ export const wellnessLogsRelations = relations(wellnessLogs, ({ one }) => ({
   }),
 }));
 
+export const userSkillsRelations = relations(userSkills, ({ one }) => ({
+  user: one(users, {
+    fields: [userSkills.userId],
+    references: [users.id],
+  }),
+}));
+
+export const auraInteractionLogsRelations = relations(auraInteractionLogs, ({ one }) => ({
+  user: one(users, {
+    fields: [auraInteractionLogs.userId],
+    references: [users.id],
+  }),
+}));
+
+export const auraPinnedAnswersRelations = relations(auraPinnedAnswers, ({ one }) => ({
+  user: one(users, {
+    fields: [auraPinnedAnswers.userId],
+    references: [users.id],
+  }),
+}));
+
 // Zod schemas for validation
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
@@ -335,6 +407,8 @@ export const updateUserPreferencesSchema = z.object({
   voiceGuidanceEnabled: z.boolean().optional(),
   emergencyContactName: z.string().optional(),
   emergencyContactPhone: z.string().optional(),
+  gender: z.enum(["male", "female"]).optional(),
+  auraHandshakeCompleted: z.boolean().optional(),
 });
 
 export const journeyProgressSchema = z.object({
@@ -353,3 +427,10 @@ export type Achievement = typeof achievements.$inferSelect;
 export type Subscription = typeof subscriptions.$inferSelect;
 export type UserEvaluation = typeof userEvaluations.$inferSelect;
 export type LearningPath = typeof learningPaths.$inferSelect;
+export type UserSkill = typeof userSkills.$inferSelect;
+export type AuraInteractionLog = typeof auraInteractionLogs.$inferSelect;
+export type AuraPinnedAnswer = typeof auraPinnedAnswers.$inferSelect;
+export type CircleContact = typeof circleContacts.$inferSelect;
+export type Medication = typeof medications.$inferSelect;
+export type HydrationLog = typeof hydrationLogs.$inferSelect;
+export type WellnessLog = typeof wellnessLogs.$inferSelect;

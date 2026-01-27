@@ -1,14 +1,25 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import { AppState, AppStateStatus } from "react-native";
 import * as Speech from "expo-speech";
 import * as Haptics from "expo-haptics";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { AuraVoiceState } from "@/components/aura/AuraPulseOrb";
 import { CircleContact } from "@/components/aura/AuraCircleContacts";
 import { Medication } from "@/components/aura/AuraMedicationReminder";
+import { predictGenderFromName, isAmbiguousName, getGenderedGreeting } from "@/utils/hebrewNames";
 
 type DayContext = "morning" | "daytime" | "evening" | "night";
-type AuraMode = "normal" | "crisis" | "idle_engagement";
+type AuraMode = "normal" | "crisis" | "idle_engagement" | "handshake";
+type Gender = "male" | "female" | null;
+type HandshakeStep = "idle" | "asking_name" | "predicting_gender" | "asking_gender" | "complete";
+
+interface PinnedAnswer {
+  id: string;
+  question: string;
+  answer: string;
+  repeatCount: number;
+}
 
 interface AuraState {
   voiceState: AuraVoiceState;
@@ -23,13 +34,22 @@ interface AuraState {
   hydrationGlasses: number;
   hydrationGoal: number;
   lastMoodCheck: Date | null;
+  userName: string | null;
+  userGender: Gender;
+  handshakeCompleted: boolean;
+  handshakeStep: HandshakeStep;
+  lastSpokenMessage: string;
+  pinnedAnswers: PinnedAnswer[];
+  screenIdleTime: number;
+  currentScreen: string;
+  patienceTimerActive: boolean;
 }
 
 interface AuraContextValue extends AuraState {
   setVoiceState: (state: AuraVoiceState) => void;
   setMode: (mode: AuraMode) => void;
   setTranscript: (text: string) => void;
-  speak: (text: string) => Promise<void>;
+  speak: (text: string, confirmationWord?: string) => Promise<void>;
   stopSpeaking: () => void;
   repeatLastMessage: () => void;
   slowDownSpeech: () => void;
@@ -43,6 +63,17 @@ interface AuraContextValue extends AuraState {
   addHydrationGlass: () => void;
   removeHydrationGlass: () => void;
   markMoodCheckComplete: () => void;
+  startHandshake: () => void;
+  setUserName: (name: string) => void;
+  setUserGender: (gender: Gender) => void;
+  completeHandshake: () => void;
+  getGenderedText: (text: string) => string;
+  setCurrentScreen: (screen: string) => void;
+  addPinnedAnswer: (question: string, answer: string) => void;
+  removePinnedAnswer: (id: string) => void;
+  getContextualSuggestion: () => string | null;
+  triggerHapticConfirmation: () => void;
+  checkPatienceRule: () => void;
 }
 
 const defaultState: AuraState = {
@@ -58,12 +89,31 @@ const defaultState: AuraState = {
   hydrationGlasses: 0,
   hydrationGoal: 8,
   lastMoodCheck: null,
+  userName: null,
+  userGender: null,
+  handshakeCompleted: false,
+  handshakeStep: "idle",
+  lastSpokenMessage: "",
+  pinnedAnswers: [],
+  screenIdleTime: 0,
+  currentScreen: "home",
+  patienceTimerActive: false,
 };
 
 const AuraContext = createContext<AuraContextValue | undefined>(undefined);
 
-const CRISIS_KEYWORDS = ["fall", "fell", "hurt", "pain", "lost", "help", "emergency", "dizzy", "chest", "breath"];
+const CRISIS_KEYWORDS_HE = ["נפלתי", "כואב", "עזרה", "חירום", "סחרחורת", "לב", "נשימה", "אבוד", "פחד"];
+const CRISIS_KEYWORDS_EN = ["fall", "fell", "hurt", "pain", "lost", "help", "emergency", "dizzy", "chest", "breath"];
 const IDLE_TIMEOUT_MS = 4 * 60 * 60 * 1000;
+const SCREEN_IDLE_SUGGESTION_MS = 10 * 1000;
+const PATIENCE_RULE_MS = 5 * 1000;
+
+const STORAGE_KEYS = {
+  USER_NAME: "@aura_user_name",
+  USER_GENDER: "@aura_user_gender",
+  HANDSHAKE_COMPLETED: "@aura_handshake_completed",
+  PINNED_ANSWERS: "@aura_pinned_answers",
+};
 
 function getDayContext(): DayContext {
   const hour = new Date().getHours();
@@ -73,13 +123,67 @@ function getDayContext(): DayContext {
   return "night";
 }
 
+const SCREEN_SUGGESTIONS: Record<string, { he: string; en: string }> = {
+  contacts: { 
+    he: "צריך עזרה להתקשר לבת שלך?",
+    en: "Need help calling your daughter?" 
+  },
+  whatsapp: { 
+    he: "רוצה ללמוד לשלוח הודעה בוואטסאפ?",
+    en: "Want to learn how to send a WhatsApp message?" 
+  },
+  gmail: { 
+    he: "אפשר לעזור לך לקרוא מייל?",
+    en: "Can I help you read an email?" 
+  },
+  photos: { 
+    he: "רוצה לשתף תמונה עם המשפחה?",
+    en: "Want to share a photo with family?" 
+  },
+  home: { 
+    he: "יש לי כמה דברים שאפשר לעזור לך איתם. מה תרצה לעשות?",
+    en: "I have some things I can help you with. What would you like to do?" 
+  },
+  settings: { 
+    he: "צריך עזרה עם ההגדרות?",
+    en: "Need help with settings?" 
+  },
+};
+
 export function AuraProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuraState>({
     ...defaultState,
     dayContext: getDayContext(),
   });
 
-  const [lastSpokenMessage, setLastSpokenMessage] = useState<string>("");
+  const screenIdleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const patienceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const loadStoredData = async () => {
+      try {
+        const [userName, userGender, handshakeCompleted, pinnedAnswers] = await Promise.all([
+          AsyncStorage.getItem(STORAGE_KEYS.USER_NAME),
+          AsyncStorage.getItem(STORAGE_KEYS.USER_GENDER),
+          AsyncStorage.getItem(STORAGE_KEYS.HANDSHAKE_COMPLETED),
+          AsyncStorage.getItem(STORAGE_KEYS.PINNED_ANSWERS),
+        ]);
+
+        setState(prev => ({
+          ...prev,
+          userName: userName || null,
+          userGender: (userGender as Gender) || null,
+          handshakeCompleted: handshakeCompleted === "true",
+          handshakeStep: handshakeCompleted === "true" ? "complete" : "idle",
+          pinnedAnswers: pinnedAnswers ? JSON.parse(pinnedAnswers) : [],
+        }));
+      } catch (error) {
+        console.error("Error loading Aura stored data:", error);
+      }
+    };
+
+    loadStoredData();
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -120,6 +224,26 @@ export function AuraProvider({ children }: { children: ReactNode }) {
     return () => subscription.remove();
   }, []);
 
+  useEffect(() => {
+    if (screenIdleTimerRef.current) {
+      clearTimeout(screenIdleTimerRef.current);
+    }
+
+    screenIdleTimerRef.current = setTimeout(() => {
+      setState(prev => ({ ...prev, screenIdleTime: SCREEN_IDLE_SUGGESTION_MS }));
+    }, SCREEN_IDLE_SUGGESTION_MS);
+
+    return () => {
+      if (screenIdleTimerRef.current) {
+        clearTimeout(screenIdleTimerRef.current);
+      }
+    };
+  }, [state.currentScreen, state.lastInteraction]);
+
+  const triggerHapticConfirmation = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  }, []);
+
   const setVoiceState = useCallback((voiceState: AuraVoiceState) => {
     setState((prev) => ({ ...prev, voiceState }));
   }, []);
@@ -135,18 +259,29 @@ export function AuraProvider({ children }: { children: ReactNode }) {
     setState((prev) => ({ ...prev, transcript }));
   }, []);
 
-  const speak = useCallback(async (text: string) => {
-    setLastSpokenMessage(text);
-    setState((prev) => ({ ...prev, voiceState: "speaking", transcript: text }));
+  const speak = useCallback(async (text: string, confirmationWord?: string) => {
+    setState((prev) => ({ 
+      ...prev, 
+      voiceState: "speaking", 
+      transcript: text,
+      lastSpokenMessage: text,
+    }));
 
     return new Promise<void>((resolve) => {
       Speech.speak(text, {
         rate: state.speechRate,
+        language: "he-IL",
         onStart: () => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          triggerHapticConfirmation();
         },
         onDone: () => {
           setState((prev) => ({ ...prev, voiceState: "idle" }));
+          if (confirmationWord) {
+            Speech.speak(confirmationWord, { 
+              rate: state.speechRate,
+              language: "he-IL",
+            });
+          }
           resolve();
         },
         onError: () => {
@@ -155,7 +290,7 @@ export function AuraProvider({ children }: { children: ReactNode }) {
         },
       });
     });
-  }, [state.speechRate]);
+  }, [state.speechRate, triggerHapticConfirmation]);
 
   const stopSpeaking = useCallback(() => {
     Speech.stop();
@@ -163,18 +298,19 @@ export function AuraProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const repeatLastMessage = useCallback(() => {
-    if (lastSpokenMessage) {
-      speak(lastSpokenMessage);
+    if (state.lastSpokenMessage) {
+      speak(state.lastSpokenMessage);
+      triggerHapticConfirmation();
     }
-  }, [lastSpokenMessage, speak]);
+  }, [state.lastSpokenMessage, speak, triggerHapticConfirmation]);
 
   const slowDownSpeech = useCallback(() => {
     setState((prev) => ({
       ...prev,
       speechRate: Math.max(0.5, prev.speechRate - 0.1),
     }));
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  }, []);
+    triggerHapticConfirmation();
+  }, [triggerHapticConfirmation]);
 
   const simplifyMessage = useCallback((message: string): string => {
     return message;
@@ -189,13 +325,21 @@ export function AuraProvider({ children }: { children: ReactNode }) {
       ...prev,
       lastInteraction: new Date(),
       mode: prev.mode === "idle_engagement" ? "normal" : prev.mode,
+      screenIdleTime: 0,
     }));
+    
+    if (patienceTimerRef.current) {
+      clearTimeout(patienceTimerRef.current);
+      patienceTimerRef.current = null;
+    }
+    setState(prev => ({ ...prev, patienceTimerActive: false }));
   }, []);
 
   const checkForCrisisKeywords = useCallback((text: string): boolean => {
     const lowerText = text.toLowerCase();
-    const hasCrisisKeyword = CRISIS_KEYWORDS.some((keyword) =>
-      lowerText.includes(keyword)
+    const allCrisisKeywords = [...CRISIS_KEYWORDS_HE, ...CRISIS_KEYWORDS_EN];
+    const hasCrisisKeyword = allCrisisKeywords.some((keyword) =>
+      lowerText.includes(keyword.toLowerCase())
     );
 
     if (hasCrisisKeyword) {
@@ -207,19 +351,27 @@ export function AuraProvider({ children }: { children: ReactNode }) {
   }, [setMode]);
 
   const getGreeting = useCallback((): string => {
+    const name = state.userName ? `, ${state.userName}` : "";
+    
     switch (state.dayContext) {
       case "morning":
-        return "Rise and Shine! Good morning. Here's what's ahead today.";
+        return state.userGender === "female" 
+          ? `בוקר טוב${name}! הנה מה שמחכה לך היום.`
+          : `בוקר טוב${name}! הנה מה שמחכה לך היום.`;
       case "daytime":
-        return "Hello! How can I help you today?";
+        return `שלום${name}! איך אפשר לעזור?`;
       case "evening":
-        return "Good evening. Let me know if you need anything.";
+        return `ערב טוב${name}. ספרי לי אם צריך משהו.`;
       case "night":
-        return "Hi there. Remember to rest well tonight.";
+        return `שלום${name}. זכרי לנוח היטב הלילה.`;
       default:
-        return "Hello! I'm here to help.";
+        return `שלום${name}! אני כאן לעזור.`;
     }
-  }, [state.dayContext]);
+  }, [state.dayContext, state.userName, state.userGender]);
+
+  const getGenderedText = useCallback((text: string): string => {
+    return getGenderedGreeting(state.userGender, text);
+  }, [state.userGender]);
 
   const setContacts = useCallback((contacts: CircleContact[]) => {
     setState((prev) => ({ ...prev, contacts }));
@@ -230,12 +382,13 @@ export function AuraProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const addHydrationGlass = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    triggerHapticConfirmation();
     setState((prev) => ({
       ...prev,
       hydrationGlasses: Math.min(prev.hydrationGlasses + 1, 20),
     }));
-  }, []);
+    speak("נרשם", undefined);
+  }, [triggerHapticConfirmation, speak]);
 
   const removeHydrationGlass = useCallback(() => {
     setState((prev) => ({
@@ -245,8 +398,158 @@ export function AuraProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const markMoodCheckComplete = useCallback(() => {
+    triggerHapticConfirmation();
     setState((prev) => ({ ...prev, lastMoodCheck: new Date() }));
+  }, [triggerHapticConfirmation]);
+
+  const startHandshake = useCallback(() => {
+    setState(prev => ({ 
+      ...prev, 
+      mode: "handshake",
+      handshakeStep: "asking_name",
+    }));
+    speak("שלום! נעים להכיר. איך קוראים לך?");
+  }, [speak]);
+
+  const setUserName = useCallback(async (name: string) => {
+    await AsyncStorage.setItem(STORAGE_KEYS.USER_NAME, name);
+    
+    const predictedGender = predictGenderFromName(name);
+    
+    if (isAmbiguousName(name)) {
+      setState(prev => ({ 
+        ...prev, 
+        userName: name,
+        handshakeStep: "asking_gender",
+      }));
+      speak(`נעים מאוד, ${name}! רק כדי שאדע לפנות אליך בצורה הכי מכבדת, האם אני פונה לגבר או לאישה?`);
+    } else {
+      const gender = predictedGender === "male" ? "male" : "female";
+      await AsyncStorage.setItem(STORAGE_KEYS.USER_GENDER, gender);
+      setState(prev => ({ 
+        ...prev, 
+        userName: name,
+        userGender: gender,
+        handshakeStep: "complete",
+        handshakeCompleted: true,
+        mode: "normal",
+      }));
+      await AsyncStorage.setItem(STORAGE_KEYS.HANDSHAKE_COMPLETED, "true");
+      
+      const welcomeMessage = gender === "female" 
+        ? `נעים מאוד ${name}! ברוכה הבאה. אני אורה, ואני כאן לעזור לך בכל מה שצריך.`
+        : `נעים מאוד ${name}! ברוך הבא. אני אורה, ואני כאן לעזור לך בכל מה שצריך.`;
+      speak(welcomeMessage, "בוצע");
+    }
+    
+    triggerHapticConfirmation();
+  }, [speak, triggerHapticConfirmation]);
+
+  const setUserGender = useCallback(async (gender: Gender) => {
+    if (gender) {
+      await AsyncStorage.setItem(STORAGE_KEYS.USER_GENDER, gender);
+    }
+    
+    await AsyncStorage.setItem(STORAGE_KEYS.HANDSHAKE_COMPLETED, "true");
+    
+    setState(prev => ({ 
+      ...prev, 
+      userGender: gender,
+      handshakeStep: "complete",
+      handshakeCompleted: true,
+      mode: "normal",
+    }));
+    
+    const name = state.userName || "";
+    const welcomeMessage = gender === "female" 
+      ? `תודה ${name}! ברוכה הבאה. אני אורה, ואני כאן לעזור לך.`
+      : `תודה ${name}! ברוך הבא. אני אורה, ואני כאן לעזור לך.`;
+    speak(welcomeMessage, "בוצע");
+    triggerHapticConfirmation();
+  }, [state.userName, speak, triggerHapticConfirmation]);
+
+  const completeHandshake = useCallback(async () => {
+    await AsyncStorage.setItem(STORAGE_KEYS.HANDSHAKE_COMPLETED, "true");
+    setState(prev => ({ 
+      ...prev, 
+      handshakeCompleted: true,
+      handshakeStep: "complete",
+      mode: "normal",
+    }));
   }, []);
+
+  const setCurrentScreen = useCallback((screen: string) => {
+    setState(prev => ({ 
+      ...prev, 
+      currentScreen: screen,
+      screenIdleTime: 0,
+    }));
+  }, []);
+
+  const addPinnedAnswer = useCallback(async (question: string, answer: string) => {
+    const existingIndex = state.pinnedAnswers.findIndex(
+      p => p.question.toLowerCase() === question.toLowerCase()
+    );
+    
+    let newPinnedAnswers: PinnedAnswer[];
+    
+    if (existingIndex >= 0) {
+      newPinnedAnswers = [...state.pinnedAnswers];
+      newPinnedAnswers[existingIndex].repeatCount += 1;
+      
+      if (newPinnedAnswers[existingIndex].repeatCount >= 3) {
+        speak("שמתי לב ששאלת את זה כמה פעמים. הצמדתי את התשובה למסך שלך.");
+      }
+    } else {
+      newPinnedAnswers = [
+        ...state.pinnedAnswers,
+        { 
+          id: Date.now().toString(), 
+          question, 
+          answer, 
+          repeatCount: 1 
+        }
+      ];
+    }
+    
+    await AsyncStorage.setItem(STORAGE_KEYS.PINNED_ANSWERS, JSON.stringify(newPinnedAnswers));
+    setState(prev => ({ ...prev, pinnedAnswers: newPinnedAnswers }));
+  }, [state.pinnedAnswers, speak]);
+
+  const removePinnedAnswer = useCallback(async (id: string) => {
+    const newPinnedAnswers = state.pinnedAnswers.filter(p => p.id !== id);
+    await AsyncStorage.setItem(STORAGE_KEYS.PINNED_ANSWERS, JSON.stringify(newPinnedAnswers));
+    setState(prev => ({ ...prev, pinnedAnswers: newPinnedAnswers }));
+  }, [state.pinnedAnswers]);
+
+  const getContextualSuggestion = useCallback((): string | null => {
+    if (state.screenIdleTime < SCREEN_IDLE_SUGGESTION_MS) {
+      return null;
+    }
+    
+    const suggestion = SCREEN_SUGGESTIONS[state.currentScreen];
+    if (suggestion) {
+      return suggestion.he;
+    }
+    
+    return null;
+  }, [state.screenIdleTime, state.currentScreen]);
+
+  const checkPatienceRule = useCallback(() => {
+    if (patienceTimerRef.current) {
+      clearTimeout(patienceTimerRef.current);
+    }
+    
+    setState(prev => ({ ...prev, patienceTimerActive: true }));
+    
+    patienceTimerRef.current = setTimeout(() => {
+      const patienceMessage = state.userGender === "female"
+        ? "אני כאן, קחי את הזמן שלך."
+        : "אני כאן, קח את הזמן שלך.";
+      speak(patienceMessage);
+      setState(prev => ({ ...prev, patienceTimerActive: false }));
+    }, PATIENCE_RULE_MS);
+  }, [state.userGender, speak]);
 
   const contextValue: AuraContextValue = {
     ...state,
@@ -267,6 +570,17 @@ export function AuraProvider({ children }: { children: ReactNode }) {
     addHydrationGlass,
     removeHydrationGlass,
     markMoodCheckComplete,
+    startHandshake,
+    setUserName,
+    setUserGender,
+    completeHandshake,
+    getGenderedText,
+    setCurrentScreen,
+    addPinnedAnswer,
+    removePinnedAnswer,
+    getContextualSuggestion,
+    triggerHapticConfirmation,
+    checkPatienceRule,
   };
 
   return (
