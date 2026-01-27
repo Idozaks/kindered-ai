@@ -5,6 +5,7 @@
 Dori AI is an ultra-accessible digital companion mobile application designed for seniors (70+). The app bridges the gap between traditional life and modern technology by providing a "patient, technically brilliant grandchild" experience. Built with Expo/React Native for cross-platform mobile support and an Express backend, the application emphasizes voice-first interaction, large touch targets, and simplified workflows for complex digital tasks.
 
 Key features include:
+- **Aura Voice Companion**: Floating dashboard with animated pulse orb, emergency contacts ("The Circle"), medication reminders, wellness check-ins, hydration tracking, SOS functionality, and accessibility controls. Features context-aware greetings and crisis detection.
 - **Guest Mode**: Users can explore the app without signing up first - no barriers to entry
 - **Simplified Onboarding**: Single welcome screen with clear, large text in Hebrew
 - **Ask Kindred**: AI chat assistant that acts as a patient, helpful digital companion for answering questions and guiding users
@@ -79,6 +80,7 @@ Preferred communication style: Simple, everyday language.
 - `expo-haptics`: Tactile feedback on interactions
 - `expo-blur`: Glassmorphism effects
 - `expo-speech`: Text-to-speech capabilities
+- `expo-location`: Location services for SOS functionality
 
 ### Storage
 - `@react-native-async-storage/async-storage`: Client-side persistence for settings and progress
