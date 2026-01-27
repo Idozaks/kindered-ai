@@ -14,6 +14,8 @@ Key features include:
 - **WhatsApp Guides**: Step-by-step tutorials for common WhatsApp tasks (reading messages, sending texts/photos, video calls, privacy settings, group safety)
 - **Gmail Guides**: Step-by-step tutorials for common Gmail tasks (reading emails, sending emails, attaching photos, searching, deleting, replying) with contextual images
 - **Grandchildren Guides**: 5 tips for staying connected with grandchildren (voice messages, emoji reactions, photo sharing, video calls, family group participation) with pink/family theme
+- **Learning Path Quiz**: Adaptive 5-question evaluation that assesses smartphone navigation, WhatsApp usage, and digital safety skills, then uses Gemini AI to recommend a personalized learning path
+- **Celebration System**: Confetti and starburst animations with haptic feedback trigger when completing guides or quizzes
 - **Global Mic Button**: Voice-first interaction available throughout the app
 
 ## User Preferences
