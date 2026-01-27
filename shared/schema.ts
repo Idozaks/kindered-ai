@@ -115,6 +115,85 @@ export const learningPaths = pgTable("learning_paths", {
   order: integer("order").default(0),
 });
 
+// Aura - Emergency contacts (Circle)
+export const circleContacts = pgTable("circle_contacts", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  phone: text("phone").notNull(),
+  relationship: text("relationship").notNull(),
+  avatarInitials: text("avatar_initials"),
+  isPrimary: boolean("is_primary").default(false),
+  order: integer("order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Aura - Medications
+export const medications = pgTable("medications", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  dosage: text("dosage"),
+  scheduledTime: text("scheduled_time").notNull(),
+  frequency: text("frequency").default("daily"),
+  notes: text("notes"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Aura - Medication logs
+export const medicationLogs = pgTable("medication_logs", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  medicationId: varchar("medication_id")
+    .notNull()
+    .references(() => medications.id, { onDelete: "cascade" }),
+  takenAt: timestamp("taken_at").defaultNow(),
+  status: text("status").default("taken"),
+});
+
+// Aura - Hydration logs
+export const hydrationLogs = pgTable("hydration_logs", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  glasses: integer("glasses").default(0),
+  date: text("date").notNull(),
+  goal: integer("goal").default(8),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Aura - Wellness check logs
+export const wellnessLogs = pgTable("wellness_logs", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  mood: text("mood").notNull(),
+  notes: text("notes"),
+  loggedAt: timestamp("logged_at").defaultNow(),
+});
+
 // Subscriptions for premium features
 export const subscriptions = pgTable("subscriptions", {
   id: varchar("id")
@@ -181,6 +260,46 @@ export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
 export const userEvaluationsRelations = relations(userEvaluations, ({ one }) => ({
   user: one(users, {
     fields: [userEvaluations.userId],
+    references: [users.id],
+  }),
+}));
+
+export const circleContactsRelations = relations(circleContacts, ({ one }) => ({
+  user: one(users, {
+    fields: [circleContacts.userId],
+    references: [users.id],
+  }),
+}));
+
+export const medicationsRelations = relations(medications, ({ one, many }) => ({
+  user: one(users, {
+    fields: [medications.userId],
+    references: [users.id],
+  }),
+  logs: many(medicationLogs),
+}));
+
+export const medicationLogsRelations = relations(medicationLogs, ({ one }) => ({
+  user: one(users, {
+    fields: [medicationLogs.userId],
+    references: [users.id],
+  }),
+  medication: one(medications, {
+    fields: [medicationLogs.medicationId],
+    references: [medications.id],
+  }),
+}));
+
+export const hydrationLogsRelations = relations(hydrationLogs, ({ one }) => ({
+  user: one(users, {
+    fields: [hydrationLogs.userId],
+    references: [users.id],
+  }),
+}));
+
+export const wellnessLogsRelations = relations(wellnessLogs, ({ one }) => ({
+  user: one(users, {
+    fields: [wellnessLogs.userId],
     references: [users.id],
   }),
 }));

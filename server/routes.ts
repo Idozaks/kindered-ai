@@ -6,6 +6,7 @@ import progressRoutes from "./progress-routes";
 import gmailProgressRoutes from "./gmail-progress-routes";
 import paymentRoutes from "./routes/payment-routes";
 import evaluationRoutes from "./routes/evaluation-routes";
+import auraRoutes from "./routes/aura-routes";
 import { registerImageRoutes } from "./replit_integrations/image";
 import { registerWebsiteHelperRoutes } from "./routes/websiteHelper";
 
@@ -33,6 +34,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Website Helper routes
   registerWebsiteHelperRoutes(app);
+
+  // Aura companion routes
+  app.use("/api/aura", auraRoutes);
 
   const httpServer = createServer(app);
 
