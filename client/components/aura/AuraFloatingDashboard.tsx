@@ -251,6 +251,7 @@ export function AuraFloatingDashboard({ onMicPress }: AuraFloatingDashboardProps
                 <View style={styles.crisisActions}>
                   <AuraSOSButton
                     primaryContact={primaryContact}
+                    allContacts={aura.contacts}
                     expanded
                     onSOSActivated={(location) => {
                       console.log("SOS activated", location);
@@ -290,7 +291,7 @@ export function AuraFloatingDashboard({ onMicPress }: AuraFloatingDashboardProps
                 </View>
 
                 <View style={styles.section}>
-                  <AuraSOSButton primaryContact={primaryContact} />
+                  <AuraSOSButton primaryContact={primaryContact} allContacts={aura.contacts} />
                 </View>
 
                 <View style={styles.section}>

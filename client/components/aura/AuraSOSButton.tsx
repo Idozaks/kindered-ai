@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { StyleSheet, View, Pressable, Linking, Platform, Vibration } from "react-native";
+import { StyleSheet, View, Pressable, Linking, Platform, Vibration, Alert } from "react-native";
+import * as SMS from "expo-sms";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import * as Location from "expo-location";
@@ -20,11 +21,12 @@ import { CircleContact } from "./AuraCircleContacts";
 
 interface AuraSOSButtonProps {
   primaryContact?: CircleContact;
+  allContacts?: CircleContact[];
   onSOSActivated?: (location: { latitude: number; longitude: number } | null) => void;
   expanded?: boolean;
 }
 
-export function AuraSOSButton({ primaryContact, onSOSActivated, expanded = false }: AuraSOSButtonProps) {
+export function AuraSOSButton({ primaryContact, allContacts = [], onSOSActivated, expanded = false }: AuraSOSButtonProps) {
   const { theme } = useTheme();
   const [isActivating, setIsActivating] = useState(false);
   const scale = useSharedValue(1);
@@ -65,6 +67,30 @@ export function AuraSOSButton({ primaryContact, onSOSActivated, expanded = false
     stopPulse();
   };
 
+  const broadcastGPSToCircle = async (location: { latitude: number; longitude: number } | null) => {
+    const contactsToNotify = allContacts.length > 0 ? allContacts : (primaryContact ? [primaryContact] : []);
+    
+    if (contactsToNotify.length === 0 || !location) {
+      return;
+    }
+
+    const isAvailable = await SMS.isAvailableAsync();
+    if (!isAvailable) {
+      console.log("SMS not available on this device");
+      return;
+    }
+
+    const phoneNumbers = contactsToNotify.map(c => c.phone.replace(/[^0-9+]/g, ""));
+    const mapsLink = `https://maps.google.com/?q=${location.latitude},${location.longitude}`;
+    const message = `אורה - התראת חירום!\n\nאני צריך/ה עזרה. המיקום שלי:\n${mapsLink}\n\nנא להתקשר או לבוא מיד.`;
+
+    try {
+      await SMS.sendSMSAsync(phoneNumbers, message);
+    } catch (error) {
+      console.error("Failed to send SMS", error);
+    }
+  };
+
   const handleSOSPress = async () => {
     setIsActivating(true);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
@@ -90,6 +116,8 @@ export function AuraSOSButton({ primaryContact, onSOSActivated, expanded = false
     if (onSOSActivated) {
       onSOSActivated(location);
     }
+
+    await broadcastGPSToCircle(location);
 
     if (primaryContact) {
       const phoneNumber = primaryContact.phone.replace(/[^0-9+]/g, "");
