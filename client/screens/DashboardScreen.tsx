@@ -166,20 +166,16 @@ export default function DashboardScreen() {
               <ThemedText type="h2" style={styles.greeting}>
                 {t("dashboard.greeting")}
               </ThemedText>
-              <Animated.View
-                key={subtitleKey}
-                entering={FadeIn.duration(400)}
-                exiting={FadeOut.duration(300)}
-              >
-                <ThemedText
-                  type="body"
-                  style={[styles.subtitle, { color: theme.textSecondary }]}
+              <View style={styles.subtitleContainer}>
+                <Animated.Text
+                  key={subtitleKey}
+                  entering={FadeIn.duration(400)}
+                  style={[styles.subtitle, { color: theme.textSecondary, fontSize: 16 }]}
                   numberOfLines={2}
-                  ellipsizeMode="tail"
                 >
                   {currentSubtitle}
-                </ThemedText>
-              </Animated.View>
+                </Animated.Text>
+              </View>
             </View>
           </View>
         </Animated.View>
@@ -229,6 +225,10 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     opacity: 0.8,
+  },
+  subtitleContainer: {
+    height: 44,
+    justifyContent: "flex-start",
   },
   sectionTitle: {
     marginBottom: Spacing.lg,
