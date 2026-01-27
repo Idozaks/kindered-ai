@@ -29,6 +29,7 @@ import { Spacing, BorderRadius, Typography, Colors } from "@/constants/theme";
 import { whatsappJourneys, Journey, getStepImage } from "@/data/whatsappJourneys";
 import { Image } from "expo-image";
 import { useJourneyProgress, useAllProgress } from "@/hooks/useJourneyProgress";
+import { useCelebration } from "@/contexts/CelebrationContext";
 
 const WHATSAPP_GREEN = "#25D366";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -44,12 +45,14 @@ export default function WhatsAppGuidesScreen() {
   const stepStartTime = useRef<number>(Date.now());
 
   const { allProgress } = useAllProgress();
+  const { celebrate } = useCelebration();
   const { 
     progress, 
     updateProgress, 
     recordStepCompletion,
     isUpdating 
   } = useJourneyProgress(selectedJourney?.id || null);
+  const isHebrew = t("language") === "he" || t("language") === "עברית";
 
   useEffect(() => {
     if (selectedJourney && progress.currentStep > 0 && !progress.completed) {
@@ -103,6 +106,8 @@ export default function WhatsAppGuidesScreen() {
   const handleFinish = useCallback(async () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     
+    const journeyTitle = selectedJourney ? (isHebrew ? selectedJourney.titleHe : selectedJourney.title) : "";
+    
     if (selectedJourney) {
       const timeSpent = Math.round((Date.now() - stepStartTime.current) / 1000);
       try {
@@ -113,9 +118,17 @@ export default function WhatsAppGuidesScreen() {
       }
     }
     
-    setSelectedJourney(null);
-    setCurrentStep(0);
-  }, [selectedJourney, currentStep, recordStepCompletion, updateProgress]);
+    celebrate({
+      message: isHebrew ? "כל הכבוד!" : "Well Done!",
+      subMessage: isHebrew ? `סיימת: ${journeyTitle}` : `Completed: ${journeyTitle}`,
+      type: "both",
+    });
+    
+    setTimeout(() => {
+      setSelectedJourney(null);
+      setCurrentStep(0);
+    }, 2800);
+  }, [selectedJourney, currentStep, recordStepCompletion, updateProgress, celebrate, isHebrew]);
 
   const handleBackToList = useCallback(async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

@@ -25,6 +25,7 @@ import RootStackNavigator from "@/navigation/RootStackNavigator";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { CelebrationProvider } from "@/contexts/CelebrationContext";
 
 import "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
@@ -99,9 +100,11 @@ export default function App() {
           <GestureHandlerRootView style={styles.root}>
             <KeyboardProvider>
               <ThemeProvider>
-                <AuthProvider>
-                  <NavigationRoot />
-                </AuthProvider>
+                <CelebrationProvider>
+                  <AuthProvider>
+                    <NavigationRoot />
+                  </AuthProvider>
+                </CelebrationProvider>
                 <StatusBar style="dark" />
               </ThemeProvider>
             </KeyboardProvider>

@@ -27,6 +27,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius, Typography, Colors } from "@/constants/theme";
 import { aiJourneys, Journey } from "@/data/aiJourneys";
 import { useJourneyProgress, useAllProgress } from "@/hooks/useJourneyProgress";
+import { useCelebration } from "@/contexts/CelebrationContext";
 
 const AI_PURPLE = "#6C63FF";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -43,6 +44,7 @@ export default function AIGuidesScreen() {
   const isHebrew = i18n.language === "he";
 
   const { allProgress } = useAllProgress();
+  const { celebrate } = useCelebration();
   const { 
     progress, 
     updateProgress, 
@@ -101,6 +103,8 @@ export default function AIGuidesScreen() {
   const handleFinish = useCallback(async () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     
+    const journeyTitle = selectedJourney ? (isHebrew ? selectedJourney.titleHe : selectedJourney.title) : "";
+    
     if (selectedJourney) {
       const timeSpent = Math.round((Date.now() - stepStartTime.current) / 1000);
       try {
@@ -111,9 +115,17 @@ export default function AIGuidesScreen() {
       }
     }
     
-    setSelectedJourney(null);
-    setCurrentStep(0);
-  }, [selectedJourney, currentStep, recordStepCompletion, updateProgress]);
+    celebrate({
+      message: isHebrew ? "כל הכבוד!" : "Well Done!",
+      subMessage: isHebrew ? `סיימת: ${journeyTitle}` : `Completed: ${journeyTitle}`,
+      type: "both",
+    });
+    
+    setTimeout(() => {
+      setSelectedJourney(null);
+      setCurrentStep(0);
+    }, 2800);
+  }, [selectedJourney, currentStep, recordStepCompletion, updateProgress, celebrate, isHebrew]);
 
   const handleBackToList = useCallback(async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
