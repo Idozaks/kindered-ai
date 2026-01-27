@@ -66,7 +66,7 @@ export default function DashboardScreen() {
     const interval = setInterval(() => {
       setCurrentSubtitle(getRandomSubtitle());
       setSubtitleKey(prev => prev + 1);
-    }, 4000);
+    }, 8000);
     
     return () => clearInterval(interval);
   }, [getRandomSubtitle]);
