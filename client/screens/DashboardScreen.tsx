@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { StyleSheet, View, ScrollView, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
@@ -8,6 +8,8 @@ import { useTranslation } from "react-i18next";
 import Animated, {
   FadeInDown,
   FadeInUp,
+  FadeIn,
+  FadeOut,
 } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/ThemedText";
@@ -38,16 +40,36 @@ export default function DashboardScreen() {
   const { theme } = useTheme();
   const { t } = useTranslation();
   const [isListening, setIsListening] = useState(false);
+  const [subtitleKey, setSubtitleKey] = useState(0);
+  const lastIndexRef = useRef(-1);
 
-  // Get random subtitle from the corpus
-  const randomSubtitle = useMemo(() => {
-    const subtitles = t("dashboard.subtitles", { returnObjects: true }) as string[];
+  // Get subtitles array
+  const subtitles = t("dashboard.subtitles", { returnObjects: true }) as string[];
+  
+  // Get current subtitle (avoiding same one twice in a row)
+  const getRandomSubtitle = useCallback(() => {
     if (Array.isArray(subtitles) && subtitles.length > 0) {
-      const randomIndex = Math.floor(Math.random() * subtitles.length);
+      let randomIndex;
+      do {
+        randomIndex = Math.floor(Math.random() * subtitles.length);
+      } while (randomIndex === lastIndexRef.current && subtitles.length > 1);
+      lastIndexRef.current = randomIndex;
       return subtitles[randomIndex];
     }
     return t("dashboard.subtitle");
-  }, [t]);
+  }, [subtitles, t]);
+
+  const [currentSubtitle, setCurrentSubtitle] = useState(() => getRandomSubtitle());
+
+  // Rotate subtitle every 4 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSubtitle(getRandomSubtitle());
+      setSubtitleKey(prev => prev + 1);
+    }, 4000);
+    
+    return () => clearInterval(interval);
+  }, [getRandomSubtitle]);
 
   const tools = [
     {
@@ -144,14 +166,20 @@ export default function DashboardScreen() {
               <ThemedText type="h2" style={styles.greeting}>
                 {t("dashboard.greeting")}
               </ThemedText>
-              <ThemedText
-                type="body"
-                style={[styles.subtitle, { color: theme.textSecondary }]}
-                numberOfLines={2}
-                ellipsizeMode="tail"
+              <Animated.View
+                key={subtitleKey}
+                entering={FadeIn.duration(400)}
+                exiting={FadeOut.duration(300)}
               >
-                {randomSubtitle}
-              </ThemedText>
+                <ThemedText
+                  type="body"
+                  style={[styles.subtitle, { color: theme.textSecondary }]}
+                  numberOfLines={2}
+                  ellipsizeMode="tail"
+                >
+                  {currentSubtitle}
+                </ThemedText>
+              </Animated.View>
             </View>
           </View>
         </Animated.View>
