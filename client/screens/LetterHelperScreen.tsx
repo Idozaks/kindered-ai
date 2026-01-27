@@ -1206,6 +1206,7 @@ const styles = StyleSheet.create({
   },
   resultCard: {
     padding: Spacing.xl,
+    marginBottom: Spacing.lg,
   },
   resultRow: {
     flexDirection: "row",
