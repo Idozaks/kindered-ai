@@ -26,6 +26,8 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { CelebrationProvider } from "@/contexts/CelebrationContext";
+import { AuraProvider } from "@/contexts/AuraContext";
+import { AuraFloatingDashboard } from "@/components/aura";
 
 import "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
@@ -101,9 +103,12 @@ export default function App() {
             <KeyboardProvider>
               <ThemeProvider>
                 <CelebrationProvider>
-                  <AuthProvider>
-                    <NavigationRoot />
-                  </AuthProvider>
+                  <AuraProvider>
+                    <AuthProvider>
+                      <NavigationRoot />
+                      <AuraFloatingDashboard />
+                    </AuthProvider>
+                  </AuraProvider>
                 </CelebrationProvider>
                 <StatusBar style="dark" />
               </ThemeProvider>
