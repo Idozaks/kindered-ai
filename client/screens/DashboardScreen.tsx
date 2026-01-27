@@ -107,6 +107,13 @@ export default function DashboardScreen() {
       image: monitorIcon,
       color: "#4285F4",
     },
+    {
+      id: "learningQuiz",
+      title: "שאלון למידה",
+      description: "גלה את מסלול הלמידה המתאים לך",
+      image: monitorIcon,
+      color: "#9C27B0",
+    },
   ];
 
   const handleToolPress = useCallback(
@@ -126,6 +133,9 @@ export default function DashboardScreen() {
           break;
         case "websiteHelper":
           navigation.navigate("WebsiteHelper");
+          break;
+        case "learningQuiz":
+          navigation.navigate("LearningPathQuiz");
           break;
       }
     },
