@@ -189,9 +189,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   logo: {
-    width: 56,
-    height: 56,
-    marginRight: Spacing.md,
+    width: 80,
+    height: 80,
+    marginRight: Spacing.lg,
   },
   greetingTextContainer: {
     flex: 1,
