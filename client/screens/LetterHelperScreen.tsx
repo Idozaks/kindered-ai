@@ -938,9 +938,15 @@ export default function LetterHelperScreen() {
                   </ThemedText>
                 </Pressable>
               </View>
-              <ThemedText type="body" style={styles.summaryTextLarge}>
-                {result.summary}
-              </ThemedText>
+              <ScrollView 
+                style={styles.summaryScrollContainer}
+                nestedScrollEnabled={true}
+                showsVerticalScrollIndicator={true}
+              >
+                <ThemedText type="body" style={styles.summaryTextLarge}>
+                  {result.summary}
+                </ThemedText>
+              </ScrollView>
             </GlassCard>
 
             {/* Hebrew Terms Tooltips */}
@@ -1326,6 +1332,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginTop: Spacing.sm,
     alignSelf: "flex-start",
+  },
+  summaryScrollContainer: {
+    maxHeight: 180,
   },
   summaryTextLarge: {
     fontSize: 20,
