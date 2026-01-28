@@ -109,7 +109,7 @@ export function AuraFloatingButton({ onPress }: AuraFloatingButtonProps) {
   return (
     <>
       <GestureDetector gesture={composedGesture}>
-        <Animated.View style={[styles.container, animatedStyle]}>
+        <Animated.View style={[styles.container, animatedStyle]} testID="aura-floating-button">
           <BlurView
             intensity={80}
             tint={isDark ? "dark" : "light"}
