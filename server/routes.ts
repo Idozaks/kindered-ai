@@ -7,6 +7,7 @@ import gmailProgressRoutes from "./gmail-progress-routes";
 import paymentRoutes from "./routes/payment-routes";
 import evaluationRoutes from "./routes/evaluation-routes";
 import auraRoutes from "./routes/aura-routes";
+import liveVoiceRoutes from "./live-voice-routes";
 import { registerImageRoutes } from "./replit_integrations/image";
 import { registerWebsiteHelperRoutes } from "./routes/websiteHelper";
 
@@ -37,6 +38,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Aura companion routes
   app.use("/api/aura", auraRoutes);
+
+  // Live voice conversation routes (Gemini Live API)
+  app.use("/api/live", liveVoiceRoutes);
 
   const httpServer = createServer(app);
 
