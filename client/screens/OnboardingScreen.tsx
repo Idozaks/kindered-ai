@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Pressable,
   ScrollView,
+  Dimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
@@ -18,6 +19,9 @@ import {
   BorderRadius,
   Shadows,
 } from "@/constants/theme";
+import { BreathingGradientMesh } from "@/components/animations/BreathingGradientMesh";
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function OnboardingScreen() {
   const { theme } = useTheme();
@@ -39,6 +43,12 @@ export default function OnboardingScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.backgroundRoot }]}>
+      <BreathingGradientMesh
+        width={SCREEN_WIDTH}
+        height={SCREEN_HEIGHT}
+        colors={["#9B59B6", "#E91E63", "#3498DB", "#00BCD4", "#9C27B0"]}
+        nodeCount={4}
+      />
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[

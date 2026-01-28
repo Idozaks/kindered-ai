@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
-import { StyleSheet, View, ScrollView, Image } from "react-native";
+import { StyleSheet, View, ScrollView, Image, Dimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useNavigation } from "@react-navigation/native";
@@ -11,6 +11,9 @@ import Animated, {
   FadeIn,
   FadeOut,
 } from "react-native-reanimated";
+import { ParticleConstellation } from "@/components/animations/ParticleConstellation";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -148,6 +151,13 @@ export default function DashboardScreen() {
 
   return (
     <ThemedView style={styles.container}>
+      <ParticleConstellation
+        width={SCREEN_WIDTH}
+        height={280}
+        particleCount={15}
+        color={theme.primary}
+        connectionDistance={80}
+      />
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[
