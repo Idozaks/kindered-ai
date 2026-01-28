@@ -16,7 +16,8 @@ import { useTheme } from "@/hooks/useTheme";
 import { useAura } from "@/contexts/AuraContext";
 import { useNativeVoice, VoiceState } from "@/hooks/useNativeVoice";
 import { Spacing, BorderRadius, AuraColors } from "@/constants/theme";
-import { AuraPulseOrb } from "./AuraPulseOrb";
+import { LiquidOrb } from "./LiquidOrb";
+import { WaveVisualizer } from "./WaveVisualizer";
 import { AuraHandshakeModal } from "./AuraHandshakeModal";
 import { ThemedText } from "@/components/ThemedText";
 
@@ -193,7 +194,7 @@ export function AuraFloatingButton({ onPress }: AuraFloatingButtonProps) {
               style={styles.blurContainer}
             >
               <View style={[styles.button, { borderColor: theme.glassBorder }]}>
-                <AuraPulseOrb state={aura.voiceState} size={48} />
+                <LiquidOrb state={aura.voiceState} size={48} />
               </View>
             </BlurView>
           </Pressable>
@@ -215,7 +216,7 @@ export function AuraFloatingButton({ onPress }: AuraFloatingButtonProps) {
           <BlurView intensity={80} tint="dark" style={styles.modalContent}>
             <View style={[styles.modalHeader, { borderBottomColor: theme.glassBorder }]}>
               <View style={styles.orbSmall}>
-                <AuraPulseOrb state={aura.voiceState} size={40} />
+                <LiquidOrb state={aura.voiceState} size={40} />
               </View>
               <View style={styles.headerText}>
                 <ThemedText style={[styles.title, { color: theme.text }]}>
@@ -283,19 +284,22 @@ export function AuraFloatingButton({ onPress }: AuraFloatingButtonProps) {
 
             {isListening ? (
               <View style={[styles.transcriptBox, { backgroundColor: AuraColors.listening + "20", borderColor: AuraColors.listening }]}>
-                <ThemedText style={[styles.listeningText, { color: AuraColors.listening }]}>
+                <WaveVisualizer state="listening" width={200} height={40} />
+                <ThemedText style={[styles.listeningText, { color: AuraColors.listening, marginTop: Spacing.sm }]}>
                   מקשיבה... דבר עכשיו
                 </ThemedText>
               </View>
             ) : isProcessing ? (
               <View style={[styles.transcriptBox, { backgroundColor: AuraColors.thinking + "20", borderColor: AuraColors.thinking }]}>
-                <ThemedText style={[styles.listeningText, { color: AuraColors.thinking }]}>
+                <WaveVisualizer state="idle" width={200} height={40} color={AuraColors.thinking} />
+                <ThemedText style={[styles.listeningText, { color: AuraColors.thinking, marginTop: Spacing.sm }]}>
                   מעבד את מה שאמרת...
                 </ThemedText>
               </View>
             ) : isSpeaking ? (
               <View style={[styles.transcriptBox, { backgroundColor: AuraColors.speaking + "20", borderColor: AuraColors.speaking }]}>
-                <ThemedText style={[styles.listeningText, { color: AuraColors.speaking }]}>
+                <WaveVisualizer state="speaking" width={200} height={40} />
+                <ThemedText style={[styles.listeningText, { color: AuraColors.speaking, marginTop: Spacing.sm }]}>
                   {speechTranscript || "מדברת..."}
                 </ThemedText>
               </View>
@@ -400,6 +404,7 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
+    alignItems: "center",
   },
   transcriptText: {
     fontSize: 18,
