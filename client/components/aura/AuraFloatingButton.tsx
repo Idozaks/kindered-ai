@@ -34,25 +34,6 @@ export function AuraFloatingButton({ onPress }: AuraFloatingButtonProps) {
 
   const [showHandshake, setShowHandshake] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  
-  const handleVoiceStateChange = (voiceState: VoiceState) => {
-    const stateMap: Record<VoiceState, typeof aura.voiceState> = {
-      idle: "idle",
-      listening: "listening",
-      processing: "thinking",
-      speaking: "speaking",
-    };
-    aura.setVoiceState(stateMap[voiceState]);
-  };
-
-  const handleTranscript = (text: string) => {
-    aura.setTranscript(text);
-    aura.recordInteraction();
-  };
-
-  const handleVoiceError = (error: string) => {
-    console.log("Voice error:", error);
-  };
 
   const { 
     state: voiceState,
@@ -69,11 +50,32 @@ export function AuraFloatingButton({ onPress }: AuraFloatingButtonProps) {
     userName: aura.userName || undefined,
     userGender: aura.userGender || undefined,
     context: aura.currentScreen,
-    onStateChange: handleVoiceStateChange,
-    onTranscript: handleTranscript,
-    onError: handleVoiceError,
     autoListen: true,
   });
+
+  const prevVoiceStateRef = React.useRef<VoiceState>("idle");
+  const prevTranscriptRef = React.useRef<string>("");
+
+  useEffect(() => {
+    if (prevVoiceStateRef.current !== voiceState) {
+      prevVoiceStateRef.current = voiceState;
+      const stateMap: Record<VoiceState, typeof aura.voiceState> = {
+        idle: "idle",
+        listening: "listening",
+        processing: "thinking",
+        speaking: "speaking",
+      };
+      aura.setVoiceState(stateMap[voiceState]);
+    }
+  }, [voiceState]);
+
+  useEffect(() => {
+    if (speechTranscript && speechTranscript !== prevTranscriptRef.current) {
+      prevTranscriptRef.current = speechTranscript;
+      aura.setTranscript(speechTranscript);
+      aura.recordInteraction();
+    }
+  }, [speechTranscript]);
 
   const handleTalkToMe = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -179,15 +181,22 @@ export function AuraFloatingButton({ onPress }: AuraFloatingButtonProps) {
     <>
       <GestureDetector gesture={composedGesture}>
         <Animated.View style={[styles.container, animatedStyle]} testID="aura-floating-button">
-          <BlurView
-            intensity={80}
-            tint={isDark ? "dark" : "light"}
-            style={styles.blurContainer}
+          <Pressable 
+            onPress={handlePress}
+            testID="aura-orb-pressable"
+            accessibilityLabel="פתח את דורי"
+            accessibilityRole="button"
           >
-            <View style={[styles.button, { borderColor: theme.glassBorder }]}>
-              <AuraPulseOrb state={aura.voiceState} size={48} />
-            </View>
-          </BlurView>
+            <BlurView
+              intensity={80}
+              tint={isDark ? "dark" : "light"}
+              style={styles.blurContainer}
+            >
+              <View style={[styles.button, { borderColor: theme.glassBorder }]}>
+                <AuraPulseOrb state={aura.voiceState} size={48} />
+              </View>
+            </BlurView>
+          </Pressable>
         </Animated.View>
       </GestureDetector>
 
