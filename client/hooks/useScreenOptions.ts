@@ -31,5 +31,7 @@ export function useScreenOptions({
     contentStyle: {
       backgroundColor: theme.backgroundRoot,
     },
+    animation: "fade_from_bottom",
+    animationDuration: 250,
   };
 }
