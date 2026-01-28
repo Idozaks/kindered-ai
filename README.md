@@ -1,220 +1,224 @@
-# Dori AI
+<div dir="rtl">
 
-**The Ultra-Accessible Digital Companion for Seniors**
+# דורי AI
 
-Dori AI bridges the gap between traditional life and modern technology, providing seniors (70+) with a "patient, technically brilliant grandchild" experience. Built with a voice-first approach, large touch targets, and simplified workflows for complex digital tasks.
+**המלווה הדיגיטלי הנגיש במיוחד למבוגרים**
 
----
-
-## Overview
-
-Dori AI is a mobile companion application designed specifically for seniors who want to embrace technology without feeling overwhelmed. The app features:
-
-- **Voice-First Interaction**: Speak naturally in Hebrew or English
-- **Large, Accessible UI**: Minimum 20px fonts, high contrast, and generous touch targets
-- **Simplified Digital Tasks**: Complex technology made simple
-- **Patient AI Companion**: Never judges, always helpful, explains as many times as needed
+דורי AI מגשרת על הפער בין החיים המסורתיים לטכנולוגיה המודרנית, ומספקת למבוגרים (70+) חוויה של "נכד סבלני ומבריק טכנית". האפליקציה בנויה עם גישת קול-ראשונה, כפתורי מגע גדולים, ותהליכי עבודה פשוטים למשימות דיגיטליות מורכבות.
 
 ---
 
-## Key Features
+## סקירה כללית
 
-### Aura Voice Companion
-A floating, movable assistant that's always there when you need help:
-- Animated pulse orb with visual feedback
-- Gemini-powered high-quality Hebrew text-to-speech
-- Personalized greetings using proper Hebrew grammar (male/female forms)
-- Quick actions: "Talk to me", "Repeat", "Speak slower"
+דורי AI היא אפליקציית מלווה לנייד שתוכננה במיוחד עבור מבוגרים שרוצים לאמץ טכנולוגיה מבלי להרגיש מוצפים. האפליקציה כוללת:
 
-### Ask Kindred
-AI chat assistant that acts as a patient, helpful digital companion:
-- Answers questions in simple, everyday language
-- Guides users through digital tasks step-by-step
-- Remembers context and preferences
-
-### Letter Helper
-Document scanning and plain-language translation:
-- Take a photo of any document (bills, letters, forms)
-- AI analyzes and explains in simple terms
-- Suggests what actions to take
-- Read aloud with high-quality voice
-
-### Learning Guides
-Step-by-step tutorials for essential digital skills:
-- **WhatsApp Guides**: Reading messages, sending texts/photos, video calls, privacy settings
-- **Gmail Guides**: Reading emails, sending emails, attachments, searching, organizing
-- **Grandchildren Connection Tips**: Voice messages, emoji reactions, photo sharing, video calls
-- **AI Learning Modules**: Understanding AI, asking questions, staying safe online
-
-### Learning Path Quiz
-Adaptive assessment that recommends personalized learning:
-- 5-question evaluation of digital skills
-- Assesses smartphone navigation, WhatsApp usage, digital safety
-- AI-powered personalized recommendations
-
-### Accessibility Features
-Built-in accessibility throughout:
-- High contrast mode
-- Adjustable speech rate
-- Privacy shield for sensitive content
-- RTL (Right-to-Left) support for Hebrew
+- **אינטראקציה קולית ראשונה**: דברו בטבעיות בעברית או באנגלית
+- **ממשק נגיש וגדול**: גופנים מינימום 20 פיקסל, ניגודיות גבוהה, ואזורי מגע נדיבים
+- **משימות דיגיטליות פשוטות**: טכנולוגיה מורכבת הופכת לפשוטה
+- **מלווה AI סבלני**: אף פעם לא שופט, תמיד עוזר, מסביר כמה פעמים שצריך
 
 ---
 
-## Technology Stack
+## תכונות עיקריות
 
-### Frontend
-- **Framework**: Expo SDK 54 with React Native 0.81
-- **Navigation**: React Navigation with Native Stack
-- **State Management**: TanStack React Query + React hooks
-- **Animations**: React Native Reanimated with haptic feedback
-- **Internationalization**: i18next with Hebrew (RTL) and English
+### אאורה - מלווה קולי
+כפתור צף ונייד שתמיד שם כשצריך עזרה:
+- כדור פועם מונפש עם משוב חזותי
+- טקסט-לדיבור עברי באיכות גבוהה מבית Gemini
+- ברכות מותאמות אישית בדקדוק עברי נכון (לשון זכר/נקבה)
+- פעולות מהירות: "דבר איתי", "חזור שוב", "לאט יותר"
 
-### Backend
-- **Runtime**: Node.js with Express 5
-- **Database**: PostgreSQL with Drizzle ORM
-- **AI Integration**: Google Gemini (flash, pro, and TTS models)
+### דבר עם דורי AI
+עוזר צ'אט AI שמשמש כמלווה דיגיטלי סבלני ועוזר:
+- עונה על שאלות בשפה פשוטה ויומיומית
+- מדריך משתמשים במשימות דיגיטליות צעד אחר צעד
+- זוכר הקשר והעדפות
 
-### Design System
-- **Typography**: Inter (English), Varela Round (Hebrew)
-- **Visual Style**: iOS 26 Liquid Glass UI with frosted effects
-- **Components**: GlassCard, GlassButton with backdrop blur
+### עוזר מכתבים
+סריקת מסמכים ותרגום לשפה פשוטה:
+- צלמו תמונה של כל מסמך (חשבונות, מכתבים, טפסים)
+- AI מנתח ומסביר במילים פשוטות
+- מציע אילו פעולות לנקוט
+- קריאה בקול עם דיבור באיכות גבוהה
 
----
+### מדריכי למידה
+הדרכות צעד אחר צעד למיומנויות דיגיטליות חיוניות:
+- **מדריכי וואטסאפ**: קריאת הודעות, שליחת טקסטים/תמונות, שיחות וידאו, הגדרות פרטיות
+- **מדריכי ג'ימייל**: קריאת אימיילים, שליחת אימיילים, צירופים, חיפוש, ארגון
+- **טיפים לקשר עם נכדים**: הודעות קוליות, תגובות אימוג'י, שיתוף תמונות, שיחות וידאו
+- **מודולי למידת AI**: הבנת AI, איך לשאול שאלות, שמירה על בטיחות באינטרנט
 
-## Recent Development Timeline
+### חידון מסלול למידה
+הערכה מותאמת שממליצה על למידה מותאמת אישית:
+- הערכה של 5 שאלות על מיומנויות דיגיטליות
+- בודק ניווט בסמארטפון, שימוש בוואטסאפ, בטיחות דיגיטלית
+- המלצות מותאמות אישית מונעות AI
 
-### January 2026 - Aura v4.0 Complete Overhaul
-
-**Week 4 - UI Simplification**
-- Transformed Aura from static dashboard to floating movable icon
-- Removed water intake tracking and emergency contacts from main interface
-- Added drag-to-reposition functionality
-- Clean bottom sheet modal with quick actions
-
-**Week 3 - Voice Quality Enhancement**
-- Integrated Gemini TTS for high-quality Hebrew speech
-- Added 800ms delay for modal display before speaking
-- Graceful fallback to expo-speech if Gemini unavailable
-- Improved speech timing and natural pauses
-
-**Week 2 - Personalization & Intelligence**
-- Handshake protocol with Hebrew name-based gender prediction
-- 200+ name database for automatic gender detection
-- Gendered Hebrew grammar throughout the app
-- Proactive idle detection (10s screen timeout suggestions)
-- 5-second patience rule with gentle check-ins
-- Visual answer pinning for frequently asked questions
-
-**Week 1 - Foundation & Safety**
-- Emergency SOS with GPS broadcasting via SMS
-- Circle contacts integration for emergency notifications
-- Full interaction logging (transcripts, intents, sentiment)
-- Haptic feedback with verbal confirmations
-
-### December 2025
-
-**Learning Content Expansion**
-- Gmail step-by-step guides with contextual images
-- Grandchildren connection tips (5 practical guides)
-- AI learning modules for digital literacy
-- Learning path quiz with AI-powered recommendations
-
-**Celebration System**
-- Confetti and starburst animations
-- Haptic feedback on achievements
-- Progress tracking across guides
-
-### November 2025
-
-**Core Features Launch**
-- Guest mode for barrier-free exploration
-- Ask Kindred AI chat assistant
-- Letter Helper document analysis
-- WhatsApp learning guides
-- Basic Aura voice companion
+### תכונות נגישות
+נגישות מובנית לאורך כל האפליקציה:
+- מצב ניגודיות גבוהה
+- מהירות דיבור מתכווננת
+- מגן פרטיות לתוכן רגיש
+- תמיכה ב-RTL (ימין לשמאל) לעברית
 
 ---
 
-## Getting Started
+## מחסנית טכנולוגית
 
-### Prerequisites
+### צד לקוח
+- **Framework**: Expo SDK 54 עם React Native 0.81
+- **ניווט**: React Navigation עם Native Stack
+- **ניהול מצב**: TanStack React Query + React hooks
+- **אנימציות**: React Native Reanimated עם משוב הפטי
+- **בינלאומיות**: i18next עם עברית (RTL) ואנגלית
+
+### צד שרת
+- **Runtime**: Node.js עם Express 5
+- **בסיס נתונים**: PostgreSQL עם Drizzle ORM
+- **אינטגרציית AI**: Google Gemini (מודלים flash, pro, ו-TTS)
+
+### מערכת עיצוב
+- **טיפוגרפיה**: Inter (אנגלית), Varela Round (עברית)
+- **סגנון חזותי**: iOS 26 Liquid Glass UI עם אפקטים מט
+- **רכיבים**: GlassCard, GlassButton עם טשטוש רקע
+
+---
+
+## ציר זמן פיתוח אחרון
+
+### ינואר 2026 - שדרוג מלא של אאורה v4.0
+
+**שבוע 4 - פישוט ממשק**
+- הפיכת אאורה מלוח בקרה סטטי לאייקון צף נייד
+- הסרת מעקב שתיית מים ואנשי קשר לחירום מהממשק הראשי
+- הוספת פונקציונליות גרירה-למיקום-מחדש
+- מודל תחתון נקי עם פעולות מהירות
+
+**שבוע 3 - שיפור איכות קול**
+- שילוב Gemini TTS לדיבור עברי באיכות גבוהה
+- הוספת השהייה של 800 מילישניות להצגת מודל לפני דיבור
+- נפילה חיננית ל-expo-speech אם Gemini לא זמין
+- שיפור תזמון דיבור והפסקות טבעיות
+
+**שבוע 2 - התאמה אישית ואינטליגנציה**
+- פרוטוקול לחיצת יד עם ניבוי מגדר מבוסס שם עברי
+- מאגר של 200+ שמות לזיהוי מגדר אוטומטי
+- דקדוק עברי מותאם מגדר לאורך כל האפליקציה
+- זיהוי חוסר פעילות יזום (הצעות לאחר 10 שניות)
+- כלל סבלנות של 5 שניות עם בדיקות עדינות
+- הצמדה חזותית של תשובות לשאלות נפוצות
+
+**שבוע 1 - יסודות ובטיחות**
+- SOS חירום עם שידור GPS באמצעות SMS
+- אינטגרציית אנשי קשר "המעגל" להודעות חירום
+- רישום אינטראקציות מלא (תמלולים, כוונות, סנטימנט)
+- משוב הפטי עם אישורים קוליים
+
+### דצמבר 2025
+
+**הרחבת תוכן למידה**
+- מדריכי ג'ימייל צעד אחר צעד עם תמונות הקשריות
+- טיפים לחיבור עם נכדים (5 מדריכים מעשיים)
+- מודולי למידת AI לאוריינות דיגיטלית
+- חידון מסלול למידה עם המלצות מונעות AI
+
+**מערכת חגיגות**
+- אנימציות קונפטי והתפרצות כוכבים
+- משוב הפטי על הישגים
+- מעקב התקדמות לאורך המדריכים
+
+### נובמבר 2025
+
+**השקת תכונות ליבה**
+- מצב אורח לחקירה ללא מחסומים
+- עוזר צ'אט AI "דבר עם דורי"
+- עוזר מכתבים לניתוח מסמכים
+- מדריכי למידה לוואטסאפ
+- מלווה קולי אאורה בסיסי
+
+---
+
+## התחלה מהירה
+
+### דרישות מקדימות
 - Node.js 18+
-- PostgreSQL database
-- Expo Go app (for mobile testing)
+- בסיס נתונים PostgreSQL
+- אפליקציית Expo Go (לבדיקה בנייד)
 
-### Installation
+### התקנה
 
 ```bash
-# Install dependencies
+# התקנת תלויות
 npm install
 
-# Set up environment variables
-# DATABASE_URL - PostgreSQL connection string
-# AI_INTEGRATIONS_GEMINI_API_KEY - Gemini API key
+# הגדרת משתני סביבה
+# DATABASE_URL - מחרוזת חיבור PostgreSQL
+# AI_INTEGRATIONS_GEMINI_API_KEY - מפתח API של Gemini
 
-# Push database schema
+# דחיפת סכמת בסיס נתונים
 npm run db:push
 
-# Start development servers
+# הפעלת שרתי פיתוח
 npm run dev
 ```
 
-### Running the App
-- **Web**: Opens automatically at localhost:8081
-- **Mobile**: Scan QR code with Expo Go app
+### הרצת האפליקציה
+- **אינטרנט**: נפתח אוטומטית ב-localhost:8081
+- **נייד**: סרקו קוד QR עם אפליקציית Expo Go
 
 ---
 
-## Environment Variables
+## משתני סביבה
 
-| Variable | Description |
-|----------|-------------|
-| `DATABASE_URL` | PostgreSQL connection string |
-| `AI_INTEGRATIONS_GEMINI_API_KEY` | Google Gemini API key |
-| `AI_INTEGRATIONS_GEMINI_BASE_URL` | Gemini API base URL |
+| משתנה | תיאור |
+|-------|-------|
+| `DATABASE_URL` | מחרוזת חיבור PostgreSQL |
+| `AI_INTEGRATIONS_GEMINI_API_KEY` | מפתח API של Google Gemini |
+| `AI_INTEGRATIONS_GEMINI_BASE_URL` | כתובת בסיס API של Gemini |
 
 ---
 
-## Project Structure
+## מבנה הפרויקט
 
 ```
 dori-ai/
-├── client/                 # Expo/React Native frontend
-│   ├── components/         # Reusable UI components
-│   │   └── aura/          # Aura voice companion components
-│   ├── contexts/          # React contexts (Auth, Aura, Theme)
-│   ├── screens/           # App screens
-│   ├── navigation/        # Navigation configuration
-│   └── utils/             # Utility functions
-├── server/                # Express backend
-│   ├── routes/            # API routes
-│   └── storage.ts         # Database operations
-├── shared/                # Shared types and schemas
-└── migrations/            # Database migrations
+├── client/                 # צד לקוח Expo/React Native
+│   ├── components/         # רכיבי UI לשימוש חוזר
+│   │   └── aura/          # רכיבי מלווה קולי אאורה
+│   ├── contexts/          # קונטקסטים של React (Auth, Aura, Theme)
+│   ├── screens/           # מסכי האפליקציה
+│   ├── navigation/        # הגדרות ניווט
+│   └── utils/             # פונקציות עזר
+├── server/                # צד שרת Express
+│   ├── routes/            # נתיבי API
+│   └── storage.ts         # פעולות בסיס נתונים
+├── shared/                # טיפוסים וסכמות משותפים
+└── migrations/            # מיגרציות בסיס נתונים
 ```
 
 ---
 
-## Contributing
+## תרומה
 
-Dori AI is built with love for our senior community. Contributions that improve accessibility, add helpful features, or enhance the user experience are welcome.
-
----
-
-## License
-
-This project is proprietary software. All rights reserved.
+דורי AI נבנית באהבה לקהילת המבוגרים שלנו. תרומות שמשפרות נגישות, מוסיפות תכונות מועילות, או משפרות את חוויית המשתמש יתקבלו בברכה.
 
 ---
 
-## Acknowledgments
+## רישיון
 
-- Built with Expo, React Native, and Google Gemini
-- Designed with input from seniors and caregivers
-- Hebrew language support powered by custom name database
-- Voice synthesis using Gemini TTS for natural Hebrew speech
+תוכנה זו היא קניינית. כל הזכויות שמורות.
 
 ---
 
-*Dori AI - Technology that cares*
+## תודות
+
+- נבנה עם Expo, React Native, ו-Google Gemini
+- עוצב עם קלט ממבוגרים ומטפלים
+- תמיכה בשפה העברית מופעלת על ידי מאגר שמות מותאם
+- סינתזת קול באמצעות Gemini TTS לדיבור עברי טבעי
+
+---
+
+*דורי AI - טכנולוגיה שאכפת לה*
+
+</div>
