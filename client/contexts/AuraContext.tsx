@@ -1,8 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
-import { AppState, AppStateStatus } from "react-native";
+import { AppState, AppStateStatus, Platform } from "react-native";
 import * as Speech from "expo-speech";
 import * as Haptics from "expo-haptics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AudioPlayer, useAudioPlayer } from "expo-audio";
+
+import { getApiUrl } from "@/lib/query-client";
 
 import { AuraVoiceState } from "@/components/aura/AuraPulseOrb";
 import { CircleContact } from "@/components/aura/AuraCircleContacts";
@@ -158,6 +161,22 @@ export function AuraProvider({ children }: { children: ReactNode }) {
 
   const screenIdleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const patienceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
+  const onAudioCompleteRef = useRef<(() => void) | null>(null);
+  
+  const nativePlayer = useAudioPlayer(null);
+  
+  useEffect(() => {
+    if (nativePlayer) {
+      const subscription = nativePlayer.addListener("playbackStatusUpdate", (status) => {
+        if ((status as any).didJustFinish && onAudioCompleteRef.current) {
+          onAudioCompleteRef.current();
+          onAudioCompleteRef.current = null;
+        }
+      });
+      return () => subscription.remove();
+    }
+  }, [nativePlayer]);
 
   useEffect(() => {
     const loadStoredData = async () => {
@@ -259,6 +278,53 @@ export function AuraProvider({ children }: { children: ReactNode }) {
     setState((prev) => ({ ...prev, transcript }));
   }, []);
 
+  const playNativeAudio = useCallback(async (base64: string, mimeType: string, onComplete?: () => void) => {
+    try {
+      onAudioCompleteRef.current = onComplete || null;
+      const uri = `data:${mimeType};base64,${base64}`;
+      nativePlayer.replace({ uri });
+      nativePlayer.play();
+    } catch (error) {
+      console.error("Native audio playback error:", error);
+      if (onComplete) onComplete();
+    }
+  }, [nativePlayer]);
+
+  const speakWithGeminiTTS = useCallback(async (text: string, onComplete?: () => void) => {
+    try {
+      const baseUrl = getApiUrl();
+      const response = await fetch(new URL("/api/ai/tts", baseUrl).href, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.audioBase64 && !data.fallback) {
+        if (Platform.OS === "web") {
+          const audioSrc = `data:${data.mimeType};base64,${data.audioBase64}`;
+          const audio = new window.Audio(audioSrc);
+          audioPlayerRef.current = audio;
+          
+          audio.onended = () => {
+            if (onComplete) onComplete();
+          };
+          audio.onerror = () => {
+            if (onComplete) onComplete();
+          };
+          audio.play();
+        } else {
+          await playNativeAudio(data.audioBase64, data.mimeType, onComplete);
+        }
+        return true;
+      }
+    } catch (error) {
+      console.log("Gemini TTS failed, falling back to expo-speech:", error);
+    }
+    return false;
+  }, [playNativeAudio]);
+
   const speak = useCallback(async (text: string, confirmationWord?: string) => {
     setState((prev) => ({ 
       ...prev, 
@@ -267,35 +333,47 @@ export function AuraProvider({ children }: { children: ReactNode }) {
       lastSpokenMessage: text,
     }));
 
-    return new Promise<void>((resolve) => {
-      Speech.speak(text, {
-        rate: state.speechRate,
-        language: "he-IL",
-        onStart: () => {
-          triggerHapticConfirmation();
-        },
-        onDone: () => {
-          setState((prev) => ({ ...prev, voiceState: "idle" }));
-          if (confirmationWord) {
-            Speech.speak(confirmationWord, { 
-              rate: state.speechRate,
-              language: "he-IL",
-            });
-          }
-          resolve();
-        },
-        onError: () => {
-          setState((prev) => ({ ...prev, voiceState: "idle" }));
-          resolve();
-        },
-      });
+    triggerHapticConfirmation();
+
+    return new Promise<void>(async (resolve) => {
+      const onComplete = () => {
+        setState((prev) => ({ ...prev, voiceState: "idle" }));
+        if (confirmationWord) {
+          Speech.speak(confirmationWord, { 
+            rate: state.speechRate,
+            language: "he-IL",
+          });
+        }
+        resolve();
+      };
+
+      const usedGemini = await speakWithGeminiTTS(text, onComplete);
+      
+      if (!usedGemini) {
+        Speech.speak(text, {
+          rate: state.speechRate,
+          language: "he-IL",
+          onDone: onComplete,
+          onError: () => {
+            setState((prev) => ({ ...prev, voiceState: "idle" }));
+            resolve();
+          },
+        });
+      }
     });
-  }, [state.speechRate, triggerHapticConfirmation]);
+  }, [state.speechRate, triggerHapticConfirmation, speakWithGeminiTTS]);
 
   const stopSpeaking = useCallback(() => {
     Speech.stop();
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.pause();
+      audioPlayerRef.current = null;
+    }
+    if (nativePlayer) {
+      nativePlayer.pause();
+    }
     setState((prev) => ({ ...prev, voiceState: "idle" }));
-  }, []);
+  }, [nativePlayer]);
 
   const repeatLastMessage = useCallback(() => {
     if (state.lastSpokenMessage) {
@@ -408,7 +486,9 @@ export function AuraProvider({ children }: { children: ReactNode }) {
       mode: "handshake",
       handshakeStep: "asking_name",
     }));
-    speak("שלום! נעים להכיר. איך קוראים לך?");
+    setTimeout(() => {
+      speak("שלום! נעים להכיר. איך קוראים לך?");
+    }, 800);
   }, [speak]);
 
   const setUserName = useCallback(async (name: string) => {
