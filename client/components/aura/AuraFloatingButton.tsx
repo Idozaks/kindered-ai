@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { StyleSheet, View, Pressable, Dimensions, Modal } from "react-native";
+import React, { useState, useEffect } from "react";
+import { StyleSheet, View, Pressable, Dimensions, Modal, Platform } from "react-native";
 import { BlurView } from "expo-blur";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -14,6 +14,7 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler";
 
 import { useTheme } from "@/hooks/useTheme";
 import { useAura } from "@/contexts/AuraContext";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { Spacing, BorderRadius, AuraColors } from "@/constants/theme";
 import { AuraPulseOrb } from "./AuraPulseOrb";
 import { AuraHandshakeModal } from "./AuraHandshakeModal";
@@ -33,6 +34,91 @@ export function AuraFloatingButton({ onPress }: AuraFloatingButtonProps) {
 
   const [showHandshake, setShowHandshake] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  
+  const { 
+    isListening, 
+    transcript: speechTranscript, 
+    error: speechError, 
+    startListening, 
+    stopListening,
+    isSupported: isSpeechSupported,
+  } = useSpeechRecognition("he-IL");
+
+  useEffect(() => {
+    if (speechTranscript && !isListening) {
+      aura.setTranscript(speechTranscript);
+      handleUserSpeech(speechTranscript);
+    }
+  }, [speechTranscript, isListening]);
+
+  useEffect(() => {
+    if (isListening) {
+      aura.setVoiceState("listening");
+    } else if (aura.voiceState === "listening") {
+      aura.setVoiceState("idle");
+    }
+  }, [isListening]);
+
+  const handleUserSpeech = async (text: string) => {
+    if (!text.trim()) return;
+    
+    aura.recordInteraction();
+    
+    if (aura.checkForCrisisKeywords(text)) {
+      aura.speak("אני רואה שמשהו לא בסדר. האם לחייג לעזרה?");
+      return;
+    }
+
+    aura.setVoiceState("thinking");
+    
+    try {
+      const response = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: text,
+          context: {
+            userName: aura.userName,
+            userGender: aura.userGender,
+            currentScreen: aura.currentScreen,
+          },
+        }),
+      });
+      
+      const data = await response.json();
+      if (data.response) {
+        aura.speak(data.response);
+      } else {
+        aura.speak("סליחה, לא הבנתי. אפשר לנסות שוב?");
+      }
+    } catch (error) {
+      console.error("AI chat error:", error);
+      aura.speak("משהו השתבש. נסה שוב בבקשה.");
+    }
+  };
+
+  const handleTalkToMe = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    
+    if (Platform.OS !== "web") {
+      aura.speak("כרגע זיהוי דיבור עובד רק דרך הדפדפן. נסה דרך האפליקציה באינטרנט.");
+      return;
+    }
+    
+    if (!isSpeechSupported) {
+      aura.speak("הדפדפן שלך לא תומך בזיהוי דיבור. נסה דפדפן Chrome.");
+      return;
+    }
+    
+    if (isListening) {
+      stopListening();
+    } else {
+      aura.speak("אני מקשיבה...");
+      setTimeout(() => {
+        startListening();
+      }, 1500);
+    }
+  };
 
   React.useEffect(() => {
     if (!aura.handshakeCompleted && aura.mode !== "handshake") {
@@ -160,14 +246,23 @@ export function AuraFloatingButton({ onPress }: AuraFloatingButtonProps) {
 
             <View style={styles.quickActions}>
               <Pressable
-                style={[styles.actionButton, { backgroundColor: theme.glassBg, borderColor: theme.glassBorder }]}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                  aura.speak("אני כאן לעזור לך בכל מה שצריך. במה אוכל לסייע?");
-                }}
+                style={[
+                  styles.actionButton, 
+                  { 
+                    backgroundColor: isListening ? AuraColors.speaking : theme.glassBg, 
+                    borderColor: isListening ? AuraColors.speaking : theme.glassBorder 
+                  }
+                ]}
+                onPress={handleTalkToMe}
               >
-                <Feather name="mic" size={28} color={theme.primary} />
-                <ThemedText style={[styles.actionText, { color: theme.text }]}>דבר איתי</ThemedText>
+                <Feather 
+                  name={isListening ? "mic-off" : "mic"} 
+                  size={28} 
+                  color={isListening ? "#fff" : theme.primary} 
+                />
+                <ThemedText style={[styles.actionText, { color: isListening ? "#fff" : theme.text }]}>
+                  {isListening ? "הפסק הקלטה" : "דבר איתי"}
+                </ThemedText>
               </Pressable>
 
               <Pressable
@@ -194,7 +289,19 @@ export function AuraFloatingButton({ onPress }: AuraFloatingButtonProps) {
               </Pressable>
             </View>
 
-            {aura.transcript ? (
+            {isListening ? (
+              <View style={[styles.transcriptBox, { backgroundColor: AuraColors.listening + "20", borderColor: AuraColors.listening }]}>
+                <ThemedText style={[styles.listeningText, { color: AuraColors.listening }]}>
+                  {speechTranscript || "מקשיבה... דבר עכשיו"}
+                </ThemedText>
+              </View>
+            ) : speechError ? (
+              <View style={[styles.transcriptBox, { backgroundColor: "#FF6B6B20", borderColor: "#FF6B6B" }]}>
+                <ThemedText style={[styles.transcriptText, { color: "#FF6B6B" }]}>
+                  {speechError}
+                </ThemedText>
+              </View>
+            ) : aura.transcript ? (
               <View style={[styles.transcriptBox, { backgroundColor: theme.glassBg, borderColor: theme.glassBorder }]}>
                 <ThemedText style={[styles.transcriptText, { color: theme.text }]}>
                   {aura.transcript}
@@ -294,5 +401,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     lineHeight: 28,
     textAlign: "right",
+  },
+  listeningText: {
+    fontSize: 18,
+    lineHeight: 28,
+    textAlign: "right",
+    fontWeight: "500",
   },
 });
