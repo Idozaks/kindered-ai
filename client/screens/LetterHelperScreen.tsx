@@ -293,6 +293,9 @@ export default function LetterHelperScreen() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [showTooltip, setShowTooltip] = useState<string | null>(null);
   
+  // Image source picker modal state
+  const [showImagePicker, setShowImagePicker] = useState(false);
+  
   // Chat modal state
   const [showChatModal, setShowChatModal] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -359,6 +362,7 @@ export default function LetterHelperScreen() {
   };
 
   const handlePickImage = async () => {
+    setShowImagePicker(false);
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (!permissionResult.granted) {
@@ -382,6 +386,7 @@ export default function LetterHelperScreen() {
   };
 
   const handleTakePhoto = async () => {
+    setShowImagePicker(false);
     if (Platform.OS === "web") {
       return;
     }
@@ -404,6 +409,14 @@ export default function LetterHelperScreen() {
       setResult(null);
       setCompletedActions(new Set());
       setCachedAudio(null);
+    }
+  };
+
+  const handleImageButtonPress = () => {
+    if (Platform.OS === "web") {
+      handlePickImage();
+    } else {
+      setShowImagePicker(true);
     }
   };
 
@@ -810,29 +823,18 @@ export default function LetterHelperScreen() {
             <View style={styles.buttonRow}>
               <GlassButton
                 variant="secondary"
-                onPress={handlePickImage}
-                icon={<Ionicons name="image-outline" size={20} color={theme.primary} />}
-                style={styles.thirdButton}
+                onPress={handleImageButtonPress}
+                icon={<Ionicons name="camera-outline" size={20} color={theme.primary} />}
+                style={styles.halfButton}
                 testID="pick-image-button"
               >
-                גלריה
+                תמונה
               </GlassButton>
-              {Platform.OS !== "web" ? (
-                <GlassButton
-                  variant="secondary"
-                  onPress={handleTakePhoto}
-                  icon={<Ionicons name="camera-outline" size={20} color={theme.primary} />}
-                  style={styles.thirdButton}
-                  testID="take-photo-button"
-                >
-                  מצלמה
-                </GlassButton>
-              ) : null}
               <GlassButton
                 variant="secondary"
                 onPress={handlePickPDF}
                 icon={<Ionicons name="document-outline" size={20} color={theme.primary} />}
-                style={styles.thirdButton}
+                style={styles.halfButton}
                 testID="pick-file-button"
               >
                 קבצים
@@ -1049,6 +1051,60 @@ export default function LetterHelperScreen() {
         ) : null}
       </KeyboardAwareScrollViewCompat>
 
+      {/* Image Source Picker Modal */}
+      <Modal
+        visible={showImagePicker}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setShowImagePicker(false)}
+      >
+        <Pressable 
+          style={styles.imagePickerOverlay} 
+          onPress={() => setShowImagePicker(false)}
+        >
+          <View style={[styles.imagePickerSheet, { backgroundColor: theme.backgroundDefault }]}>
+            <ThemedText type="h4" style={styles.imagePickerTitle}>
+              בחר מקור תמונה
+            </ThemedText>
+            
+            <View style={styles.imagePickerOptions}>
+              <Pressable
+                style={[styles.imagePickerOption, { backgroundColor: theme.card }]}
+                onPress={handleTakePhoto}
+              >
+                <View style={[styles.imagePickerIconContainer, { backgroundColor: theme.primary + "20" }]}>
+                  <Ionicons name="camera" size={32} color={theme.primary} />
+                </View>
+                <ThemedText type="body" style={styles.imagePickerOptionText}>
+                  צלם תמונה
+                </ThemedText>
+              </Pressable>
+              
+              <Pressable
+                style={[styles.imagePickerOption, { backgroundColor: theme.card }]}
+                onPress={handlePickImage}
+              >
+                <View style={[styles.imagePickerIconContainer, { backgroundColor: theme.primary + "20" }]}>
+                  <Ionicons name="images" size={32} color={theme.primary} />
+                </View>
+                <ThemedText type="body" style={styles.imagePickerOptionText}>
+                  בחר מהגלריה
+                </ThemedText>
+              </Pressable>
+            </View>
+            
+            <Pressable
+              style={[styles.imagePickerCancel, { borderTopColor: theme.border }]}
+              onPress={() => setShowImagePicker(false)}
+            >
+              <ThemedText type="body" style={{ color: theme.textSecondary }}>
+                ביטול
+              </ThemedText>
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
+
       {/* Chat Modal */}
       <Modal
         visible={showChatModal}
@@ -1190,6 +1246,9 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
   },
   thirdButton: {
+    flex: 1,
+  },
+  halfButton: {
     flex: 1,
   },
   pdfPreview: {
@@ -1384,5 +1443,50 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.full,
     alignItems: "center",
     justifyContent: "center",
+  },
+  imagePickerOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+  imagePickerSheet: {
+    borderTopLeftRadius: BorderRadius.xl,
+    borderTopRightRadius: BorderRadius.xl,
+    paddingTop: Spacing.xl,
+    paddingBottom: Spacing["3xl"],
+  },
+  imagePickerTitle: {
+    textAlign: "center",
+    marginBottom: Spacing.xl,
+  },
+  imagePickerOptions: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: Spacing.xl,
+    paddingHorizontal: Spacing.xl,
+    marginBottom: Spacing.xl,
+  },
+  imagePickerOption: {
+    alignItems: "center",
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    minWidth: 120,
+  },
+  imagePickerIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: Spacing.md,
+  },
+  imagePickerOptionText: {
+    textAlign: "center",
+  },
+  imagePickerCancel: {
+    paddingTop: Spacing.lg,
+    marginHorizontal: Spacing.xl,
+    borderTopWidth: 1,
+    alignItems: "center",
   },
 });
