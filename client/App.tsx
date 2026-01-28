@@ -27,7 +27,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { CelebrationProvider } from "@/contexts/CelebrationContext";
 import { AuraProvider } from "@/contexts/AuraContext";
-import { AuraFloatingDashboard } from "@/components/aura";
+import { AuraFloatingButton } from "@/components/aura";
 
 import "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
@@ -106,7 +106,7 @@ export default function App() {
                   <AuraProvider>
                     <AuthProvider>
                       <NavigationRoot />
-                      <AuraFloatingDashboard />
+                      <AuraFloatingButton />
                     </AuthProvider>
                   </AuraProvider>
                 </CelebrationProvider>
