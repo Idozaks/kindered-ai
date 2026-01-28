@@ -1,7 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { Audio, AVPlaybackStatus } from "expo-av";
+import { useAudioRecorder, RecordingPresets, AudioModule } from "expo-audio";
+import { useAudioPlayer } from "expo-audio";
 import { Platform } from "react-native";
-import * as FileSystem from "expo-file-system";
+import { File, Paths } from "expo-file-system";
 import { getApiUrl } from "@/lib/query-client";
 
 export type VoiceState = "idle" | "listening" | "processing" | "speaking";
@@ -23,23 +24,42 @@ export function useNativeVoice(options: UseNativeVoiceOptions = {}) {
   const [transcript, setTranscript] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [isSupported, setIsSupported] = useState(true);
+  const [audioSource, setAudioSource] = useState<string | null>(null);
   
-  const recordingRef = useRef<Audio.Recording | null>(null);
-  const soundRef = useRef<Audio.Sound | null>(null);
   const isMountedRef = useRef(true);
+  const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const audioPlayer = useAudioPlayer(audioSource);
 
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
-      stopRecording();
-      stopPlayback();
     };
   }, []);
 
   useEffect(() => {
     onStateChange?.(state);
   }, [state, onStateChange]);
+
+  useEffect(() => {
+    if (audioPlayer && state === "speaking") {
+      const checkStatus = () => {
+        if (!audioPlayer.playing && isMountedRef.current) {
+          updateState("idle");
+          if (autoListen) {
+            setTimeout(() => {
+              if (isMountedRef.current) {
+                startListening();
+              }
+            }, 500);
+          }
+        }
+      };
+      
+      const interval = setInterval(checkStatus, 200);
+      return () => clearInterval(interval);
+    }
+  }, [audioPlayer, state, autoListen]);
 
   const updateState = useCallback((newState: VoiceState) => {
     if (isMountedRef.current) {
@@ -55,38 +75,16 @@ export function useNativeVoice(options: UseNativeVoiceOptions = {}) {
     }
   }, [onError, updateState]);
 
-  const stopPlayback = useCallback(async () => {
-    if (soundRef.current) {
-      try {
-        await soundRef.current.stopAsync();
-        await soundRef.current.unloadAsync();
-      } catch (e) {
-        console.log("Error stopping playback:", e);
-      }
-      soundRef.current = null;
-    }
-  }, []);
-
-  const stopRecording = useCallback(async () => {
-    if (recordingRef.current) {
-      try {
-        await recordingRef.current.stopAndUnloadAsync();
-      } catch (e) {
-        console.log("Error stopping recording:", e);
-      }
-      recordingRef.current = null;
-    }
-  }, []);
-
   const requestPermissions = useCallback(async (): Promise<boolean> => {
     try {
-      const { status } = await Audio.requestPermissionsAsync();
-      if (status !== "granted") {
+      const status = await AudioModule.requestRecordingPermissionsAsync();
+      if (!status.granted) {
         handleError("צריך לאשר גישה למיקרופון");
         return false;
       }
       return true;
     } catch (e) {
+      console.error("Permission error:", e);
       handleError("שגיאה בבקשת הרשאות");
       return false;
     }
@@ -96,35 +94,24 @@ export function useNativeVoice(options: UseNativeVoiceOptions = {}) {
     try {
       updateState("speaking");
       
-      await Audio.setAudioModeAsync({
-        playsInSilentModeIOS: true,
-        staysActiveInBackground: false,
-        shouldDuckAndroid: true,
-      });
-
-      const audioUri = `data:${mimeType};base64,${audioBase64}`;
+      const fileExt = mimeType.includes("wav") ? "wav" : "mp3";
+      const tempFile = new File(Paths.cache, `response_${Date.now()}.${fileExt}`);
       
-      const { sound } = await Audio.Sound.createAsync(
-        { uri: audioUri },
-        { shouldPlay: true },
-        (status) => {
-          if (status.isLoaded && status.didJustFinish) {
-            soundRef.current = null;
-            if (isMountedRef.current) {
-              updateState("idle");
-              if (autoListen) {
-                setTimeout(() => {
-                  if (isMountedRef.current) {
-                    startListening();
-                  }
-                }, 500);
-              }
-            }
-          }
+      const binaryString = atob(audioBase64);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      await tempFile.write(bytes);
+      
+      setAudioSource(tempFile.uri);
+      
+      setTimeout(() => {
+        if (audioPlayer) {
+          audioPlayer.play();
         }
-      );
+      }, 100);
       
-      soundRef.current = sound;
     } catch (e: any) {
       console.error("Audio playback error:", e);
       updateState("idle");
@@ -132,15 +119,18 @@ export function useNativeVoice(options: UseNativeVoiceOptions = {}) {
         setTimeout(() => startListening(), 500);
       }
     }
-  }, [updateState, autoListen]);
+  }, [updateState, autoListen, audioPlayer]);
 
-  const processAudioWithLiveAPI = useCallback(async (audioUri: string) => {
+  const processAudioWithLiveAPI = useCallback(async (recordingUri: string) => {
     try {
       updateState("processing");
       
-      const audioBase64 = await FileSystem.readAsStringAsync(audioUri, {
-        encoding: "base64",
-      });
+      const recordingFile = new File(recordingUri);
+      const arrayBuffer = await recordingFile.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuffer);
+      let binary = "";
+      bytes.forEach((b) => (binary += String.fromCharCode(b)));
+      const audioBase64 = btoa(binary);
       
       const apiUrl = getApiUrl();
       const response = await fetch(new URL("/api/live/voice-turn", apiUrl).toString(), {
@@ -182,63 +172,23 @@ export function useNativeVoice(options: UseNativeVoiceOptions = {}) {
       setError(null);
       updateState("listening");
       
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-        staysActiveInBackground: false,
-        shouldDuckAndroid: true,
-      });
-      
-      const recording = new Audio.Recording();
-      await recording.prepareToRecordAsync({
-        isMeteringEnabled: true,
-        android: {
-          extension: ".wav",
-          outputFormat: Audio.AndroidOutputFormat.DEFAULT,
-          audioEncoder: Audio.AndroidAudioEncoder.DEFAULT,
-          sampleRate: 16000,
-          numberOfChannels: 1,
-          bitRate: 256000,
-        },
-        ios: {
-          extension: ".wav",
-          outputFormat: Audio.IOSOutputFormat.LINEARPCM,
-          audioQuality: Audio.IOSAudioQuality.HIGH,
-          sampleRate: 16000,
-          numberOfChannels: 1,
-          bitRate: 256000,
-          linearPCMBitDepth: 16,
-          linearPCMIsBigEndian: false,
-          linearPCMIsFloat: false,
-        },
-        web: {
-          mimeType: "audio/webm",
-          bitsPerSecond: 128000,
-        },
-      });
-      
-      await recording.startAsync();
-      recordingRef.current = recording;
+      audioRecorder.record();
+      console.log("Recording started");
     } catch (e: any) {
       console.error("Recording start error:", e);
       handleError("לא הצלחתי להתחיל הקלטה");
     }
-  }, [state, requestPermissions, updateState, handleError]);
+  }, [state, requestPermissions, updateState, handleError, audioRecorder]);
 
   const stopListening = useCallback(async () => {
-    if (!recordingRef.current || state !== "listening") return;
+    if (state !== "listening") return;
     
     try {
-      await recordingRef.current.stopAndUnloadAsync();
-      const uri = recordingRef.current.getURI();
-      recordingRef.current = null;
+      await audioRecorder.stop();
+      console.log("Recording stopped, URI:", audioRecorder.uri);
       
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: false,
-      });
-      
-      if (uri) {
-        await processAudioWithLiveAPI(uri);
+      if (audioRecorder.uri) {
+        await processAudioWithLiveAPI(audioRecorder.uri);
       } else {
         handleError("לא נמצאה הקלטה");
       }
@@ -246,7 +196,7 @@ export function useNativeVoice(options: UseNativeVoiceOptions = {}) {
       console.error("Recording stop error:", e);
       handleError("שגיאה בעיבוד ההקלטה");
     }
-  }, [state, processAudioWithLiveAPI, handleError]);
+  }, [state, audioRecorder, processAudioWithLiveAPI, handleError]);
 
   const sendTextMessage = useCallback(async (text: string) => {
     if (state !== "idle") return;
@@ -286,10 +236,18 @@ export function useNativeVoice(options: UseNativeVoiceOptions = {}) {
   }, [state, userName, userGender, context, updateState, onTranscript, playAudioResponse, handleError]);
 
   const cancel = useCallback(async () => {
-    await stopRecording();
-    await stopPlayback();
+    try {
+      if (audioRecorder.isRecording) {
+        await audioRecorder.stop();
+      }
+      if (audioPlayer && audioPlayer.playing) {
+        audioPlayer.pause();
+      }
+    } catch (e) {
+      console.log("Cancel error:", e);
+    }
     updateState("idle");
-  }, [stopRecording, stopPlayback, updateState]);
+  }, [audioRecorder, audioPlayer, updateState]);
 
   return {
     state,
