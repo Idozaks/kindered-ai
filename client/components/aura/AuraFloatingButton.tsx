@@ -14,7 +14,7 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler";
 
 import { useTheme } from "@/hooks/useTheme";
 import { useAura } from "@/contexts/AuraContext";
-import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { useNativeVoice, VoiceState } from "@/hooks/useNativeVoice";
 import { Spacing, BorderRadius, AuraColors } from "@/constants/theme";
 import { AuraPulseOrb } from "./AuraPulseOrb";
 import { AuraHandshakeModal } from "./AuraHandshakeModal";
@@ -35,90 +35,73 @@ export function AuraFloatingButton({ onPress }: AuraFloatingButtonProps) {
   const [showHandshake, setShowHandshake] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   
+  const handleVoiceStateChange = (voiceState: VoiceState) => {
+    const stateMap: Record<VoiceState, typeof aura.voiceState> = {
+      idle: "idle",
+      listening: "listening",
+      processing: "thinking",
+      speaking: "speaking",
+    };
+    aura.setVoiceState(stateMap[voiceState]);
+  };
+
+  const handleTranscript = (text: string) => {
+    aura.setTranscript(text);
+    aura.recordInteraction();
+  };
+
+  const handleVoiceError = (error: string) => {
+    console.log("Voice error:", error);
+  };
+
   const { 
-    isListening, 
+    state: voiceState,
     transcript: speechTranscript, 
     error: speechError, 
     startListening, 
     stopListening,
     isSupported: isSpeechSupported,
-  } = useSpeechRecognition("he-IL");
-
-  useEffect(() => {
-    if (speechTranscript && !isListening) {
-      aura.setTranscript(speechTranscript);
-      handleUserSpeech(speechTranscript);
-    }
-  }, [speechTranscript, isListening]);
-
-  useEffect(() => {
-    if (isListening) {
-      aura.setVoiceState("listening");
-    } else if (aura.voiceState === "listening") {
-      aura.setVoiceState("idle");
-    }
-  }, [isListening]);
-
-  const handleUserSpeech = async (text: string) => {
-    if (!text.trim()) return;
-    
-    aura.recordInteraction();
-    
-    if (aura.checkForCrisisKeywords(text)) {
-      aura.speak("אני רואה שמשהו לא בסדר. האם לחייג לעזרה?");
-      return;
-    }
-
-    aura.setVoiceState("thinking");
-    
-    try {
-      const response = await fetch("/api/ai/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: text,
-          context: {
-            userName: aura.userName,
-            userGender: aura.userGender,
-            currentScreen: aura.currentScreen,
-          },
-        }),
-      });
-      
-      const data = await response.json();
-      if (data.response) {
-        aura.speak(data.response);
-      } else {
-        aura.speak("סליחה, לא הבנתי. אפשר לנסות שוב?");
-      }
-    } catch (error) {
-      console.error("AI chat error:", error);
-      aura.speak("משהו השתבש. נסה שוב בבקשה.");
-    }
-  };
+    isListening,
+    isProcessing,
+    isSpeaking,
+    cancel,
+  } = useNativeVoice({
+    userName: aura.userName || undefined,
+    userGender: aura.userGender || undefined,
+    context: aura.currentScreen,
+    onStateChange: handleVoiceStateChange,
+    onTranscript: handleTranscript,
+    onError: handleVoiceError,
+    autoListen: true,
+  });
 
   const handleTalkToMe = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     
-    if (Platform.OS !== "web") {
-      aura.speak("כרגע זיהוי דיבור עובד רק דרך הדפדפן. נסה דרך האפליקציה באינטרנט.");
-      return;
-    }
-    
-    if (!isSpeechSupported) {
-      aura.speak("הדפדפן שלך לא תומך בזיהוי דיבור. נסה דפדפן Chrome.");
-      return;
-    }
-    
     if (isListening) {
       stopListening();
+    } else if (isSpeaking || isProcessing) {
+      cancel();
     } else {
-      aura.speak("אני מקשיבה...");
-      setTimeout(() => {
-        startListening();
-      }, 1500);
+      startListening();
     }
   };
+
+  const getButtonLabel = () => {
+    if (isListening) return "הפסק הקלטה";
+    if (isProcessing) return "מעבד...";
+    if (isSpeaking) return "מדברת...";
+    return "דבר איתי";
+  };
+
+  const getButtonIcon = () => {
+    if (isListening) return "mic-off";
+    if (isProcessing) return "loader";
+    if (isSpeaking) return "volume-2";
+    return "mic";
+  };
+
+  const isActive = isListening || isProcessing || isSpeaking;
 
   React.useEffect(() => {
     if (!aura.handshakeCompleted && aura.mode !== "handshake") {
@@ -249,19 +232,19 @@ export function AuraFloatingButton({ onPress }: AuraFloatingButtonProps) {
                 style={[
                   styles.actionButton, 
                   { 
-                    backgroundColor: isListening ? AuraColors.speaking : theme.glassBg, 
-                    borderColor: isListening ? AuraColors.speaking : theme.glassBorder 
+                    backgroundColor: isActive ? AuraColors.speaking : theme.glassBg, 
+                    borderColor: isActive ? AuraColors.speaking : theme.glassBorder 
                   }
                 ]}
                 onPress={handleTalkToMe}
               >
                 <Feather 
-                  name={isListening ? "mic-off" : "mic"} 
+                  name={getButtonIcon() as any} 
                   size={28} 
-                  color={isListening ? "#fff" : theme.primary} 
+                  color={isActive ? "#fff" : theme.primary} 
                 />
-                <ThemedText style={[styles.actionText, { color: isListening ? "#fff" : theme.text }]}>
-                  {isListening ? "הפסק הקלטה" : "דבר איתי"}
+                <ThemedText style={[styles.actionText, { color: isActive ? "#fff" : theme.text }]}>
+                  {getButtonLabel()}
                 </ThemedText>
               </Pressable>
 
@@ -292,7 +275,19 @@ export function AuraFloatingButton({ onPress }: AuraFloatingButtonProps) {
             {isListening ? (
               <View style={[styles.transcriptBox, { backgroundColor: AuraColors.listening + "20", borderColor: AuraColors.listening }]}>
                 <ThemedText style={[styles.listeningText, { color: AuraColors.listening }]}>
-                  {speechTranscript || "מקשיבה... דבר עכשיו"}
+                  מקשיבה... דבר עכשיו
+                </ThemedText>
+              </View>
+            ) : isProcessing ? (
+              <View style={[styles.transcriptBox, { backgroundColor: AuraColors.thinking + "20", borderColor: AuraColors.thinking }]}>
+                <ThemedText style={[styles.listeningText, { color: AuraColors.thinking }]}>
+                  מעבד את מה שאמרת...
+                </ThemedText>
+              </View>
+            ) : isSpeaking ? (
+              <View style={[styles.transcriptBox, { backgroundColor: AuraColors.speaking + "20", borderColor: AuraColors.speaking }]}>
+                <ThemedText style={[styles.listeningText, { color: AuraColors.speaking }]}>
+                  {speechTranscript || "מדברת..."}
                 </ThemedText>
               </View>
             ) : speechError ? (
