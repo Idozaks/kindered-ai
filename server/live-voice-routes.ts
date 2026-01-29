@@ -62,8 +62,10 @@ function createSystemInstruction(userName?: string, userGender?: string, context
 router.post("/voice-turn", async (req: Request, res: Response) => {
   try {
     const { audioBase64, userName, userGender, context } = req.body;
+    console.log("voice-turn request received, audio length:", audioBase64?.length || 0, "user:", userName);
 
     if (!audioBase64) {
+      console.error("No audio data in request");
       return res.status(400).json({ error: "Audio data is required" });
     }
 

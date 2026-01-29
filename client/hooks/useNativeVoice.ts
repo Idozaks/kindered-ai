@@ -137,16 +137,28 @@ export function useNativeVoice(options: UseNativeVoiceOptions = {}) {
 
   const processAudioWithLiveAPI = useCallback(async (recordingUri: string) => {
     try {
+      console.log("processAudioWithLiveAPI called with URI:", recordingUri);
       updateState("processing");
       
       const recordingFile = new File(recordingUri);
+      console.log("Reading audio file...");
       const arrayBuffer = await recordingFile.arrayBuffer();
+      console.log("Audio file size:", arrayBuffer.byteLength, "bytes");
+      
+      if (arrayBuffer.byteLength < 1000) {
+        console.error("Audio too short, likely empty recording");
+        handleError("ההקלטה קצרה מדי. נסה לדבר יותר זמן.");
+        return;
+      }
+      
       const bytes = new Uint8Array(arrayBuffer);
       let binary = "";
       bytes.forEach((b) => (binary += String.fromCharCode(b)));
       const audioBase64 = btoa(binary);
+      console.log("Audio encoded to base64, length:", audioBase64.length);
       
       const apiUrl = getApiUrl();
+      console.log("Sending to API:", apiUrl);
       const response = await fetch(new URL("/api/live/voice-turn", apiUrl).toString(), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -158,7 +170,9 @@ export function useNativeVoice(options: UseNativeVoiceOptions = {}) {
         }),
       });
       
+      console.log("API response status:", response.status);
       const data = await response.json();
+      console.log("API response data:", data);
       
       if (data.text) {
         setTranscript(data.text);
@@ -166,31 +180,46 @@ export function useNativeVoice(options: UseNativeVoiceOptions = {}) {
       }
       
       if (data.audioBase64 && data.mimeType) {
+        console.log("Playing audio response...");
         await playAudioResponse(data.audioBase64, data.mimeType);
       } else if (data.fallback) {
+        console.log("Fallback response:", data.text);
         handleError(data.text || "לא הצלחתי לעבד את ההקלטה");
+      } else if (data.error) {
+        console.error("API error:", data.error);
+        handleError(data.text || "שגיאה בעיבוד השמע");
       }
     } catch (e: any) {
-      console.error("Live API error:", e);
+      console.error("Live API error:", e?.message || e);
       handleError("שגיאה בחיבור לשרת");
     }
   }, [userName, userGender, context, updateState, onTranscript, playAudioResponse, handleError]);
 
   const startListening = useCallback(async () => {
-    if (state !== "idle" || isPlayingRef.current) return;
+    console.log("startListening called, state:", state, "isPlaying:", isPlayingRef.current);
+    if (state !== "idle" || isPlayingRef.current) {
+      console.log("Blocked: state not idle or playing");
+      return;
+    }
     
     const hasPermission = await requestPermissions();
-    if (!hasPermission) return;
+    if (!hasPermission) {
+      console.log("No permission granted");
+      return;
+    }
     
     try {
       setError(null);
       updateState("listening");
       
       if (audioRecorder.isRecording) {
+        console.log("Stopping existing recording first");
         await audioRecorder.stop();
       }
       
+      console.log("Preparing to record...");
       await audioRecorder.prepareToRecordAsync();
+      console.log("Starting recording...");
       audioRecorder.record();
       console.log("Recording started successfully");
     } catch (e: any) {
@@ -201,19 +230,26 @@ export function useNativeVoice(options: UseNativeVoiceOptions = {}) {
   }, [state, requestPermissions, updateState, handleError, audioRecorder]);
 
   const stopListening = useCallback(async () => {
-    if (state !== "listening") return;
+    console.log("stopListening called, state:", state, "isRecording:", audioRecorder.isRecording);
+    if (state !== "listening") {
+      console.log("Not in listening state, ignoring stop");
+      return;
+    }
     
     try {
+      console.log("Stopping recording...");
       await audioRecorder.stop();
-      console.log("Recording stopped, URI:", audioRecorder.uri);
+      console.log("Recording stopped, URI:", audioRecorder.uri, "duration:", audioRecorder.currentTime);
       
       if (audioRecorder.uri) {
+        console.log("Processing audio with Live API...");
         await processAudioWithLiveAPI(audioRecorder.uri);
       } else {
+        console.error("No recording URI found");
         handleError("לא נמצאה הקלטה");
       }
     } catch (e: any) {
-      console.error("Recording stop error:", e);
+      console.error("Recording stop error:", e?.message || e);
       handleError("שגיאה בעיבוד ההקלטה");
     }
   }, [state, audioRecorder, processAudioWithLiveAPI, handleError]);
