@@ -1,7 +1,32 @@
 import { Router, Request, Response } from "express";
 import { GoogleGenAI, Modality, LiveServerMessage } from "@google/genai";
+import { exec } from "child_process";
+import { promisify } from "util";
+import * as fs from "fs";
+import * as path from "path";
+import * as os from "os";
 
+const execAsync = promisify(exec);
 const router = Router();
+
+async function convertToPcm16k(inputBase64: string): Promise<string> {
+  const tempDir = os.tmpdir();
+  const inputFile = path.join(tempDir, `input_${Date.now()}.m4a`);
+  const outputFile = path.join(tempDir, `output_${Date.now()}.raw`);
+  
+  try {
+    const inputBuffer = Buffer.from(inputBase64, 'base64');
+    fs.writeFileSync(inputFile, inputBuffer);
+    
+    await execAsync(`ffmpeg -y -i "${inputFile}" -f s16le -acodec pcm_s16le -ar 16000 -ac 1 "${outputFile}"`);
+    
+    const pcmBuffer = fs.readFileSync(outputFile);
+    return pcmBuffer.toString('base64');
+  } finally {
+    try { fs.unlinkSync(inputFile); } catch (e) {}
+    try { fs.unlinkSync(outputFile); } catch (e) {}
+  }
+}
 
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY || process.env.AI_INTEGRATIONS_GEMINI_API_KEY,
@@ -69,6 +94,20 @@ router.post("/voice-turn", async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Audio data is required" });
     }
 
+    console.log("Converting audio to PCM 16kHz...");
+    let pcmAudioBase64: string;
+    try {
+      pcmAudioBase64 = await convertToPcm16k(audioBase64);
+      console.log("Audio converted, PCM length:", pcmAudioBase64.length);
+    } catch (conversionError: any) {
+      console.error("Audio conversion failed:", conversionError.message);
+      return res.json({
+        text: "סליחה, לא הצלחתי לעבד את ההקלטה. נסה שוב.",
+        fallback: true,
+        error: "Audio conversion failed",
+      });
+    }
+
     const systemInstruction = createSystemInstruction(userName, userGender, context);
     
     const audioChunks: string[] = [];
@@ -131,7 +170,7 @@ router.post("/voice-turn", async (req: Request, res: Response) => {
         session.sendRealtimeInput({
           media: {
             mimeType: "audio/pcm;rate=16000",
-            data: audioBase64,
+            data: pcmAudioBase64,
           },
         });
         session.sendClientContent({ turnComplete: true });
