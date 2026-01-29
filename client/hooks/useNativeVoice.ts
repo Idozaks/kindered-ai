@@ -27,6 +27,8 @@ export function useNativeVoice(options: UseNativeVoiceOptions = {}) {
   const [audioSource, setAudioSource] = useState<string | null>(null);
   
   const isMountedRef = useRef(true);
+  const isPlayingRef = useRef(false);
+  const playbackCompleteRef = useRef(false);
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const audioPlayer = useAudioPlayer(audioSource);
 
@@ -42,16 +44,19 @@ export function useNativeVoice(options: UseNativeVoiceOptions = {}) {
   }, [state, onStateChange]);
 
   useEffect(() => {
-    if (audioPlayer && state === "speaking") {
+    if (audioPlayer && state === "speaking" && isPlayingRef.current) {
       const checkStatus = () => {
-        if (!audioPlayer.playing && isMountedRef.current) {
+        if (!audioPlayer.playing && isMountedRef.current && !playbackCompleteRef.current) {
+          playbackCompleteRef.current = true;
+          isPlayingRef.current = false;
+          setAudioSource(null);
           updateState("idle");
           if (autoListen) {
             setTimeout(() => {
-              if (isMountedRef.current) {
+              if (isMountedRef.current && !isPlayingRef.current) {
                 startListening();
               }
-            }, 500);
+            }, 800);
           }
         }
       };
@@ -92,6 +97,14 @@ export function useNativeVoice(options: UseNativeVoiceOptions = {}) {
 
   const playAudioResponse = useCallback(async (audioBase64: string, mimeType: string) => {
     try {
+      if (isPlayingRef.current && audioPlayer) {
+        try {
+          audioPlayer.pause();
+        } catch (e) {}
+      }
+      
+      isPlayingRef.current = true;
+      playbackCompleteRef.current = false;
       updateState("speaking");
       
       const fileExt = mimeType.includes("wav") ? "wav" : "mp3";
@@ -107,13 +120,14 @@ export function useNativeVoice(options: UseNativeVoiceOptions = {}) {
       setAudioSource(tempFile.uri);
       
       setTimeout(() => {
-        if (audioPlayer) {
+        if (audioPlayer && isMountedRef.current) {
           audioPlayer.play();
         }
-      }, 100);
+      }, 150);
       
     } catch (e: any) {
       console.error("Audio playback error:", e);
+      isPlayingRef.current = false;
       updateState("idle");
       if (autoListen) {
         setTimeout(() => startListening(), 500);
@@ -163,7 +177,7 @@ export function useNativeVoice(options: UseNativeVoiceOptions = {}) {
   }, [userName, userGender, context, updateState, onTranscript, playAudioResponse, handleError]);
 
   const startListening = useCallback(async () => {
-    if (state !== "idle") return;
+    if (state !== "idle" || isPlayingRef.current) return;
     
     const hasPermission = await requestPermissions();
     if (!hasPermission) return;
@@ -252,6 +266,9 @@ export function useNativeVoice(options: UseNativeVoiceOptions = {}) {
     } catch (e) {
       console.log("Cancel error:", e);
     }
+    isPlayingRef.current = false;
+    playbackCompleteRef.current = true;
+    setAudioSource(null);
     updateState("idle");
   }, [audioRecorder, audioPlayer, updateState]);
 
