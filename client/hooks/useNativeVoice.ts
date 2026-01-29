@@ -7,6 +7,10 @@ import { getApiUrl } from "@/lib/query-client";
 
 export type VoiceState = "idle" | "listening" | "processing" | "speaking";
 
+const SILENCE_THRESHOLD = -40;
+const SILENCE_DURATION_MS = 2000;
+const MIN_RECORDING_MS = 1000;
+
 interface UseNativeVoiceOptions {
   userName?: string;
   userGender?: string;
@@ -15,10 +19,11 @@ interface UseNativeVoiceOptions {
   onTranscript?: (text: string) => void;
   onError?: (error: string) => void;
   autoListen?: boolean;
+  autoStopOnSilence?: boolean;
 }
 
 export function useNativeVoice(options: UseNativeVoiceOptions = {}) {
-  const { userName, userGender, context, onStateChange, onTranscript, onError, autoListen = true } = options;
+  const { userName, userGender, context, onStateChange, onTranscript, onError, autoListen = true, autoStopOnSilence = true } = options;
   
   const [state, setState] = useState<VoiceState>("idle");
   const [transcript, setTranscript] = useState<string>("");
@@ -29,7 +34,10 @@ export function useNativeVoice(options: UseNativeVoiceOptions = {}) {
   const isMountedRef = useRef(true);
   const isPlayingRef = useRef(false);
   const playbackCompleteRef = useRef(false);
-  const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const silenceStartRef = useRef<number | null>(null);
+  const recordingStartRef = useRef<number | null>(null);
+  const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY, { isMeteringEnabled: true });
   const audioPlayer = useAudioPlayer(audioSource);
 
   useEffect(() => {
@@ -65,6 +73,42 @@ export function useNativeVoice(options: UseNativeVoiceOptions = {}) {
       return () => clearInterval(interval);
     }
   }, [audioPlayer, state, autoListen]);
+
+  useEffect(() => {
+    if (!autoStopOnSilence || state !== "listening" || !audioRecorder.isRecording) {
+      if (silenceTimerRef.current) {
+        clearInterval(silenceTimerRef.current);
+        silenceTimerRef.current = null;
+      }
+      return;
+    }
+
+    silenceTimerRef.current = setInterval(() => {
+      if (!isMountedRef.current || state !== "listening") return;
+
+      const metering = audioRecorder.currentMetering ?? -160;
+      const now = Date.now();
+      const recordingDuration = recordingStartRef.current ? now - recordingStartRef.current : 0;
+
+      if (metering < SILENCE_THRESHOLD) {
+        if (!silenceStartRef.current) {
+          silenceStartRef.current = now;
+        } else if (now - silenceStartRef.current >= SILENCE_DURATION_MS && recordingDuration >= MIN_RECORDING_MS) {
+          console.log("Auto-stopping due to silence detected");
+          stopListening();
+        }
+      } else {
+        silenceStartRef.current = null;
+      }
+    }, 100);
+
+    return () => {
+      if (silenceTimerRef.current) {
+        clearInterval(silenceTimerRef.current);
+        silenceTimerRef.current = null;
+      }
+    };
+  }, [state, autoStopOnSilence, audioRecorder.isRecording, audioRecorder.currentMetering]);
 
   const updateState = useCallback((newState: VoiceState) => {
     if (isMountedRef.current) {
@@ -210,6 +254,8 @@ export function useNativeVoice(options: UseNativeVoiceOptions = {}) {
     
     try {
       setError(null);
+      silenceStartRef.current = null;
+      recordingStartRef.current = Date.now();
       updateState("listening");
       
       if (audioRecorder.isRecording) {
@@ -221,7 +267,7 @@ export function useNativeVoice(options: UseNativeVoiceOptions = {}) {
       await audioRecorder.prepareToRecordAsync();
       console.log("Starting recording...");
       audioRecorder.record();
-      console.log("Recording started successfully");
+      console.log("Recording started successfully with auto-stop enabled");
     } catch (e: any) {
       console.error("Recording start error:", e?.message || e);
       updateState("idle");
@@ -235,6 +281,9 @@ export function useNativeVoice(options: UseNativeVoiceOptions = {}) {
       console.log("Not in listening state, ignoring stop");
       return;
     }
+    
+    silenceStartRef.current = null;
+    recordingStartRef.current = null;
     
     try {
       console.log("Stopping recording...");
