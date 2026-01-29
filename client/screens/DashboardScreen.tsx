@@ -22,20 +22,6 @@ import { useTheme } from "@/hooks/useTheme";
 import { Spacing } from "@/constants/theme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 
-// Import tool icons
-// @ts-ignore
-import askDoriIcon from "@/assets/images/ask-dori-tool.png";
-// @ts-ignore
-import letterIcon from "@/assets/images/letter-tool.png";
-// @ts-ignore
-import mirrorIcon from "@/assets/images/mirror-tool.png";
-// @ts-ignore
-import libraryIcon from "@/assets/images/library-tool.png";
-// @ts-ignore
-import websiteIcon from "@/assets/images/website-tool.png";
-// @ts-ignore
-import quizIcon from "@/assets/images/quiz-tool.png";
-
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function DashboardScreen() {
@@ -81,42 +67,42 @@ export default function DashboardScreen() {
       id: "grandchild",
       title: t("tools.grandchild.title"),
       description: t("tools.grandchild.description"),
-      image: askDoriIcon,
-      color: theme.primary,
+      icon: "message-circle" as const,
+      color: "#4285F4",
     },
     {
       id: "letter",
       title: t("tools.letter.title"),
       description: t("tools.letter.description"),
-      image: letterIcon,
-      color: "#F4B942",
+      icon: "file-text" as const,
+      color: "#FBBC04",
     },
     {
       id: "mirror",
       title: t("tools.mirror.title"),
       description: t("tools.mirror.description"),
-      image: mirrorIcon,
-      color: "#9B59B6",
+      icon: "play-circle" as const,
+      color: "#EA4335",
     },
     {
       id: "library",
       title: t("tools.library.title"),
       description: t("tools.library.description"),
-      image: libraryIcon,
-      color: "#6C63FF",
+      icon: "book-open" as const,
+      color: "#34A853",
     },
     {
       id: "websiteHelper",
       title: t("tools.websiteHelper.title"),
       description: t("tools.websiteHelper.description"),
-      image: websiteIcon,
+      icon: "globe" as const,
       color: "#4285F4",
     },
     {
       id: "learningQuiz",
       title: "שאלון למידה",
       description: "גלה את מסלול הלמידה המתאים לך",
-      image: quizIcon,
+      icon: "check-square" as const,
       color: "#9C27B0",
     },
   ];
