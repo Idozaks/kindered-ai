@@ -16,6 +16,7 @@ import { BlurView } from "expo-blur";
 import { Feather } from "@expo/vector-icons";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAura } from "@/contexts/AuraContext";
 import {
   Colors,
   Spacing,
@@ -33,6 +34,7 @@ type LoginScreenProps = {
 export default function LoginScreen({ navigation }: LoginScreenProps) {
   const { theme, isDark } = useTheme();
   const { login, continueAsGuest } = useAuth();
+  const { resetHandshake } = useAura();
   const insets = useSafeAreaInsets();
 
   const [email, setEmail] = useState("");
@@ -45,6 +47,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
   const handleGuestLogin = async () => {
     setIsGuestLoading(true);
     try {
+      resetHandshake();
       await continueAsGuest();
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err: any) {

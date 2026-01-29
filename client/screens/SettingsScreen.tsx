@@ -19,6 +19,7 @@ import { GlassButton } from "@/components/GlassButton";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAura } from "@/contexts/AuraContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { storage, UserSettings } from "@/lib/storage";
 import i18n from "@/lib/i18n";
@@ -35,6 +36,7 @@ export default function SettingsScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
   const queryClient = useQueryClient();
   const { user, logout, isLoading: authLoading } = useAuth();
+  const { resetHandshake } = useAura();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [settings, setSettings] = useState<UserSettings>({
     language: "he",
@@ -111,6 +113,7 @@ export default function SettingsScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setIsLoggingOut(true);
     try {
+      resetHandshake();
       await logout();
     } catch (error) {
       console.error("Logout error:", error);

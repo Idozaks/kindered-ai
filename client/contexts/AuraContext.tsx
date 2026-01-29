@@ -70,6 +70,7 @@ interface AuraContextValue extends AuraState {
   setUserName: (name: string) => void;
   setUserGender: (gender: Gender) => void;
   completeHandshake: () => void;
+  resetHandshake: () => void;
   getGenderedText: (text: string) => string;
   setCurrentScreen: (screen: string) => void;
   addPinnedAnswer: (question: string, answer: string) => void;
@@ -640,6 +641,18 @@ export function AuraProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const resetHandshake = useCallback(() => {
+    setState(prev => ({ 
+      ...prev, 
+      userName: null,
+      userGender: null,
+      handshakeCompleted: false,
+      handshakeStep: "idle",
+      mode: "normal",
+      pinnedAnswers: [],
+    }));
+  }, []);
+
   const setCurrentScreen = useCallback((screen: string) => {
     setState(prev => ({ 
       ...prev, 
@@ -736,6 +749,7 @@ export function AuraProvider({ children }: { children: ReactNode }) {
     setUserName,
     setUserGender,
     completeHandshake,
+    resetHandshake,
     getGenderedText,
     setCurrentScreen,
     addPinnedAnswer,

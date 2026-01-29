@@ -54,6 +54,21 @@ const TOKEN_KEY = "kindred_auth_token";
 
 const GUEST_KEY = "kindred_guest_mode";
 
+const AURA_KEYS = [
+  "@aura_user_name",
+  "@aura_user_gender", 
+  "@aura_handshake_completed",
+  "@aura_pinned_answers",
+];
+
+async function clearAuraData() {
+  try {
+    await AsyncStorage.multiRemove(AURA_KEYS);
+  } catch (error) {
+    console.error("Failed to clear Aura data:", error);
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({
     user: null,
@@ -172,6 +187,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     await AsyncStorage.removeItem(TOKEN_KEY);
     await AsyncStorage.removeItem(GUEST_KEY);
+    await clearAuraData();
     setState({
       user: null,
       token: null,
@@ -183,6 +199,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function continueAsGuest() {
+    await clearAuraData();
     await AsyncStorage.setItem(GUEST_KEY, "true");
     setState({
       user: null,
