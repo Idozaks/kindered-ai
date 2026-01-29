@@ -1,8 +1,19 @@
+export type InteractionType = 
+  | "none" 
+  | "chat-demo"           // Try asking AI a question
+  | "question-practice"   // Practice writing good questions with feedback
+  | "image-generation"    // Generate an image with AI
+  | "document-reader"     // Upload/photo a document for AI to read
+  | "safety-quiz";        // AI safety quiz
+
 export interface JourneyStep {
   text: string;
   textHe?: string;
   trainerNote?: string;
   trainerNoteHe?: string;
+  interaction?: InteractionType;
+  interactionPrompt?: string;
+  interactionPromptHe?: string;
 }
 
 export interface Journey {
@@ -43,6 +54,15 @@ export const aiJourneys: Journey[] = [
         trainerNoteHe: "הדגם על ידי שאילת שאלה פשוטה.",
       },
       {
+        text: "Now let's try it! Ask the AI anything - what's the weather like, tell me a joke, or explain something you've always wondered about.",
+        textHe: "עכשיו בוא ננסה! שאל את הבינה המלאכותית כל דבר - מה מזג האוויר, ספר לי בדיחה, או הסבר משהו שתמיד רצית לדעת.",
+        trainerNote: "Let the user interact with real AI for the first time.",
+        trainerNoteHe: "תן למשתמש לתקשר עם בינה מלאכותית אמיתית בפעם הראשונה.",
+        interaction: "chat-demo",
+        interactionPrompt: "Try asking me anything! For example: 'Tell me a joke' or 'What day is today?'",
+        interactionPromptHe: "נסה לשאול אותי כל דבר! למשל: 'ספר לי בדיחה' או 'איזה יום היום?'",
+      },
+      {
         text: "AI is patient and never gets tired. You can ask the same question many times, and it will always try to help you understand better.",
         textHe: "בינה מלאכותית סבלנית ולעולם לא מתעייפת. אפשר לשאול את אותה שאלה הרבה פעמים, והיא תמיד תנסה לעזור לך להבין טוב יותר.",
         trainerNote: "This is especially important for seniors who may feel embarrassed to ask repeatedly.",
@@ -75,6 +95,15 @@ export const aiJourneys: Journey[] = [
         textHe: "תן הקשר. ספר לבינה המלאכותית למי זה מיועד, מה אתה צריך, וכל פרט חשוב. יותר מידע = תשובות טובות יותר.",
         trainerNote: "Use examples like 'My grandson is turning 10 and loves dinosaurs'.",
         trainerNoteHe: "השתמש בדוגמאות כמו 'הנכד שלי הופך ל-10 ואוהב דינוזאורים'.",
+      },
+      {
+        text: "Let's practice! Try writing a question and I'll give you feedback on how to make it better.",
+        textHe: "בוא נתרגל! נסה לכתוב שאלה ואני אתן לך משוב איך לשפר אותה.",
+        trainerNote: "Interactive practice with AI feedback on question quality.",
+        trainerNoteHe: "תרגול אינטראקטיבי עם משוב מבינה מלאכותית על איכות השאלה.",
+        interaction: "question-practice",
+        interactionPrompt: "Write any question and I'll help you make it clearer and more effective!",
+        interactionPromptHe: "כתוב שאלה כלשהי ואני אעזור לך להפוך אותה לברורה ויעילה יותר!",
       },
       {
         text: "Don't be afraid to say 'I don't understand'. Ask the AI to explain in simpler words or give an example.",
@@ -117,10 +146,13 @@ export const aiJourneys: Journey[] = [
         trainerNoteHe: "יותר פרטים = תוצאות טובות יותר.",
       },
       {
-        text: "You can create: greeting cards for family, birthday pictures, beautiful scenery, or even pictures of things that don't exist!",
-        textHe: "אפשר ליצור: כרטיסי ברכה למשפחה, תמונות יום הולדת, נופים יפים, או אפילו תמונות של דברים שלא קיימים!",
-        trainerNote: "Give practical examples relevant to their life.",
-        trainerNoteHe: "תן דוגמאות מעשיות הרלוונטיות לחייהם.",
+        text: "Now let's create something! Describe a picture you'd like to see - maybe flowers, a sunset, a cozy room, or anything you imagine!",
+        textHe: "עכשיו בוא ניצור משהו! תאר תמונה שהיית רוצה לראות - אולי פרחים, שקיעה, חדר נעים, או כל דבר שאתה מדמיין!",
+        trainerNote: "Real image generation experience. Guide them to describe something meaningful.",
+        trainerNoteHe: "חוויית יצירת תמונה אמיתית. הדרך אותם לתאר משהו משמעותי.",
+        interaction: "image-generation",
+        interactionPrompt: "Describe a picture and I'll create it for you! Try: 'A garden with colorful flowers and butterflies'",
+        interactionPromptHe: "תאר תמונה ואני אצור אותה בשבילך! נסה: 'גינה עם פרחים צבעוניים ופרפרים'",
       },
       {
         text: "Don't worry if the first picture isn't perfect. You can ask to try again with different words or say 'make it more colorful' or 'add a rainbow'.",
@@ -155,6 +187,15 @@ export const aiJourneys: Journey[] = [
         textHe: "פשוט צלם תמונה של המסמך עם הטלפון. הבינה המלאכותית יכולה לראות מה כתוב ולהבין את זה בשבילך.",
         trainerNote: "Demonstrate taking a photo of a document.",
         trainerNoteHe: "הדגם צילום של מסמך.",
+      },
+      {
+        text: "Let's try it now! Take a photo of any document - a letter, a bill, or even a medicine label - and I'll explain it to you.",
+        textHe: "בוא ננסה עכשיו! צלם תמונה של מסמך כלשהו - מכתב, חשבון, או אפילו תווית תרופה - ואני אסביר לך אותו.",
+        trainerNote: "Real document reading experience. Be patient with camera use.",
+        trainerNoteHe: "חוויית קריאת מסמך אמיתית. היה סבלני עם שימוש במצלמה.",
+        interaction: "document-reader",
+        interactionPrompt: "Take a photo of a document and I'll read and explain it for you in simple words!",
+        interactionPromptHe: "צלם תמונה של מסמך ואני אקרא ואסביר אותו בשבילך במילים פשוטות!",
       },
       {
         text: "AI will tell you: What is this document about? Is it urgent? What do you need to do about it?",
@@ -201,6 +242,15 @@ export const aiJourneys: Journey[] = [
         textHe: "להחלטות חשובות (רפואיות, כספיות, משפטיות), תמיד בדוק עם איש מקצוע אמיתי. בינה מלאכותית נותנת מידע, אבל רופא או עורך דין מכירים את המצב הספציפי שלך.",
         trainerNote: "AI assists but doesn't replace professional advice.",
         trainerNoteHe: "בינה מלאכותית מסייעת אבל לא מחליפה ייעוץ מקצועי.",
+      },
+      {
+        text: "Let's test what you learned! I'll ask you a few safety questions to make sure you're ready to use AI safely.",
+        textHe: "בוא נבדוק מה למדת! אני אשאל אותך כמה שאלות בטיחות כדי לוודא שאתה מוכן להשתמש בבינה מלאכותית בבטחה.",
+        trainerNote: "Interactive safety quiz to reinforce learning.",
+        trainerNoteHe: "חידון בטיחות אינטראקטיבי לחיזוק הלמידה.",
+        interaction: "safety-quiz",
+        interactionPrompt: "Answer a few quick questions to earn your AI Safety badge!",
+        interactionPromptHe: "ענה על כמה שאלות קצרות כדי להרוויח את תג בטיחות AI שלך!",
       },
       {
         text: "If something AI says doesn't feel right or seems strange, trust your instincts. You can always ask a family member to double-check.",
