@@ -172,11 +172,17 @@ export function useNativeVoice(options: UseNativeVoiceOptions = {}) {
       setError(null);
       updateState("listening");
       
+      if (audioRecorder.isRecording) {
+        await audioRecorder.stop();
+      }
+      
+      await audioRecorder.prepareToRecordAsync();
       audioRecorder.record();
-      console.log("Recording started");
+      console.log("Recording started successfully");
     } catch (e: any) {
-      console.error("Recording start error:", e);
-      handleError("לא הצלחתי להתחיל הקלטה");
+      console.error("Recording start error:", e?.message || e);
+      updateState("idle");
+      handleError("לא הצלחתי להתחיל הקלטה. נסה שוב.");
     }
   }, [state, requestPermissions, updateState, handleError, audioRecorder]);
 
