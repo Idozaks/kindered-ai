@@ -25,9 +25,10 @@ import { GlassButton } from "@/components/GlassButton";
 import { GlassCard } from "@/components/GlassCard";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius, Typography, Colors } from "@/constants/theme";
-import { aiJourneys, Journey } from "@/data/aiJourneys";
+import { aiJourneys, Journey, InteractionType } from "@/data/aiJourneys";
 import { useJourneyProgress, useAllProgress } from "@/hooks/useJourneyProgress";
 import { useCelebration } from "@/contexts/CelebrationContext";
+import { AIInteractiveDemo } from "@/components/ai/AIInteractiveDemo";
 
 const AI_PURPLE = "#6C63FF";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -289,6 +290,16 @@ export default function AIGuidesScreen() {
               </ThemedText>
             </GlassCard>
           </Animated.View>
+
+          {step.interaction && step.interaction !== "none" ? (
+            <Animated.View entering={FadeInDown.delay(400).duration(400)}>
+              <AIInteractiveDemo
+                type={step.interaction}
+                prompt={step.interactionPrompt || ""}
+                promptHe={step.interactionPromptHe}
+              />
+            </Animated.View>
+          ) : null}
 
           {(step.trainerNote || step.trainerNoteHe) ? (
             <Animated.View entering={FadeInDown.delay(300).duration(400)}>

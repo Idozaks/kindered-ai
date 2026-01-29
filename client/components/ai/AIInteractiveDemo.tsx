@@ -491,7 +491,7 @@ Give brief, positive feedback on their question (2-3 sentences). If it's a good 
       const passed = quizScore >= 2;
       return (
         <Animated.View entering={FadeIn.duration(500)} style={styles.container}>
-          <GlassCard style={[styles.quizResultCard, { backgroundColor: passed ? Colors.light.success + "10" : Colors.light.warning + "10" }]}>
+          <GlassCard style={{...styles.quizResultCard, backgroundColor: passed ? Colors.light.success + "10" : Colors.light.warning + "10" }}>
             <Feather
               name={passed ? "award" : "refresh-cw"}
               size={48}
