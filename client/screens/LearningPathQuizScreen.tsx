@@ -45,6 +45,25 @@ const QUIZ_RESULT_KEY = "@dori_quiz_result";
 
 type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
 
+interface ShuffledQuestion extends QuizQuestion {
+  shuffledOptionsHe: string[];
+  shuffledCorrectIndex: number;
+}
+
+function shuffleOptions(question: QuizQuestion): ShuffledQuestion {
+  const indices = question.optionsHe.map((_, i) => i);
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+  
+  return {
+    ...question,
+    shuffledOptionsHe: indices.map(i => question.optionsHe[i]),
+    shuffledCorrectIndex: indices.indexOf(question.correctIndex),
+  };
+}
+
 interface QuizAnswer {
   questionId: string;
   category: "smartphone" | "whatsapp" | "safety";
@@ -96,7 +115,7 @@ export default function LearningPathQuizScreen() {
   const [result, setResult] = useState<EvaluationResult | null>(null);
   const [savedResult, setSavedResult] = useState<EvaluationResult | null>(null);
   const [isLoadingSaved, setIsLoadingSaved] = useState(true);
-  const [shuffledQuestions, setShuffledQuestions] = useState<QuizQuestion[]>([]);
+  const [shuffledQuestions, setShuffledQuestions] = useState<ShuffledQuestion[]>([]);
 
   const progressScale = useSharedValue(0);
   const questionOpacity = useSharedValue(1);
@@ -128,7 +147,8 @@ export default function LearningPathQuizScreen() {
   };
 
   const startQuiz = () => {
-    const shuffled = [...quizQuestions].sort(() => Math.random() - 0.5).slice(0, 5);
+    const selectedQuestions = [...quizQuestions].sort(() => Math.random() - 0.5).slice(0, 5);
+    const shuffled = selectedQuestions.map(q => shuffleOptions(q));
     setShuffledQuestions(shuffled);
     setCurrentQuestionIndex(0);
     setAnswers([]);
@@ -174,7 +194,7 @@ export default function LearningPathQuizScreen() {
     setIsNarrating(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-    const text = `${currentQuestion.questionHe}. ${currentQuestion.optionsHe
+    const text = `${currentQuestion.questionHe}. ${currentQuestion.shuffledOptionsHe
       .map((opt, i) => `אפשרות ${i + 1}: ${opt}`)
       .join(". ")}`;
 
@@ -199,7 +219,7 @@ export default function LearningPathQuizScreen() {
       setSelectedOption(optionIndex);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-      const isCorrect = optionIndex === currentQuestion.correctIndex;
+      const isCorrect = optionIndex === currentQuestion.shuffledCorrectIndex;
       
       if (isCorrect) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -617,9 +637,9 @@ export default function LearningPathQuizScreen() {
           </ThemedText>
 
           <View style={styles.optionsContainer}>
-            {currentQuestion?.optionsHe.map((option, index) => {
+            {currentQuestion?.shuffledOptionsHe.map((option, index) => {
               const isSelected = selectedOption === index;
-              const isCorrect = index === currentQuestion.correctIndex;
+              const isCorrect = index === currentQuestion.shuffledCorrectIndex;
               const showCorrectness = selectedOption !== null;
 
               let optionStyle = {};
