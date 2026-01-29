@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { StyleSheet, View, Pressable, Dimensions, Modal, Platform } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { StyleSheet, View, Pressable, Dimensions, Modal, Platform, TextInput, ScrollView, KeyboardAvoidingView, ActivityIndicator } from "react-native";
 import { BlurView } from "expo-blur";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -15,11 +15,18 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { useTheme } from "@/hooks/useTheme";
 import { useAura } from "@/contexts/AuraContext";
 import { useNativeVoice, VoiceState } from "@/hooks/useNativeVoice";
-import { Spacing, BorderRadius, AuraColors } from "@/constants/theme";
+import { Spacing, BorderRadius, AuraColors, Colors } from "@/constants/theme";
 import { LiquidOrb } from "./LiquidOrb";
 import { WaveVisualizer } from "./WaveVisualizer";
 import { AuraHandshakeModal } from "./AuraHandshakeModal";
 import { ThemedText } from "@/components/ThemedText";
+import { getApiUrl } from "@/lib/query-client";
+
+interface ChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+}
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const BUTTON_SIZE = 64;
@@ -35,6 +42,77 @@ export function AuraFloatingButton({ onPress }: AuraFloatingButtonProps) {
 
   const [showHandshake, setShowHandshake] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [textInput, setTextInput] = useState("");
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [isTyping, setIsTyping] = useState(false);
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  const sendTextMessage = async (message: string) => {
+    if (!message.trim()) return;
+    
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      role: "user",
+      content: message.trim(),
+    };
+    
+    setChatMessages(prev => [...prev, userMessage]);
+    setTextInput("");
+    setIsTyping(true);
+    aura.setVoiceState("thinking");
+    
+    try {
+      const baseUrl = getApiUrl();
+      const response = await fetch(new URL("/api/ai/grandchild-help", baseUrl).href, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question: message.trim(),
+          context: aura.currentScreen,
+          language: "he",
+          history: chatMessages.map(m => ({
+            role: m.role,
+            content: m.content,
+          })),
+        }),
+      });
+      
+      const data = await response.json();
+      
+      let aiResponse = data.answer || data.response || "סליחה, לא הצלחתי לענות. נסה שוב.";
+      if (aiResponse.includes("---SUGGESTIONS---")) {
+        aiResponse = aiResponse.split("---SUGGESTIONS---")[0].trim();
+      }
+      
+      const assistantMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: aiResponse,
+      };
+      
+      setChatMessages(prev => [...prev, assistantMessage]);
+      aura.setTranscript(aiResponse);
+      aura.speak(aiResponse);
+      aura.recordInteraction();
+    } catch (error) {
+      console.error("Text chat error:", error);
+      const errorMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: "סליחה, משהו השתבש. נסה שוב בבקשה.",
+      };
+      setChatMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsTyping(false);
+      aura.setVoiceState("idle");
+    }
+    
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 100);
+  };
 
   const { 
     state: voiceState,
@@ -212,7 +290,10 @@ export function AuraFloatingButton({ onPress }: AuraFloatingButtonProps) {
         animationType="slide"
         onRequestClose={() => setIsOpen(false)}
       >
-        <View style={styles.modalOverlay}>
+        <KeyboardAvoidingView 
+          style={styles.modalOverlay} 
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
           <BlurView intensity={80} tint="dark" style={styles.modalContent}>
             <View style={[styles.modalHeader, { borderBottomColor: theme.glassBorder }]}>
               <View style={styles.orbSmall}>
@@ -220,7 +301,7 @@ export function AuraFloatingButton({ onPress }: AuraFloatingButtonProps) {
               </View>
               <View style={styles.headerText}>
                 <ThemedText style={[styles.title, { color: theme.text }]}>
-                  {aura.userName ? `שלום, ${aura.userName}` : "אורה"}
+                  {aura.userName ? `שלום, ${aura.userName}` : "דורי"}
                 </ThemedText>
                 <ThemedText style={[styles.subtitle, { color: theme.textSecondary }]}>
                   איך אפשר לעזור?
@@ -237,87 +318,110 @@ export function AuraFloatingButton({ onPress }: AuraFloatingButtonProps) {
               </Pressable>
             </View>
 
-            <View style={styles.quickActions}>
-              <Pressable
-                style={[
-                  styles.actionButton, 
-                  { 
-                    backgroundColor: isActive ? AuraColors.speaking : theme.glassBg, 
-                    borderColor: isActive ? AuraColors.speaking : theme.glassBorder 
-                  }
-                ]}
-                onPress={handleTalkToMe}
-              >
-                <Feather 
-                  name={getButtonIcon() as any} 
-                  size={28} 
-                  color={isActive ? "#fff" : theme.primary} 
-                />
-                <ThemedText style={[styles.actionText, { color: isActive ? "#fff" : theme.text }]}>
-                  {getButtonLabel()}
-                </ThemedText>
-              </Pressable>
+            {/* Chat Messages Area */}
+            <ScrollView 
+              ref={scrollViewRef}
+              style={styles.chatContainer}
+              contentContainerStyle={styles.chatContent}
+              showsVerticalScrollIndicator={false}
+            >
+              {chatMessages.length === 0 ? (
+                <View style={styles.emptyChat}>
+                  <Feather name="message-circle" size={48} color={theme.textSecondary} />
+                  <ThemedText style={[styles.emptyChatText, { color: theme.textSecondary }]}>
+                    דבר או כתוב לי משהו
+                  </ThemedText>
+                </View>
+              ) : (
+                chatMessages.map((msg) => (
+                  <View
+                    key={msg.id}
+                    style={[
+                      styles.messageBubble,
+                      msg.role === "user" ? styles.userBubble : styles.assistantBubble,
+                      { backgroundColor: msg.role === "user" ? AuraColors.speaking + "30" : theme.glassBg }
+                    ]}
+                  >
+                    <ThemedText style={[styles.messageText, { color: theme.text }]}>
+                      {msg.content}
+                    </ThemedText>
+                  </View>
+                ))
+              )}
+              {isTyping ? (
+                <View style={[styles.messageBubble, styles.assistantBubble, { backgroundColor: theme.glassBg }]}>
+                  <ActivityIndicator size="small" color={AuraColors.thinking} />
+                  <ThemedText style={[styles.messageText, { color: theme.textSecondary, marginLeft: Spacing.sm }]}>
+                    חושבת...
+                  </ThemedText>
+                </View>
+              ) : null}
+            </ScrollView>
 
-              <Pressable
-                style={[styles.actionButton, { backgroundColor: theme.glassBg, borderColor: theme.glassBorder }]}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                  aura.repeatLastMessage();
-                }}
-              >
-                <Feather name="repeat" size={28} color={theme.primary} />
-                <ThemedText style={[styles.actionText, { color: theme.text }]}>חזור שוב</ThemedText>
-              </Pressable>
-
-              <Pressable
-                style={[styles.actionButton, { backgroundColor: theme.glassBg, borderColor: theme.glassBorder }]}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                  aura.slowDownSpeech();
-                  aura.speak("אדבר לאט יותר");
-                }}
-              >
-                <Feather name="volume-1" size={28} color={theme.primary} />
-                <ThemedText style={[styles.actionText, { color: theme.text }]}>לאט יותר</ThemedText>
-              </Pressable>
-            </View>
-
+            {/* Voice Status Indicator */}
             {isListening ? (
-              <View style={[styles.transcriptBox, { backgroundColor: AuraColors.listening + "20", borderColor: AuraColors.listening }]}>
-                <WaveVisualizer state="listening" width={200} height={40} />
-                <ThemedText style={[styles.listeningText, { color: AuraColors.listening, marginTop: Spacing.sm }]}>
-                  מקשיבה... דבר עכשיו
+              <View style={[styles.voiceStatus, { backgroundColor: AuraColors.listening + "20", borderColor: AuraColors.listening }]}>
+                <WaveVisualizer state="listening" width={120} height={30} />
+                <ThemedText style={[styles.voiceStatusText, { color: AuraColors.listening }]}>
+                  מקשיבה...
                 </ThemedText>
               </View>
             ) : isProcessing ? (
-              <View style={[styles.transcriptBox, { backgroundColor: AuraColors.thinking + "20", borderColor: AuraColors.thinking }]}>
-                <WaveVisualizer state="idle" width={200} height={40} color={AuraColors.thinking} />
-                <ThemedText style={[styles.listeningText, { color: AuraColors.thinking, marginTop: Spacing.sm }]}>
-                  מעבד את מה שאמרת...
+              <View style={[styles.voiceStatus, { backgroundColor: AuraColors.thinking + "20", borderColor: AuraColors.thinking }]}>
+                <WaveVisualizer state="idle" width={120} height={30} color={AuraColors.thinking} />
+                <ThemedText style={[styles.voiceStatusText, { color: AuraColors.thinking }]}>
+                  מעבדת...
                 </ThemedText>
               </View>
             ) : isSpeaking ? (
-              <View style={[styles.transcriptBox, { backgroundColor: AuraColors.speaking + "20", borderColor: AuraColors.speaking }]}>
-                <WaveVisualizer state="speaking" width={200} height={40} />
-                <ThemedText style={[styles.listeningText, { color: AuraColors.speaking, marginTop: Spacing.sm }]}>
-                  {speechTranscript || "מדברת..."}
-                </ThemedText>
-              </View>
-            ) : speechError ? (
-              <View style={[styles.transcriptBox, { backgroundColor: "#FF6B6B20", borderColor: "#FF6B6B" }]}>
-                <ThemedText style={[styles.transcriptText, { color: "#FF6B6B" }]}>
-                  {speechError}
-                </ThemedText>
-              </View>
-            ) : aura.transcript ? (
-              <View style={[styles.transcriptBox, { backgroundColor: theme.glassBg, borderColor: theme.glassBorder }]}>
-                <ThemedText style={[styles.transcriptText, { color: theme.text }]}>
-                  {aura.transcript}
+              <View style={[styles.voiceStatus, { backgroundColor: AuraColors.speaking + "20", borderColor: AuraColors.speaking }]}>
+                <WaveVisualizer state="speaking" width={120} height={30} />
+                <ThemedText style={[styles.voiceStatusText, { color: AuraColors.speaking }]}>
+                  מדברת...
                 </ThemedText>
               </View>
             ) : null}
+
+            {/* Input Area - Text + Voice */}
+            <View style={[styles.inputContainer, { borderTopColor: theme.glassBorder }]}>
+              <TextInput
+                style={[styles.textInput, { backgroundColor: theme.glassBg, borderColor: theme.glassBorder, color: theme.text }]}
+                placeholder="כתוב הודעה..."
+                placeholderTextColor={theme.textSecondary}
+                value={textInput}
+                onChangeText={setTextInput}
+                onSubmitEditing={() => sendTextMessage(textInput)}
+                returnKeyType="send"
+                multiline={false}
+                editable={!isTyping && !isListening}
+              />
+              
+              {textInput.trim() ? (
+                <Pressable
+                  style={[styles.sendButton, { backgroundColor: AuraColors.speaking }]}
+                  onPress={() => sendTextMessage(textInput)}
+                  disabled={isTyping}
+                >
+                  <Feather name="send" size={22} color="#fff" />
+                </Pressable>
+              ) : (
+                <Pressable
+                  style={[
+                    styles.sendButton, 
+                    { backgroundColor: isActive ? AuraColors.speaking : theme.glassBg }
+                  ]}
+                  onPress={handleTalkToMe}
+                >
+                  <Feather 
+                    name={getButtonIcon() as any} 
+                    size={22} 
+                    color={isActive ? "#fff" : theme.primary} 
+                  />
+                </Pressable>
+              )}
+            </View>
           </BlurView>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </>
   );
@@ -350,8 +454,9 @@ const styles = StyleSheet.create({
   modalContent: {
     borderTopLeftRadius: BorderRadius.xl,
     borderTopRightRadius: BorderRadius.xl,
-    paddingBottom: 40,
+    paddingBottom: 20,
     overflow: "hidden",
+    maxHeight: SCREEN_HEIGHT * 0.75,
   },
   modalHeader: {
     flexDirection: "row",
@@ -378,38 +483,81 @@ const styles = StyleSheet.create({
   closeButton: {
     padding: Spacing.sm,
   },
-  quickActions: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    padding: Spacing.lg,
-    gap: Spacing.md,
-  },
-  actionButton: {
+  chatContainer: {
     flex: 1,
+    minHeight: 200,
+    maxHeight: 300,
+  },
+  chatContent: {
+    padding: Spacing.lg,
+    paddingBottom: Spacing.md,
+  },
+  emptyChat: {
     alignItems: "center",
     justifyContent: "center",
-    padding: Spacing.lg,
+    paddingVertical: Spacing.xl * 2,
+    gap: Spacing.md,
+  },
+  emptyChatText: {
+    fontSize: 18,
+    textAlign: "center",
+  },
+  messageBubble: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.sm,
+    maxWidth: "85%",
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  userBubble: {
+    alignSelf: "flex-end",
+  },
+  assistantBubble: {
+    alignSelf: "flex-start",
+  },
+  messageText: {
+    fontSize: 17,
+    lineHeight: 24,
+    textAlign: "right",
+  },
+  voiceStatus: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginHorizontal: Spacing.lg,
+    padding: Spacing.md,
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
     gap: Spacing.sm,
   },
-  actionText: {
-    fontSize: 14,
+  voiceStatusText: {
+    fontSize: 16,
     fontWeight: "500",
-    textAlign: "center",
   },
-  transcriptBox: {
-    margin: Spacing.lg,
-    marginTop: 0,
-    padding: Spacing.lg,
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    borderTopWidth: 1,
+    gap: Spacing.sm,
+  },
+  textInput: {
+    flex: 1,
+    height: 48,
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
-    alignItems: "center",
-  },
-  transcriptText: {
+    paddingHorizontal: Spacing.md,
     fontSize: 18,
-    lineHeight: 28,
     textAlign: "right",
+  },
+  sendButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
   },
   listeningText: {
     fontSize: 18,
