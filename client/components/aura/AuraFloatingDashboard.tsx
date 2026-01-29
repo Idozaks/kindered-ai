@@ -324,7 +324,7 @@ export function AuraFloatingDashboard({ onMicPress }: AuraFloatingDashboardProps
                 style={[styles.pinnedCard, { backgroundColor: theme.backgroundSecondary, borderColor: theme.border }]}
               >
                 <View style={styles.pinnedHeader}>
-                  <Feather name="pin" size={14} color={theme.textSecondary} />
+                  <Feather name="bookmark" size={14} color={theme.textSecondary} />
                   <ThemedText style={[styles.pinnedQuestion, { color: theme.textSecondary }]}>
                     {pinned.question}
                   </ThemedText>
