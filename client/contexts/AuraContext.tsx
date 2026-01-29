@@ -120,7 +120,7 @@ const STORAGE_KEYS = {
   GREETING_AUDIO: "@aura_greeting_audio",
 };
 
-const GREETING_MESSAGE = "שלום! נעים להכיר. איך קוראים לך?";
+const GREETING_MESSAGE = "שלום אני דורי, מה שמכם?";
 
 function getDayContext(): DayContext {
   const hour = new Date().getHours();
@@ -641,7 +641,7 @@ export function AuraProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
-  const resetHandshake = useCallback(() => {
+  const resetHandshake = useCallback(async () => {
     setState(prev => ({ 
       ...prev, 
       userName: null,
@@ -651,6 +651,8 @@ export function AuraProvider({ children }: { children: ReactNode }) {
       mode: "normal",
       pinnedAnswers: [],
     }));
+    cachedGreetingRef.current = null;
+    await AsyncStorage.removeItem(STORAGE_KEYS.GREETING_AUDIO);
   }, []);
 
   const setCurrentScreen = useCallback((screen: string) => {
