@@ -546,16 +546,29 @@ export default function LearningPathQuizScreen() {
             ) : null}
 
             <Pressable
-              style={[styles.startButton, { backgroundColor: theme.primary }]}
+              style={[styles.startButton, { backgroundColor: result.evaluation.recommendedPath.color }]}
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                navigation.navigate("Library");
+              }}
+            >
+              <Feather name="book-open" size={24} color="#FFFFFF" />
+              <ThemedText type="h4" style={styles.startButtonText}>
+                לספריה - התחל ללמוד!
+              </ThemedText>
+              <Feather name="arrow-left" size={24} color="#FFFFFF" />
+            </Pressable>
+
+            <Pressable
+              style={[styles.secondaryButton, { borderColor: theme.glassBorder }]}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 navigation.navigate("Dashboard");
               }}
             >
-              <ThemedText type="h4" style={styles.startButtonText}>
-                התחל ללמוד!
+              <ThemedText type="body" style={{ color: theme.textSecondary }}>
+                חזרה למסך הבית
               </ThemedText>
-              <Feather name="arrow-left" size={24} color="#FFFFFF" />
             </Pressable>
           </Animated.View>
         </ScrollView>
@@ -909,6 +922,15 @@ const styles = StyleSheet.create({
   },
   startButtonText: {
     color: "#FFFFFF",
+  },
+  secondaryButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    marginTop: Spacing.md,
   },
   homeContainer: {
     flex: 1,
