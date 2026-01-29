@@ -490,25 +490,29 @@ Give brief, positive feedback on their question (2-3 sentences). If it's a good 
     if (quizComplete) {
       const passed = quizScore >= 2;
       return (
-        <Animated.View entering={FadeIn.duration(500)} style={styles.container}>
-          <GlassCard style={{...styles.quizResultCard, backgroundColor: passed ? Colors.light.success + "10" : Colors.light.warning + "10" }}>
-            <Feather
-              name={passed ? "award" : "refresh-cw"}
-              size={48}
-              color={passed ? Colors.light.success : Colors.light.warning}
-            />
-            <ThemedText type="h3" style={{ textAlign: "center", marginTop: Spacing.lg }}>
-              {passed
-                ? isHebrew
-                  ? "מעולה! קיבלת את תג הבטיחות!"
-                  : "Excellent! You earned your Safety Badge!"
-                : isHebrew
-                ? "כמעט! בוא ננסה שוב."
-                : "Almost! Let's try again."}
+        <View style={styles.container}>
+          <GlassCard style={{...styles.quizResultCard, backgroundColor: passed ? Colors.light.success + "05" : Colors.light.warning + "05" }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.md }}>
+              <Feather
+                name={passed ? "check-circle" : "alert-circle"}
+                size={24}
+                color={passed ? Colors.light.success : Colors.light.warning}
+              />
+              <ThemedText type="h4">
+                {passed
+                  ? isHebrew
+                    ? "הבוחן הושלם בהצלחה!"
+                    : "Quiz completed successfully!"
+                  : isHebrew
+                  ? "כמעט! כדאי לנסות שוב."
+                  : "Almost! You might want to try again."}
+              </ThemedText>
+            </View>
+            
+            <ThemedText type="body" style={{ marginTop: Spacing.sm, color: theme.textSecondary }}>
+              {isHebrew ? `קיבלת ${quizScore} מתוך ${safetyQuizQuestions.length} תשובות נכונות.` : `You got ${quizScore} out of ${safetyQuizQuestions.length} correct.`}
             </ThemedText>
-            <ThemedText type="body" style={{ textAlign: "center", marginTop: Spacing.sm, color: theme.textSecondary }}>
-              {isHebrew ? `ניקוד: ${quizScore}/${safetyQuizQuestions.length}` : `Score: ${quizScore}/${safetyQuizQuestions.length}`}
-            </ThemedText>
+            
             {!passed ? (
               <GlassButton
                 onPress={() => {
@@ -518,13 +522,13 @@ Give brief, positive feedback on their question (2-3 sentences). If it's a good 
                   setSelectedAnswer(null);
                   setShowFeedback(false);
                 }}
-                style={{ marginTop: Spacing.xl }}
+                style={{ marginTop: Spacing.md }}
               >
                 {isHebrew ? "נסה שוב" : "Try Again"}
               </GlassButton>
             ) : null}
           </GlassCard>
-        </Animated.View>
+        </View>
       );
     }
 
