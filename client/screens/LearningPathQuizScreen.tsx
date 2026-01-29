@@ -11,6 +11,7 @@ import { BlurView } from "expo-blur";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import * as Speech from "expo-speech";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -39,6 +40,8 @@ import { Spacing, BorderRadius, Shadows } from "@/constants/theme";
 import { quizQuestions, QuizQuestion } from "@/data/quizQuestions";
 import { MainStackParamList } from "@/navigation/RootStackNavigator";
 import { apiRequest, getApiUrl } from "@/lib/query-client";
+
+const QUIZ_RESULT_KEY = "@dori_quiz_result";
 
 type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
 
@@ -75,6 +78,8 @@ interface EvaluationResult {
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
+type QuizPhase = "home" | "quiz" | "evaluating" | "result";
+
 export default function LearningPathQuizScreen() {
   const navigation = useNavigation<NavigationProp>();
   const { theme, isDark } = useTheme();
@@ -82,21 +87,57 @@ export default function LearningPathQuizScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
 
+  const [phase, setPhase] = useState<QuizPhase>("home");
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<QuizAnswer[]>([]);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isNarrating, setIsNarrating] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [result, setResult] = useState<EvaluationResult | null>(null);
+  const [savedResult, setSavedResult] = useState<EvaluationResult | null>(null);
+  const [isLoadingSaved, setIsLoadingSaved] = useState(true);
   const [shuffledQuestions, setShuffledQuestions] = useState<QuizQuestion[]>([]);
 
   const progressScale = useSharedValue(0);
   const questionOpacity = useSharedValue(1);
 
   useEffect(() => {
+    loadSavedResult();
+  }, []);
+
+  const loadSavedResult = async () => {
+    try {
+      const saved = await AsyncStorage.getItem(QUIZ_RESULT_KEY);
+      if (saved) {
+        setSavedResult(JSON.parse(saved));
+      }
+    } catch (error) {
+      console.error("Failed to load saved quiz result:", error);
+    } finally {
+      setIsLoadingSaved(false);
+    }
+  };
+
+  const saveResult = async (resultData: EvaluationResult) => {
+    try {
+      await AsyncStorage.setItem(QUIZ_RESULT_KEY, JSON.stringify(resultData));
+      setSavedResult(resultData);
+    } catch (error) {
+      console.error("Failed to save quiz result:", error);
+    }
+  };
+
+  const startQuiz = () => {
     const shuffled = [...quizQuestions].sort(() => Math.random() - 0.5).slice(0, 5);
     setShuffledQuestions(shuffled);
-  }, []);
+    setCurrentQuestionIndex(0);
+    setAnswers([]);
+    setSelectedOption(null);
+    setShowResult(false);
+    setResult(null);
+    setPhase("quiz");
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  };
 
   const currentQuestion = shuffledQuestions[currentQuestionIndex];
 
@@ -107,7 +148,8 @@ export default function LearningPathQuizScreen() {
     },
     onSuccess: (data: EvaluationResult) => {
       setResult(data);
-      setShowResult(true);
+      saveResult(data);
+      setPhase("result");
       celebrate({
         message: "סיימת את השאלון!",
         subMessage: `מסלול הלמידה שלך: ${data.evaluation.recommendedPath.titleHe}`,
@@ -222,7 +264,13 @@ export default function LearningPathQuizScreen() {
     }
   };
 
-  if (shuffledQuestions.length === 0) {
+  const getSkillLevelLabel = (score: number) => {
+    if (score >= 80) return { label: "מתקדם", color: theme.success };
+    if (score >= 50) return { label: "בינוני", color: theme.warning };
+    return { label: "מתחיל", color: theme.primary };
+  };
+
+  if (isLoadingSaved) {
     return (
       <ThemedView style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={theme.primary} />
@@ -230,7 +278,151 @@ export default function LearningPathQuizScreen() {
     );
   }
 
-  if (showResult && result) {
+  if (phase === "home") {
+    const displayResult = savedResult;
+    
+    return (
+      <ThemedView style={styles.container}>
+        <ScrollView
+          contentContainerStyle={[
+            styles.scrollContent,
+            { paddingTop: headerHeight + Spacing.xl, paddingBottom: insets.bottom + Spacing.xl },
+          ]}
+          showsVerticalScrollIndicator={false}
+        >
+          <Animated.View entering={FadeIn.duration(400)} style={styles.homeContainer}>
+            <View style={[styles.homeHeader, { backgroundColor: theme.primary + "15" }]}>
+              <View style={[styles.homeIconCircle, { backgroundColor: theme.primary }]}>
+                <Feather name="clipboard" size={40} color="#FFFFFF" />
+              </View>
+              <ThemedText type="h2" style={styles.homeTitle}>
+                שאלון למידה
+              </ThemedText>
+              <ThemedText type="body" style={[styles.homeSubtitle, { color: theme.textSecondary }]}>
+                גלה את רמת המיומנות הדיגיטלית שלך וקבל מסלול למידה מותאם אישית
+              </ThemedText>
+            </View>
+
+            {displayResult ? (
+              <Animated.View entering={FadeIn.delay(200)} style={styles.currentLevelSection}>
+                <ThemedText type="h4" style={styles.sectionTitle}>
+                  הרמה הנוכחית שלך
+                </ThemedText>
+                <View style={[styles.levelCard, { backgroundColor: displayResult.evaluation.recommendedPath.color + "15", borderColor: displayResult.evaluation.recommendedPath.color }]}>
+                  <View style={styles.levelHeader}>
+                    <View style={[styles.levelIconCircle, { backgroundColor: displayResult.evaluation.recommendedPath.color }]}>
+                      <Feather
+                        name={displayResult.evaluation.recommendedPath.icon as any}
+                        size={28}
+                        color="#FFFFFF"
+                      />
+                    </View>
+                    <View style={styles.levelInfo}>
+                      <ThemedText type="h3" style={{ color: displayResult.evaluation.recommendedPath.color }}>
+                        {displayResult.evaluation.recommendedPath.titleHe}
+                      </ThemedText>
+                      <ThemedText type="small" style={{ color: theme.textSecondary }}>
+                        ציון כללי: {displayResult.evaluation.scores.overall}%
+                      </ThemedText>
+                    </View>
+                  </View>
+
+                  <View style={styles.skillBars}>
+                    <View style={styles.skillRow}>
+                      <View style={styles.skillLabelRow}>
+                        <Feather name="smartphone" size={16} color={theme.primary} />
+                        <ThemedText type="small" style={{ color: theme.textSecondary }}>סמארטפון</ThemedText>
+                        <ThemedText type="small" style={{ color: getSkillLevelLabel(displayResult.evaluation.scores.smartphone).color, fontWeight: "600" }}>
+                          {getSkillLevelLabel(displayResult.evaluation.scores.smartphone).label}
+                        </ThemedText>
+                      </View>
+                      <View style={[styles.skillBarBg, { backgroundColor: theme.border }]}>
+                        <View style={[styles.skillBarFill, { width: `${displayResult.evaluation.scores.smartphone}%`, backgroundColor: theme.primary }]} />
+                      </View>
+                    </View>
+
+                    <View style={styles.skillRow}>
+                      <View style={styles.skillLabelRow}>
+                        <Feather name="message-circle" size={16} color="#25D366" />
+                        <ThemedText type="small" style={{ color: theme.textSecondary }}>וואטסאפ</ThemedText>
+                        <ThemedText type="small" style={{ color: getSkillLevelLabel(displayResult.evaluation.scores.whatsapp).color, fontWeight: "600" }}>
+                          {getSkillLevelLabel(displayResult.evaluation.scores.whatsapp).label}
+                        </ThemedText>
+                      </View>
+                      <View style={[styles.skillBarBg, { backgroundColor: theme.border }]}>
+                        <View style={[styles.skillBarFill, { width: `${displayResult.evaluation.scores.whatsapp}%`, backgroundColor: "#25D366" }]} />
+                      </View>
+                    </View>
+
+                    <View style={styles.skillRow}>
+                      <View style={styles.skillLabelRow}>
+                        <Feather name="shield" size={16} color="#FF5722" />
+                        <ThemedText type="small" style={{ color: theme.textSecondary }}>בטיחות דיגיטלית</ThemedText>
+                        <ThemedText type="small" style={{ color: getSkillLevelLabel(displayResult.evaluation.scores.safety).color, fontWeight: "600" }}>
+                          {getSkillLevelLabel(displayResult.evaluation.scores.safety).label}
+                        </ThemedText>
+                      </View>
+                      <View style={[styles.skillBarBg, { backgroundColor: theme.border }]}>
+                        <View style={[styles.skillBarFill, { width: `${displayResult.evaluation.scores.safety}%`, backgroundColor: "#FF5722" }]} />
+                      </View>
+                    </View>
+                  </View>
+                </View>
+              </Animated.View>
+            ) : (
+              <Animated.View entering={FadeIn.delay(200)} style={styles.categoriesSection}>
+                <ThemedText type="h4" style={styles.sectionTitle}>
+                  מה נבדוק?
+                </ThemedText>
+                <View style={styles.categoryCards}>
+                  <View style={[styles.categoryCard, { backgroundColor: theme.primary + "15" }]}>
+                    <Feather name="smartphone" size={28} color={theme.primary} />
+                    <ThemedText type="body" style={styles.categoryLabel}>ניווט בסמארטפון</ThemedText>
+                  </View>
+                  <View style={[styles.categoryCard, { backgroundColor: "#25D366" + "15" }]}>
+                    <Feather name="message-circle" size={28} color="#25D366" />
+                    <ThemedText type="body" style={styles.categoryLabel}>שימוש בוואטסאפ</ThemedText>
+                  </View>
+                  <View style={[styles.categoryCard, { backgroundColor: "#FF5722" + "15" }]}>
+                    <Feather name="shield" size={28} color="#FF5722" />
+                    <ThemedText type="body" style={styles.categoryLabel}>בטיחות דיגיטלית</ThemedText>
+                  </View>
+                </View>
+              </Animated.View>
+            )}
+
+            <View style={styles.quizInfo}>
+              <View style={styles.infoRow}>
+                <Feather name="clock" size={20} color={theme.textSecondary} />
+                <ThemedText type="body" style={{ color: theme.textSecondary }}>
+                  5 שאלות קצרות
+                </ThemedText>
+              </View>
+              <View style={styles.infoRow}>
+                <Feather name="award" size={20} color={theme.textSecondary} />
+                <ThemedText type="body" style={{ color: theme.textSecondary }}>
+                  מסלול למידה מותאם אישית
+                </ThemedText>
+              </View>
+            </View>
+
+            <Pressable
+              style={[styles.startQuizButton, { backgroundColor: theme.primary }]}
+              onPress={startQuiz}
+              testID="start-quiz-button"
+            >
+              <ThemedText type="h4" style={styles.startButtonText}>
+                {savedResult ? "בצע שאלון מחדש" : "התחל שאלון"}
+              </ThemedText>
+              <Feather name="arrow-left" size={24} color="#FFFFFF" />
+            </Pressable>
+          </Animated.View>
+        </ScrollView>
+      </ThemedView>
+    );
+  }
+
+  if (phase === "result" && result) {
     return (
       <ThemedView style={styles.container}>
         <ScrollView
@@ -697,5 +889,111 @@ const styles = StyleSheet.create({
   },
   startButtonText: {
     color: "#FFFFFF",
+  },
+  homeContainer: {
+    flex: 1,
+  },
+  homeHeader: {
+    alignItems: "center",
+    padding: Spacing["2xl"],
+    borderRadius: BorderRadius.xl,
+    marginBottom: Spacing.xl,
+  },
+  homeIconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: Spacing.lg,
+    ...Shadows.glass,
+  },
+  homeTitle: {
+    textAlign: "center",
+    marginBottom: Spacing.sm,
+  },
+  homeSubtitle: {
+    textAlign: "center",
+    lineHeight: 24,
+  },
+  currentLevelSection: {
+    marginBottom: Spacing.xl,
+  },
+  levelCard: {
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.xl,
+    borderWidth: 2,
+  },
+  levelHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.lg,
+    marginBottom: Spacing.xl,
+  },
+  levelIconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: "center",
+    alignItems: "center",
+    ...Shadows.glass,
+  },
+  levelInfo: {
+    flex: 1,
+  },
+  skillBars: {
+    gap: Spacing.lg,
+  },
+  skillRow: {
+    gap: Spacing.sm,
+  },
+  skillLabelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: Spacing.sm,
+  },
+  skillBarBg: {
+    height: 8,
+    borderRadius: 4,
+    overflow: "hidden",
+  },
+  skillBarFill: {
+    height: "100%",
+    borderRadius: 4,
+  },
+  categoriesSection: {
+    marginBottom: Spacing.xl,
+  },
+  categoryCards: {
+    gap: Spacing.md,
+  },
+  categoryCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.lg,
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+  },
+  categoryLabel: {
+    flex: 1,
+  },
+  quizInfo: {
+    gap: Spacing.md,
+    marginBottom: Spacing.xl,
+  },
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.md,
+  },
+  startQuizButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    gap: Spacing.md,
+    ...Shadows.glass,
   },
 });
