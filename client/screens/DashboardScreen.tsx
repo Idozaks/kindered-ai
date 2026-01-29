@@ -24,15 +24,17 @@ import { RootStackParamList } from "@/navigation/RootStackNavigator";
 
 // Import tool icons
 // @ts-ignore
-import monitorIcon from "@/assets/images/monitor-tool.png";
+import askDoriIcon from "@/assets/images/ask-dori-tool.png";
 // @ts-ignore
 import letterIcon from "@/assets/images/letter-tool.png";
 // @ts-ignore
 import mirrorIcon from "@/assets/images/mirror-tool.png";
 // @ts-ignore
-import whatsappIcon from "@/assets/images/whatsapp-tool.png";
+import libraryIcon from "@/assets/images/library-tool.png";
 // @ts-ignore
-import gmailIcon from "@/assets/images/gmail-tool.png";
+import websiteIcon from "@/assets/images/website-tool.png";
+// @ts-ignore
+import quizIcon from "@/assets/images/quiz-tool.png";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -79,7 +81,7 @@ export default function DashboardScreen() {
       id: "grandchild",
       title: t("tools.grandchild.title"),
       description: t("tools.grandchild.description"),
-      image: monitorIcon,
+      image: askDoriIcon,
       color: theme.primary,
     },
     {
@@ -100,21 +102,21 @@ export default function DashboardScreen() {
       id: "library",
       title: t("tools.library.title"),
       description: t("tools.library.description"),
-      image: monitorIcon,
+      image: libraryIcon,
       color: "#6C63FF",
     },
     {
       id: "websiteHelper",
       title: t("tools.websiteHelper.title"),
       description: t("tools.websiteHelper.description"),
-      image: monitorIcon,
+      image: websiteIcon,
       color: "#4285F4",
     },
     {
       id: "learningQuiz",
       title: "שאלון למידה",
       description: "גלה את מסלול הלמידה המתאים לך",
-      image: monitorIcon,
+      image: quizIcon,
       color: "#9C27B0",
     },
   ];
