@@ -116,7 +116,10 @@ const STORAGE_KEYS = {
   USER_GENDER: "@aura_user_gender",
   HANDSHAKE_COMPLETED: "@aura_handshake_completed",
   PINNED_ANSWERS: "@aura_pinned_answers",
+  GREETING_AUDIO: "@aura_greeting_audio",
 };
+
+const GREETING_MESSAGE = "שלום! נעים להכיר. איך קוראים לך?";
 
 function getDayContext(): DayContext {
   const hour = new Date().getHours();
@@ -178,6 +181,35 @@ export function AuraProvider({ children }: { children: ReactNode }) {
     }
   }, [nativePlayer]);
 
+  const cachedGreetingRef = useRef<{ audioBase64: string; mimeType: string } | null>(null);
+
+  const preCacheGreeting = useCallback(async () => {
+    try {
+      const cached = await AsyncStorage.getItem(STORAGE_KEYS.GREETING_AUDIO);
+      if (cached) {
+        cachedGreetingRef.current = JSON.parse(cached);
+        return;
+      }
+      
+      const baseUrl = getApiUrl();
+      const response = await fetch(new URL("/api/ai/tts", baseUrl).href, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: GREETING_MESSAGE }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.audioBase64 && !data.fallback) {
+        const audioData = { audioBase64: data.audioBase64, mimeType: data.mimeType };
+        await AsyncStorage.setItem(STORAGE_KEYS.GREETING_AUDIO, JSON.stringify(audioData));
+        cachedGreetingRef.current = audioData;
+      }
+    } catch (error) {
+      console.log("Failed to pre-cache greeting:", error);
+    }
+  }, []);
+
   useEffect(() => {
     const loadStoredData = async () => {
       try {
@@ -196,13 +228,15 @@ export function AuraProvider({ children }: { children: ReactNode }) {
           handshakeStep: handshakeCompleted === "true" ? "complete" : "idle",
           pinnedAnswers: pinnedAnswers ? JSON.parse(pinnedAnswers) : [],
         }));
+
+        preCacheGreeting();
       } catch (error) {
         console.error("Error loading Aura stored data:", error);
       }
     };
 
     loadStoredData();
-  }, []);
+  }, [preCacheGreeting]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -289,6 +323,48 @@ export function AuraProvider({ children }: { children: ReactNode }) {
       if (onComplete) onComplete();
     }
   }, [nativePlayer]);
+
+  const playCachedGreeting = useCallback(async (onComplete?: () => void) => {
+    const cached = cachedGreetingRef.current;
+    if (!cached) {
+      return false;
+    }
+
+    try {
+      setState((prev) => ({ 
+        ...prev, 
+        voiceState: "speaking", 
+        transcript: GREETING_MESSAGE,
+        lastSpokenMessage: GREETING_MESSAGE,
+      }));
+
+      if (Platform.OS === "web") {
+        const audioSrc = `data:${cached.mimeType};base64,${cached.audioBase64}`;
+        const audio = new window.Audio(audioSrc);
+        audioPlayerRef.current = audio;
+        
+        audio.onended = () => {
+          setState((prev) => ({ ...prev, voiceState: "idle" }));
+          if (onComplete) onComplete();
+        };
+        audio.onerror = () => {
+          setState((prev) => ({ ...prev, voiceState: "idle" }));
+          if (onComplete) onComplete();
+        };
+        audio.play();
+      } else {
+        await playNativeAudio(cached.audioBase64, cached.mimeType, () => {
+          setState((prev) => ({ ...prev, voiceState: "idle" }));
+          if (onComplete) onComplete();
+        });
+      }
+      return true;
+    } catch (error) {
+      console.error("Failed to play cached greeting:", error);
+      setState((prev) => ({ ...prev, voiceState: "idle" }));
+      return false;
+    }
+  }, [playNativeAudio]);
 
   const speakWithGeminiTTS = useCallback(async (text: string, onComplete?: () => void) => {
     try {
@@ -480,16 +556,22 @@ export function AuraProvider({ children }: { children: ReactNode }) {
     setState((prev) => ({ ...prev, lastMoodCheck: new Date() }));
   }, [triggerHapticConfirmation]);
 
-  const startHandshake = useCallback(() => {
+  const startHandshake = useCallback(async () => {
     setState(prev => ({ 
       ...prev, 
       mode: "handshake",
       handshakeStep: "asking_name",
     }));
-    setTimeout(() => {
-      speak("שלום! נעים להכיר. איך קוראים לך?");
-    }, 800);
-  }, [speak]);
+    
+    triggerHapticConfirmation();
+    
+    setTimeout(async () => {
+      const usedCached = await playCachedGreeting();
+      if (!usedCached) {
+        speak(GREETING_MESSAGE);
+      }
+    }, 300);
+  }, [speak, playCachedGreeting, triggerHapticConfirmation]);
 
   const setUserName = useCallback(async (name: string) => {
     await AsyncStorage.setItem(STORAGE_KEYS.USER_NAME, name);
